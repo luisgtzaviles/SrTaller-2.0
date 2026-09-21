@@ -317,8 +317,12 @@ test(
       );
 
       await admin.query(
-        `insert into tenants (tenant_id, operating_currency, created_at)
-         values ($1, 'MXN', now()), ($2, 'MXN', now()), ($3, 'MXN', now()), ($4, 'MXN', now()), ($5, 'MXN', now())`,
+        `insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at)
+         values ($1, 'User Tenant A', 'ACTIVE', 'MXN', 0, now(), now()),
+                ($2, 'User Tenant B', 'ACTIVE', 'MXN', 0, now(), now()),
+                ($3, 'User Tenant C', 'ACTIVE', 'MXN', 0, now(), now()),
+                ($4, 'User Tenant D', 'ACTIVE', 'MXN', 0, now(), now()),
+                ($5, 'User Tenant E', 'ACTIVE', 'MXN', 0, now(), now())`,
         [tenantA, tenantB, tenantC, tenantD, tenantE],
       );
 
@@ -1018,6 +1022,13 @@ test(
       assert.equal(latest?.name, '20260906170000_users_create_directory');
       await runner.migrateDown(authorization(latest));
       await assertUserTables(admin, []);
+
+      // The user-directory reversal fixture uses synthetic Tenant identities
+      // that intentionally have no production-authorized display-name
+      // backfill. Remove those completed fixture rows before reapplying the
+      // full migration chain so TL-03 continues to fail closed for unknown
+      // legacy Tenants.
+      await admin.query('delete from tenants');
 
       const reapplied = await runner.migrateToLatest();
       assert.ok(

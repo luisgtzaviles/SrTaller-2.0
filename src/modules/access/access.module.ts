@@ -55,6 +55,7 @@ import { RevokeRoleAssignmentUseCase } from './application/use-cases/revoke-role
 import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';
 import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';
 import { KyselyAdminAuthRepository } from './infrastructure/persistence/kysely-admin-auth.repository.js';
+import type { KyselyTenantBootstrapAccessWriter } from './infrastructure/persistence/kysely-tenant-bootstrap-access.writer.js';
 import { ProvisionPinCredentialUseCase } from './application/use-cases/provision-pin-credential.use-case.js';
 import { ReplacePinCredentialUseCase } from './application/use-cases/replace-pin-credential.use-case.js';
 import { AuthenticatePinUseCase } from './application/use-cases/authenticate-pin.use-case.js';
@@ -105,7 +106,8 @@ import { UserPreferencesController } from './presentation/user-preferences.contr
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
   | KyselyPinCredentialRepositoryFactory
-  | KyselyAdminAuthRepository;
+  | KyselyAdminAuthRepository
+  | KyselyTenantBootstrapAccessWriter;
 type RegisteredAccessSecurityAdapter = NodeArgon2PinHasher;
 type RegisteredAccessUseCases =
   | AuthenticatePinUseCase

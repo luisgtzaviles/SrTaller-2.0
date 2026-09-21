@@ -402,10 +402,13 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts',
     'src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts',
     'src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts',
+    'src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts',
+    'src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts',
+    'src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -451,6 +454,8 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260916180000_catalog_add_supplier_version_completeness.ts',
       'src/infrastructure/database/migrations/20260917190100_access_add_catalog_configuration_capabilities.ts',
       'src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts',
+      'src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts',
+      'src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts',
     ].includes(migration)) {
       assert.deepEqual(registration.functions, []);
       assert.deepEqual(registration.triggers, []);

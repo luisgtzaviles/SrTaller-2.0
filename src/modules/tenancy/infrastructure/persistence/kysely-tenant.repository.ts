@@ -1,14 +1,13 @@
-import type { Kysely, Transaction } from 'kysely';
-
 import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import {
   useDatabasePersistenceExecutor,
   useTransactionalDatabasePersistenceExecutor,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type {
+  InternalDatabasePersistenceExecutor,
   InternalDatabasePersistenceOperation,
 } from '../../../../infrastructure/database/database-persistence-capability.js';
-import type { DatabaseSchema, TenantRow } from '../../../../infrastructure/database/database-types.js';
+import type { TenantRow } from '../../../../infrastructure/database/database-types.js';
 import type { DatabaseTransactionContext } from '../../../../infrastructure/database/transaction-runner.js';
 import { parseTenantId } from '../../index.js';
 import {
@@ -21,9 +20,7 @@ import type {
   TenantRepositoryPort,
 } from '../../application/ports/tenant-repository.port.js';
 
-type TenantExecutor =
-  | Kysely<Pick<DatabaseSchema, 'tenants'>>
-  | Transaction<Pick<DatabaseSchema, 'tenants'>>;
+type TenantExecutor = InternalDatabasePersistenceExecutor<'tenancy'>;
 
 type ExecuteTenantOperation = <Result>(
   operation: InternalDatabasePersistenceOperation<'tenancy', Result>,
@@ -85,11 +82,16 @@ function validateScope(
 function validateCreateRecord(
   scope: TenantPersistenceScope,
   record: CreateTenantRecord,
-): Readonly<{ tenantId: TenantPersistenceScope['tenantId']; operatingCurrency: string; createdAt: Date }> {
+): Readonly<{ tenantId: TenantPersistenceScope['tenantId']; displayName: string; lifecycleStatus: 'ONBOARDING' | 'ACTIVE'; operatingCurrency: string; createdAt: Date }> {
   if (
     typeof record !== 'object' ||
     record === null ||
     record.tenantId !== scope.tenantId ||
+    typeof record.displayName !== 'string' ||
+    record.displayName.length === 0 ||
+    record.displayName.length > 160 ||
+    record.displayName !== record.displayName.trim() ||
+    (record.lifecycleStatus !== 'ONBOARDING' && record.lifecycleStatus !== 'ACTIVE') ||
     !validInstant(record.createdAt) ||
     typeof record.operatingCurrency !== 'string' ||
     !/^[A-Z]{3}$/u.test(record.operatingCurrency)
@@ -98,6 +100,8 @@ function validateCreateRecord(
   }
   return Object.freeze({
     tenantId: scope.tenantId,
+    displayName: record.displayName,
+    lifecycleStatus: record.lifecycleStatus,
     operatingCurrency: record.operatingCurrency,
     createdAt: new Date(record.createdAt),
   });
@@ -106,8 +110,12 @@ function validateCreateRecord(
 function mapTenantRecord(row: TenantRow): TenantRecord {
   return Object.freeze({
     tenantId: parseTenantId(row.tenant_id),
+    displayName: row.display_name,
+    lifecycleStatus: row.lifecycle_status,
     operatingCurrency: row.operating_currency,
+    version: row.version,
     createdAt: row.created_at.toISOString(),
+    updatedAt: row.updated_at.toISOString(),
   });
 }
 
@@ -126,10 +134,21 @@ class KyselyTenantRepository implements TenantRepositoryPort {
           .insertInto('tenants')
           .values({
             tenant_id: validatedRecord.tenantId,
+            display_name: validatedRecord.displayName,
+            lifecycle_status: validatedRecord.lifecycleStatus,
             operating_currency: validatedRecord.operatingCurrency,
             created_at: validatedRecord.createdAt,
+            updated_at: validatedRecord.createdAt,
           })
-          .returning(['tenant_id', 'operating_currency', 'created_at'])
+          .returning([
+            'tenant_id',
+            'display_name',
+            'lifecycle_status',
+            'operating_currency',
+            'version',
+            'created_at',
+            'updated_at',
+          ])
           .executeTakeFirstOrThrow();
         return mapTenantRecord(row);
       });
@@ -146,7 +165,7 @@ class KyselyTenantRepository implements TenantRepositoryPort {
       return await this.execute(async (executor: TenantExecutor) => {
         const row = await executor
           .selectFrom('tenants')
-          .select(['tenant_id', 'operating_currency', 'created_at'])
+          .selectAll()
           .where('tenant_id', '=', validatedScope.tenantId)
           .executeTakeFirst();
         return row ? mapTenantRecord(row) : null;

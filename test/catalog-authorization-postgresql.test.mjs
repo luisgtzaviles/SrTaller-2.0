@@ -27,7 +27,7 @@ const migrationRoot = fileURLToPath(
   new URL('../dist/infrastructure/database/migrations/', import.meta.url),
 );
 const migrationName = '20260917190200_access_add_granular_catalog_capabilities';
-const tenantId = randomUUID();
+const tenantId = '00000000-0000-4000-8000-000000000001';
 const roleIds = Object.freeze({
   legacyCatalog: randomUUID(),
   legacyImport: randomUUID(),

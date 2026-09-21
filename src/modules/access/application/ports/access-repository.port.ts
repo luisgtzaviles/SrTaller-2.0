@@ -47,6 +47,8 @@ export type AccessRoleRecord = Readonly<{
   description: RoleDescription | null;
   status: RoleStatus;
   version: number;
+  managementMode: 'TENANT_MANAGED' | 'SYSTEM_MANAGED';
+  policyVersion: number | null;
   capabilityCodes: readonly CapabilityCode[];
   createdAt: string;
   updatedAt: string;
@@ -123,6 +125,7 @@ export type AccessPersistenceErrorCode =
   | 'ACCESS_IDEMPOTENCY_CONFLICT'
   | 'ACCESS_INPUT_INVALID'
   | 'ACCESS_PERSISTENCE_FAILED'
+  | 'ACCESS_PROTECTED_ROLE'
   | 'ACCESS_REFERENCE_NOT_FOUND'
   | 'ACCESS_STALE_WRITE'
   | 'ACCESS_TENANT_SCOPE_REQUIRED';

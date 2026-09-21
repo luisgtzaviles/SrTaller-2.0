@@ -1,157 +1,167 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: HARNESS — Fix Post-Merge Work Unit Snapshot Lifecycle
-iteration: 1 - Lifecycle Defect Remediation
-type: GOVERNANCE
+work_unit: TL-03 — Atomic Tenant Bootstrap + Starter Authority
+iteration: 2 - Authorized Implementation
+type: IMPLEMENTATION
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
-branch: fix/harness-post-merge-snapshot-lifecycle
-base_sha: 46ce91bc6fe0fe70362ceee730db688aa307d781
+branch: feature/tl-03-atomic-tenant-bootstrap
+base_sha: cca47e9204bfe0ad8c1cb78c08a506888b7b1535
 status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
 
-## Identity
-
-- **Milestone:** Development Harness 2.0 lifecycle remediation.
-- **Work Unit:** HARNESS — Fix Post-Merge Work Unit Snapshot Lifecycle.
-- **Sprint:** none; this is an authorized governance remediation.
-- **Current PBI:** `NONE`; TL-02 remains closed and TL-03 is not started.
+Milestone: Tenant Lifecycle MVP
+Sprint: NONE
 Current PBI: NONE
-- **Status:** `READY_FOR_PROMOTION`; the local candidate is frozen for its
-  exact-HEAD promotion verification.
-- **Progress:** `7 / 7` local Work Unit blocks complete.
-- **Current work:** exact-candidate revalidation after the deliberate remote
-  promotion review strengthened exact-main binding.
-- **Next block:** update the existing Draft PR and require fresh authoritative
-  CI on the remediated HEAD.
-- **Blockers:** none.
-- **Last updated:** 2026-09-21, America/Hermosillo.
+General State: Local implementation and authoritative verification complete
+Progress: 8 / 8 implementation blocks complete
+Current Work: Local candidate ready; awaiting separate Owner promotion authorization
+Next Block: Revalidate exact HEAD, then push and open one Draft PR only if authorized
+Blocking: NONE
+Last Updated: 2026-09-21
 
 ## Objective
 
-Make post-merge Work Unit closure mechanically truthful without making feature
-branches claim `IDLE`, weakening validation or requiring a routine second PR.
+Implement the atomic, idempotent server-side bootstrap foundation that establishes a newly verified Tenant and its first trusted administrative authority without exposing a public registration surface.
 
 ## Why
 
-TL-02 is materially closed by its authorized merge and exact-main CI, but its
-landed `ACTIVE` snapshot makes explicit `MAIN` validation fail and blocks safe
-initialization of the next authorized Work Unit.
+To execute one authorized objective with a transferable repository-native handoff.
 
 ## In Scope
 
-- Reproduce and explain the missing feature-to-main lifecycle transition.
-- Evaluate deterministic repository-native closure designs.
-- Update only the Work Unit checker, initializer/closure tooling, contracts and
-  regression coverage required by the selected design.
-- Repair the current invalid main snapshot through this governed remediation.
+- Audit current Tenant/User/Access/TL-02 persistence and transactions.
+- Define the atomic/idempotent internal bootstrap contract.
+- Define starter authority, schema delta, threat model and test plan.
+- Preserve the approved Owner decisions throughout implementation.
 
 ## Out of Scope
 
-- TL-02 product changes or reopening TL-02.
-- Starting TL-03 or another product Work Unit.
-- Product architecture, database, deploy, GitHub configuration or unrelated
-  cleanup.
-- Accepting `ACTIVE` as a valid main snapshot or weakening existing gates.
+- Public registration/email delivery (TL-04).
+- Branch lifecycle/activation (TL-05), Users UI (TL-06) and Station enrollment.
+- Admin UI, push, PR, merge or deploy.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](../delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
-- [`SOURCE_OF_TRUTH.md`](../delivery/SOURCE_OF_TRUTH.md)
-- [`DEFINITION_OF_DONE.md`](../delivery/DEFINITION_OF_DONE.md)
+- [`TENANT_LIFECYCLE_MVP.md`](../architecture/TENANT_LIFECYCLE_MVP.md)
+- [`ADR-015`](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md)
+- [`DEC-049`](../decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md)
+- [`TL-03 readiness`](../architecture-readiness/tenant-lifecycle/TL-03_ATOMIC_TENANT_BOOTSTRAP_READINESS.md)
 
 ## Risks
 
-- A false `IDLE` can hide failed merge or exact-main verification.
-- Branch-local or uncommitted state can break handoff across agents/clones.
-- Automatic post-merge mutation can recreate closure commits or bypass review.
-- Relaxing `MAIN` validation can conceal the original defect.
+- Cross-owner atomicity must preserve single-owner persistence boundaries.
+- Client-controlled elevation or pre-verification authority is forbidden.
+- Credential material, IDs and idempotency must survive ambiguous retries
+  without exposing secrets or creating orphan data.
 
 ## Plan
 
-- [x] Confirm TL-02 material closure and reproduce `INVALID_MAIN_SNAPSHOT`.
-- [x] Trace the missing transition and evaluate the minimum viable designs.
-- [x] Implement the selected lifecycle/checker/tooling change.
-- [x] Add full deterministic lifecycle regressions.
-- [x] Prove valid main closure and next-Work-Unit preconditions without starting
-  TL-03.
-- [x] Run proportional architectural checks and deliberate review.
-- [x] Set this Work Unit `READY_FOR_PROMOTION` and stop before remote actions.
+- [x] Revalidate repository/workflow and initialize TL-03.
+- [x] Audit Tenant/User/Role/Capability/Admin Identity persistence.
+- [x] Audit transaction and idempotency infrastructure.
+- [x] Define bootstrap grant, result and cross-owner orchestration.
+- [x] Define schema/migration requirements.
+- [x] Define threat model and failure semantics.
+- [x] Define incremental implementation blocks and test plan.
+- [x] Resolve Owner decisions TL3D-001–004.
+- [x] Receive separate implementation authorization.
+- [x] Block 1 — Tenant schema, trustworthy backfill and bootstrap journal.
+- [x] Block 2 — Protected/versioned starter Role and capability policy.
+- [x] Block 3 — Transaction-aware owner persistence ports.
+- [x] Block 4 — Internal bootstrap domain/application contract.
+- [x] Block 5 — Atomic orchestration and sanitized audit.
+- [x] Block 6 — Idempotency, concurrency and failure injection.
+- [x] Block 7 — TL-02 login, isolation and operational-auth regression.
+- [x] Block 8 — Evidence, full verification and promotion handoff.
 
 ## Current
 
-The deterministic closure-ref design, fail-closed PR/main validation, shared
-publication command, contracts and regressions are complete. Deliberate review
-also bound closure to the live remote `main` ref and to an authoritative run
-whose `headBranch` is exactly `main`; the remediated tree now requires its
-single exact-candidate full promotion run.
+All eight authorized implementation blocks and local promotion gates are
+complete on the current branch.
 
 ## Next
 
-Run the exact-candidate full promotion verification, update the existing Draft
-PR normally and require fresh authoritative CI. Stop before merge.
+Await separate Owner authorization for remote promotion. Do not start TL-04.
 
 ## Blockers
 
-None. The Owner explicitly authorized this one remediation to replace the
-invalid landed snapshot and correct the lifecycle contract.
+None.
 
 ## Important Discoveries
 
-- GitHub merges the tracked branch snapshot unchanged; no current step converts
-  branch-operational state into a valid main representation.
-- The initializer correctly rejects replacing `ACTIVE`, so the invalid main
-  snapshot blocks the next Work Unit even though TL-02 is materially closed.
-- TL-02 remains closed; this is a Harness defect, not product remediation.
-- A deterministic annotated Git tag can preserve the reviewed branch snapshot
-  while recording closure only after the ordinary merge and exact-main CI.
-- PR CI must reject `ACTIVE`; otherwise an unclosable snapshot can land before
-  the post-merge predicate is eligible.
-- Exact SHA matching alone does not prove an exact-`main` run because the same
-  commit can be the head of another CI-enabled branch; closure now requires
-  `headBranch: main` explicitly.
-- A stale local `origin/main` cache cannot prove synchronization with the
-  authoritative remote; closure now also reads live `refs/heads/main`.
+- TL-02 password verifiers are purpose-bound to Tenant + Admin Identity IDs;
+  the Registration Attempt must reserve those IDs server-side before hashing.
+- Current first-User, Role and Admin Identity repositories open independent
+  transactions; TL-03 needs transaction-aware owner ports, not nested calls.
+- Current capability catalog has no Tenant/Branch/Station lifecycle codes.
+- Current Tenant schema has no display name, lifecycle, version or updated time.
+- Existing workshop names have no authoritative source suitable for blind
+  migration backfill.
+- Block 1 materializes the only approved legacy mapping (`SR Taller`) and fails
+  closed for every unexpected preexisting Tenant instead of fabricating a name.
+- Block 2 adds only the approved administrative capabilities, a protected
+  `SYSTEM_MANAGED` policy v1 Role and ordinary-mutation guards; no operational
+  capability is part of the starter bundle.
+- Block 3 adds owner-scoped transactional writers over one SERIALIZABLE-capable
+  context. A dedicated PostgreSQL guard serializes duplicate Registration IDs
+  without raw SQL or application-only check-then-insert.
+- Block 4 accepts only opaque Registration/correlation IDs at the command edge;
+  validates the trusted immutable grant and exposes a stable, secret-free result.
+- Block 5 composes Tenant, User, TL-02 identity/credential, protected Role,
+  capability bundle, assignment, sanitized event and journal in one transaction;
+  it never creates an Admin or Operational Session.
+- Block 6 proves PostgreSQL rollback at all nine material boundaries, concurrent
+  duplicate serialization, stable replay, ambiguous-timeout recovery, conflict
+  rejection, duplicate names, normalized-email conflict and tenant isolation.
+- Block 7 proves TL-02 login with the bootstrapped identity, no implicit
+  Operational Session, and 60 focused Role/PIN/Session/authorization regressions.
 
 ## Focused Verification
 
-- [x] PR #64 merge and exact-main authoritative CI revalidated.
-- [x] `work-unit:check --mode MAIN` reproduced `INVALID_MAIN_SNAPSHOT`.
-- [x] Work Unit lifecycle regression suite: 14/14 PASS.
-- [x] Governance/source-of-truth regressions: 4/4 PASS.
-- [x] Explicit main-mode and next-start precondition proofs.
-- [x] Typecheck, architecture, docs links/consistency/secret scan and
-  `git diff --check`.
-- Exact-candidate full promotion verification remains authoritative and is not
-  copied into Markdown as mutable command evidence.
+- [x] Work Unit lifecycle check PASS in effective `BLOCKED` state.
+- [x] Architecture policy, Markdown structure/relative links, documentation
+  consistency, focused secret scan and `git diff --check` PASS.
+- [x] Change classifier preserves `FULL` for a future promotion because the
+  readiness contract is cross-module/high-risk; no gate was waived.
+- [x] Block 1 typecheck/build and focused schema/ownership tests PASS.
+- [x] PostgreSQL 18.4 applied the additive Tenant foundation migration; second
+  execution reported `0 pending`.
+- [x] Block 2 typecheck/build, capability catalog, Role contract and starter
+  policy regressions PASS; PostgreSQL 18.4 applied the policy migration and a
+  second execution reported `0 pending`.
+- [x] Block 3 typecheck/build, ownership/schema/architecture regressions PASS;
+  PostgreSQL 18.4 applied the guard migration and rerun reported `0 pending`.
+- [x] Block 6 focused contract/use-case tests PASS; fresh PostgreSQL 18.4 ran
+  79 migrations, rerun `0 pending`, and all 3 material TL-03 suites PASS.
+- [x] Block 7 TL-02 PostgreSQL 2/2 PASS and focused operational authorization,
+  Role, PIN, Session and admin-session regressions 60/60 PASS.
+- [x] Final candidate verification covers unit/contracts, PostgreSQL 18.4
+  migration/atomicity/concurrency/failure injection, TL-02 regressions,
+  architecture/security gates and `verify:full` stages 0–15; 79 migrations
+  applied and rerun reported `0 pending`.
 
 ## Promotion Gates
 
-- Risk is `ARCHITECTURAL`; current full promotion verification and deliberate
-  architectural review remain mandatory.
-- The selected design must fail closed for unmerged or failed exact-main work.
-- Owner authorized ordinary branch push and one Draft PR for this Work Unit.
-- Merge and deploy remain unauthorized.
+- Existing authoritative promotion policy remains unchanged.
 
 ## Remote Actions / Authorization
 
-- No push, PR, merge or deploy is authorized yet.
-- Promotion must stop locally at `READY_FOR_PROMOTION` for Owner authorization.
+- No push, PR, merge or deploy has been performed or authorized for this
+  candidate.
 
 ## Handoff Notes
 
-- Preserve `apps/dev-preview-web/src/.DS_Store` as an unrelated Owner artifact.
-- Do not modify TL-02 product functionality or start TL-03.
-- Do not solve the defect by accepting `ACTIVE` on `main`.
+- Branch creation/switching is explicit and occurred before this command.
 
 ## Closure Predicate
 
-This Harness Work Unit closes only after its reviewed fix is merged, exact-main
-CI is green, main derives a valid effective `IDLE` state without a routine
-closure PR, and the absorbed branch has no exclusive commits. No deploy is
-required.
+Owner decisions approved, implementation completed on this branch, required
+local verification PASS, checklist reconciled to `READY_FOR_PROMOTION`, one
+authorized PR merged ordinarily, exact-main CI GREEN, closure ref published;
+Preview/deploy are N/A unless separately authorized.

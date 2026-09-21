@@ -118,7 +118,13 @@ test('tenant scope fails closed before the persistence capability is used', asyn
   await assert.rejects(
     repository.createTenant(
       { tenantId: tenantA },
-      { tenantId: tenantB, operatingCurrency: 'MXN', createdAt },
+      {
+        tenantId: tenantB,
+        displayName: 'Tenant B',
+        lifecycleStatus: 'ONBOARDING',
+        operatingCurrency: 'MXN',
+        createdAt,
+      },
     ),
     expectsTenantCode('PERSISTENCE_TENANT_SCOPE_REQUIRED'),
   );
@@ -150,17 +156,35 @@ test('adapters map immutable records and invoke only their registered owner', as
     fakeConnection(
       insertExecutor({
         tenant_id: tenantA,
+        display_name: 'Tenant A',
+        lifecycle_status: 'ONBOARDING',
         operating_currency: 'MXN',
+        version: 0,
         created_at: new Date(createdAt),
+        updated_at: new Date(createdAt),
       }),
       tenantOwners,
     ),
   );
   const tenant = await tenantRepository.createTenant(
     { tenantId: tenantA },
-    { tenantId: tenantA, operatingCurrency: 'MXN', createdAt },
+    {
+      tenantId: tenantA,
+      displayName: 'Tenant A',
+      lifecycleStatus: 'ONBOARDING',
+      operatingCurrency: 'MXN',
+      createdAt,
+    },
   );
-  assert.deepEqual(tenant, { tenantId: tenantA, operatingCurrency: 'MXN', createdAt });
+  assert.deepEqual(tenant, {
+    tenantId: tenantA,
+    displayName: 'Tenant A',
+    lifecycleStatus: 'ONBOARDING',
+    operatingCurrency: 'MXN',
+    version: 0,
+    createdAt,
+    updatedAt: createdAt,
+  });
   assert.ok(Object.isFrozen(tenant));
   assert.deepEqual(tenantOwners, ['tenancy']);
 
@@ -204,7 +228,13 @@ test('driver failures map to stable sanitized owner errors', async () => {
     await assert.rejects(
       tenantRepository.createTenant(
         { tenantId: tenantA },
-        { tenantId: tenantA, operatingCurrency: 'MXN', createdAt },
+        {
+          tenantId: tenantA,
+          displayName: 'Tenant A',
+          lifecycleStatus: 'ONBOARDING',
+          operatingCurrency: 'MXN',
+          createdAt,
+        },
       ),
       (error) => {
         assert.ok(expectsTenantCode('TENANT_PERSISTENCE_FAILED')(error));

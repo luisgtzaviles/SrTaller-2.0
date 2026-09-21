@@ -69,7 +69,7 @@ test('Customer phone search hydrates matched Customer-owned phones and stays iso
   const repository = new KyselyCustomerIntakeRepository(connection);
   try {
     await removeFixture(admin);
-    await admin.query("insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'MXN', now())", [tenantA, tenantB]);
+    await admin.query("insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Customer Tenant A', 'ACTIVE', 'MXN', 0, now(), now()), ($2, 'Customer Tenant B', 'ACTIVE', 'MXN', 0, now(), now())", [tenantA, tenantB]);
     await admin.query('insert into branches (tenant_id, branch_id, created_at) values ($1, $2, now()), ($3, $4, now())', [tenantA, branchA, tenantB, branchB]);
     await admin.query(`insert into customers (customer_id, tenant_id, branch_id, given_name, family_name, created_at)
       values ($1, $2, $3, 'Owner Search Alpha', 'Branch One', now()), ($4, $5, $6, 'Owner Search Beta', 'Branch Two', now())`,

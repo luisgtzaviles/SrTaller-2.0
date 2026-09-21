@@ -40,6 +40,9 @@ export const expectedPostgresqlSkipInventory = Object.freeze([
   materialTest('test/catalog-postgresql.test.mjs', 'UX-005.6 promotes one exact pending Brand group atomically without fuzzy matching or duplicate canonicals', 'pbi041-postgresql', 'pbi041Enabled'),
   materialTest('test/tl02-admin-auth-postgresql.test.mjs', 'TL-02 persistence enforces tenant identity, secret shape and append-only audit', 'tl02-postgresql'),
   materialTest('test/tl02-admin-auth-postgresql.test.mjs', 'TL-02 PostgreSQL executes concurrent sessions, rate limit, reauth, revocation and recovery without Operational Session crossover', 'tl02-postgresql'),
+  materialTest('test/tl03-bootstrap-postgresql.test.mjs', 'TL-03 permits duplicate workshop names, isolates tenants, logs no secrets and supports TL-02 login', 'tl03-postgresql'),
+  materialTest('test/tl03-bootstrap-postgresql.test.mjs', 'TL-03 rolls back every material failure stage without partial authority', 'tl03-postgresql'),
+  materialTest('test/tl03-bootstrap-postgresql.test.mjs', 'TL-03 serializes duplicate calls, replays ambiguous success and rejects conflicting reuse', 'tl03-postgresql'),
 ]);
 
 function inspectGuardedTests(source, file) {
@@ -114,6 +117,7 @@ export async function inspectPostgresqlSkipInventory(root = process.cwd()) {
       pbi040Postgresql: materialCount('pbi040-postgresql'),
       pbi041Postgresql: materialCount('pbi041-postgresql'),
       tl02Postgresql: materialCount('tl02-postgresql'),
+      tl03Postgresql: materialCount('tl03-postgresql'),
     }),
   });
 }

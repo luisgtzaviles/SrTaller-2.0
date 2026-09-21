@@ -265,6 +265,20 @@ function authorization(item) {
   });
 }
 
+async function migrateUpThrough(runner, targetMigrationName) {
+  const results = [];
+  while (true) {
+    const status = await runner.getMigrationStatus();
+    const next = status.migrations.find(({ state }) => state === 'pending');
+    assert.ok(next, `Expected pending migration through ${targetMigrationName}`);
+    const execution = await runner.migrateUp();
+    results.push(...execution.results);
+    if (next.name === targetMigrationName) {
+      return Object.freeze({ results: Object.freeze(results), status: execution.status });
+    }
+  }
+}
+
 async function resetDatabase(admin) {
   await admin.query('drop function if exists catalog_reject_append_only_mutation() cascade');
   await admin.query('drop function if exists access_assert_unambiguous_pin_eligibility() cascade');
@@ -509,9 +523,14 @@ test(
       await seedAuthorities(admin);
       status = await runner.getMigrationStatus();
       const expectedUpgradeCount = status.migrations.filter(
-        ({ state }) => state === 'pending',
+        ({ state, name }) =>
+          state === 'pending' &&
+          name <= '20260920180000_access_create_admin_identity_sessions',
       ).length;
-      const upgraded = await runner.migrateToLatest();
+      const upgraded = await migrateUpThrough(
+        runner,
+        '20260920180000_access_create_admin_identity_sessions',
+      );
       assert.equal(upgraded.results.length, expectedUpgradeCount);
       assert.equal(
         upgraded.results[0]?.name,
@@ -1740,9 +1759,14 @@ test(
 
       status = await runner.getMigrationStatus();
       const expectedReapplyCount = status.migrations.filter(
-        ({ state }) => state === 'pending',
+        ({ state, name }) =>
+          state === 'pending' &&
+          name <= '20260920180000_access_create_admin_identity_sessions',
       ).length;
-      const reapplied = await runner.migrateToLatest();
+      const reapplied = await migrateUpThrough(
+        runner,
+        '20260920180000_access_create_admin_identity_sessions',
+      );
       assert.equal(reapplied.results.length, expectedReapplyCount);
       await assertPinTables(admin, pinTables);
 

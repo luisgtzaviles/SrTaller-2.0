@@ -79,7 +79,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
   const retirement = new CatalogRetirementService(new KyselyCatalogRetirementRepository(connection));
   const ctxA = context(tenantA, branchA); const ctxB = context(tenantB, branchB); const ctxC = context(tenantC, branchC);
   try {
-    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'USD', now()), ($3, 'MXN', now())`, [tenantA, tenantB, tenantC]);
+    await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Bulk Tenant A', 'ACTIVE', 'MXN', 0, now(), now()), ($2, 'Bulk Tenant B', 'ACTIVE', 'USD', 0, now(), now()), ($3, 'Bulk Tenant C', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantA, tenantB, tenantC]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now()), ($3, $4, 'America/Phoenix', true, now()), ($5, $6, 'America/Hermosillo', true, now())`, [tenantA, branchA, tenantB, branchB, tenantC, branchC]);
     await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at)
       values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantB, virginCategoryId]);
@@ -738,7 +738,7 @@ test('UX-005.1 keeps safely capturable new references out of manual reconciliati
   const tenantId = randomUUID(); const branchId = randomUUID(); const ctx = context(tenantId, branchId);
   const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
   try {
-    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Pending Reference Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
     const categoryId = randomUUID(); const brandId = randomUUID();
     await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantId, categoryId]);
@@ -807,7 +807,7 @@ test('PBI-041 material handoff preserves the publisher as the Apply audit actor'
   const publisher = Object.freeze({ ...context(tenantId, branchId), actorDisplayName: 'Publisher B' });
   const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
   try {
-    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Audit Handoff Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
     const source = await service.createSource(preparer, { name: 'Handoff QA supplier' });
     const draft = await service.createDraft(preparer, { sourceId: source.sourceId, description: 'Prepared by A', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'a'.repeat(64), rawPayload: 'handoff-qa', rows: [fullRow(9_401)] });
@@ -831,7 +831,7 @@ test('PBI-041 rejects a stale authorized Apply snapshot after a concurrent decis
   const bulk = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
   const catalog = new CatalogService(new KyselyCatalogRepository(connection), async () => 'MXN');
   try {
-    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Authorization Snapshot Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
     const category = await catalog.createCategory(preparer, { name: 'Pantallas', applicableKinds: ['PART'], expectedVersion: 0, clientRequestId: randomUUID() });
     const brand = await catalog.createBrand(preparer, { name: 'Apple', applicableKinds: ['PART'], expectedVersion: 0, clientRequestId: randomUUID() });
@@ -916,7 +916,7 @@ test('UX-005.3 correction drafts preserve an analyzed source snapshot and reject
   const tenantId = randomUUID(); const branchId = randomUUID(); const ctx = context(tenantId, branchId);
   const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
   try {
-    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Correction Draft Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
     const categoryId = randomUUID(); const correctedCategoryId = randomUUID(); const brandId = randomUUID();
     await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now()), ($1, $3, 'PART', 'Pantallas corregidas', 'pantallas corregidas', 'ACTIVE', 1, now(), now())`, [tenantId, categoryId, correctedCategoryId]);
@@ -950,7 +950,7 @@ test('UX-003.1 persists tenant-isolated catalog field policies with append-only 
   const policy = new CatalogFieldPolicyService(new KyselyCatalogFieldPolicyRepository(connection), () => new Date('2026-09-17T19:00:00.000Z'), () => randomUUID());
   const policyContext = (tenantId) => Object.freeze({ tenantId, branchId: randomUUID(), stationId: randomUUID(), sessionId: randomUUID(), actorUserId: randomUUID(), actorDisplayName: 'Policy QA', capability: 'catalog.configuration.manage', commitGuards: Object.freeze([{ async confirmCurrent() { return true; }, async confirmTemporalCurrent() { return true; } }]) });
   try {
-    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'MXN', now())`, [policyTenantA, policyTenantB]);
+    await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Policy Tenant A', 'ACTIVE', 'MXN', 0, now(), now()), ($2, 'Policy Tenant B', 'ACTIVE', 'MXN', 0, now(), now())`, [policyTenantA, policyTenantB]);
     const fallback = await policy.effective({ tenantId: policyTenantA });
     assert.deepEqual([fallback.source, fallback.policyVersion, fallback.fieldLevels.brand], ['product-default', 0, 'OPTIONAL']);
     const changed = { ...fallback.fieldLevels, brand: 'REQUIRED', referenceCost: 'ESSENTIAL' };
@@ -976,7 +976,7 @@ test('UX-003.4 enforces required values from the resulting Catalog state and rec
   const policyContext = Object.freeze({ ...ctx, capability: 'catalog.configuration.manage' });
   const knownRow = { kind: 'PART', supplierObservedTitle: 'Pantalla QA efectiva', title: 'Pantalla QA efectiva', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: 'EFFECTIVE-001', sku: 'EFFECTIVE-001', barcode: 'EFFECTIVE-BAR-001', basePriceMinor: 120_00, referenceCostMinor: null };
   try {
-    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Effective Policy Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
     await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantId, randomUUID()]);
     await admin.query(`insert into catalog_brands (tenant_id, brand_id, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'Apple', 'apple', 'ACTIVE', 1, now(), now())`, [tenantId, randomUUID()]);
@@ -1014,7 +1014,7 @@ test('UX-005.6 rejects zero effective base prices at Analyze and independently a
   const policy = new CatalogFieldPolicyService(new KyselyCatalogFieldPolicyRepository(connection), () => new Date('2026-09-18T20:00:00.000Z'), () => randomUUID());
   const policyContext = Object.freeze({ ...ctx, capability: 'catalog.configuration.manage' });
   try {
-    await admin.query(`insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now())`, [tenantId]);
+    await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Zero Price Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
     await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
     const source = await service.createSource(ctx, { name: 'UX-005.6 integrity fixture' });
     const zeroRow = { kind: 'PART', supplierObservedTitle: 'Precio cero', title: 'Precio cero', description: null, category: 'Pantallas', brand: 'Samsung', supplierItemCode: 'UX0056-ZERO', sku: null, barcode: null, basePriceMinor: 0, referenceCostMinor: 0 };

@@ -60,7 +60,7 @@ test('PostgreSQL persists personal mode by Tenant and User with restrictive life
   const repository = new KyselyUserPreferencesRepository(connection);
   try {
     await removeFixture(admin);
-    await admin.query("insert into tenants (tenant_id, operating_currency, created_at) values ($1, 'MXN', now()), ($2, 'MXN', now())", [tenantA, tenantB]);
+    await admin.query("insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Preferences Tenant A', 'ACTIVE', 'MXN', 0, now(), now()), ($2, 'Preferences Tenant B', 'ACTIVE', 'MXN', 0, now(), now())", [tenantA, tenantB]);
     await admin.query(`insert into users (tenant_id, user_id, display_name, status, version, created_at, updated_at)
       values ($1, $2, 'Shared A', 'active', 0, now(), now()),
              ($1, $3, 'Other A', 'active', 0, now(), now()),

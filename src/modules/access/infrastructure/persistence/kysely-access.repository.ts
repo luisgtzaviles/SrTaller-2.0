@@ -315,6 +315,8 @@ function mapRoleRecord(
     description: parseRoleDescription(row.description),
     status: parseRoleStatus(row.status),
     version: row.version,
+    managementMode: row.management_mode,
+    policyVersion: row.policy_version,
     capabilityCodes: composeEffectiveCapabilities(capabilityCodes),
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
@@ -336,6 +338,8 @@ function mapRoleCommand(command: AccessRoleCommandRow): AccessRoleRecord {
     description: parseRoleDescription(command.result_description),
     status: parseRoleStatus(command.result_status),
     version: command.result_version,
+    managementMode: 'TENANT_MANAGED',
+    policyVersion: null,
     capabilityCodes: composeEffectiveCapabilities(
       command.result_capability_codes.map(parseCapabilityCode),
     ),
@@ -529,6 +533,8 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             description: trustedInput.description,
             status: 'active',
             version: 0,
+            management_mode: 'TENANT_MANAGED',
+            policy_version: null,
             created_at: trustedInput.occurredAt,
             updated_at: trustedInput.occurredAt,
           }).returningAll().executeTakeFirstOrThrow();
@@ -599,6 +605,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             .where('status', '=', 'active')
             .executeTakeFirst();
           if (!current) throw new AccessPersistenceError('ACCESS_REFERENCE_NOT_FOUND');
+          if (current.management_mode === 'SYSTEM_MANAGED') {
+            throw new AccessPersistenceError('ACCESS_PROTECTED_ROLE');
+          }
           if (current.version !== trustedInput.expectedVersion) {
             throw new AccessPersistenceError('ACCESS_STALE_WRITE');
           }
@@ -684,6 +693,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             .where('status', '=', 'active')
             .executeTakeFirst();
           if (!current) throw new AccessPersistenceError('ACCESS_REFERENCE_NOT_FOUND');
+          if (current.management_mode === 'SYSTEM_MANAGED') {
+            throw new AccessPersistenceError('ACCESS_PROTECTED_ROLE');
+          }
           if (current.version !== trustedInput.expectedVersion) {
             throw new AccessPersistenceError('ACCESS_STALE_WRITE');
           }

@@ -62,6 +62,8 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     users: DatabaseSchema['users'];
     user_preferences: DatabaseSchema['user_preferences'];
     user_provisioning_bootstraps: DatabaseSchema['user_provisioning_bootstraps'];
+    tenant_bootstrap_commands: DatabaseSchema['tenant_bootstrap_commands'];
+    tenant_bootstrap_guards: DatabaseSchema['tenant_bootstrap_guards'];
     user_lifecycle_commands: DatabaseSchema['user_lifecycle_commands'];
     user_profile_update_commands: DatabaseSchema['user_profile_update_commands'];
     user_create_commands: DatabaseSchema['user_create_commands'];
@@ -129,7 +131,7 @@ type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
     : Owner extends 'repairs'
     ? Pick<DatabaseSchema, 'repair_catalog_reference_deletion_events' | 'repair_attachments' | 'repair_business_audit_events' | 'repair_intakes' | 'repair_equipment_corrections' | 'repair_device_types' | 'repair_device_type_pending_values' | 'repair_device_type_catalog_events' | 'repair_brands' | 'repair_brand_pending_values' | 'repair_brand_catalog_events' | 'repair_models' | 'repair_model_pending_values' | 'repair_model_catalog_events' | 'repair_risks' | 'repair_intervention_risks' | 'repair_risk_catalog_events' | 'repair_problem_categories' | 'repair_problem_pending_values' | 'repair_problem_category_catalog_events' | 'repair_problem_category_deletion_events' | 'repair_problem_classifications' | 'repair_problem_classification_events' | 'repair_operational_note_request_guards' | 'repair_create_commands' | 'repair_folio_sequences' | 'repair_new_repair_policy_heads' | 'repair_new_repair_policy_versions' | 'repair_timeline_entries' | 'repairs' | 'repair_technicians' | 'repair_technician_branches' | 'repair_technician_assignments' | 'repair_workflow_transitions' | 'repair_locations' | 'repair_location_movements'>
     : Owner extends 'tenancy'
-    ? Pick<DatabaseSchema, 'tenants'>
+    ? Pick<DatabaseSchema, 'tenants' | 'tenant_bootstrap_commands' | 'tenant_bootstrap_guards'>
     : Owner extends 'users'
     ? Pick<DatabaseSchema, 'users' | 'user_preferences' | 'user_provisioning_bootstraps' | 'user_lifecycle_commands' | 'user_profile_update_commands' | 'user_create_commands'>
     : Pick<DatabaseSchema, 'branches' | 'stations' | 'station_bindings' | 'station_credentials'>;

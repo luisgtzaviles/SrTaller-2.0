@@ -7,7 +7,30 @@ type DefaultedMutableColumn<T> = ColumnType<T, T | undefined, T>;
 
 export interface TenantTable {
   readonly tenant_id: ImmutableColumn<string>;
+  readonly display_name: MutableColumn<string>;
+  readonly lifecycle_status: MutableColumn<'ONBOARDING' | 'ACTIVE'>;
   readonly operating_currency: MutableColumn<string>;
+  readonly version: DefaultedMutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface TenantBootstrapCommandTable {
+  readonly verified_registration_id: ImmutableColumn<string>;
+  readonly registration_revision: ImmutableColumn<number>;
+  readonly approved_input_digest: ImmutableColumn<Uint8Array>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly first_user_id: ImmutableColumn<string>;
+  readonly admin_identity_id: ImmutableColumn<string>;
+  readonly starter_role_id: ImmutableColumn<string>;
+  readonly starter_policy_version: ImmutableColumn<number>;
+  readonly starter_assignment_id: ImmutableColumn<string>;
+  readonly result_tenant_status: ImmutableColumn<'ONBOARDING'>;
+  readonly completed_at: ImmutableColumn<Date>;
+}
+
+export interface TenantBootstrapGuardTable {
+  readonly verified_registration_id: ImmutableColumn<string>;
   readonly created_at: ImmutableColumn<Date>;
 }
 
@@ -607,6 +630,17 @@ export interface UserCreateCommandTable {
 export type AccessCapabilityCode =
   | 'access_matrix.read'
   | 'access_matrix.manage'
+  | 'tenant.profile.read'
+  | 'tenant.profile.manage'
+  | 'branches.read'
+  | 'branches.manage'
+  | 'branches.deactivate'
+  | 'stations.read'
+  | 'stations.manage'
+  | 'stations.enrollment.issue'
+  | 'stations.enrollment.cancel'
+  | 'stations.revoke'
+  | 'stations.relink'
   | 'repairs.add_note'
   | 'repairs.create'
   | 'repairs.correct_intake'
@@ -648,6 +682,8 @@ export interface AccessRoleTable {
   readonly description: MutableColumn<string | null>;
   readonly status: MutableColumn<'active' | 'disabled' | 'archived'>;
   readonly version: MutableColumn<number>;
+  readonly management_mode: DefaultedImmutableColumn<'TENANT_MANAGED' | 'SYSTEM_MANAGED'>;
+  readonly policy_version: ImmutableColumn<number | null>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
 }
@@ -1535,6 +1571,8 @@ export interface RepairLocationMovementTable {
 
 export interface DatabaseSchema {
   readonly tenants: TenantTable;
+  readonly tenant_bootstrap_commands: TenantBootstrapCommandTable;
+  readonly tenant_bootstrap_guards: TenantBootstrapGuardTable;
   readonly branches: BranchTable;
   readonly stations: StationTable;
   readonly station_bindings: StationBindingTable;
@@ -1639,6 +1677,10 @@ export interface DatabaseSchema {
 export type TenantRow = Selectable<TenantTable>;
 export type NewTenant = Insertable<TenantTable>;
 export type TenantUpdate = Updateable<TenantTable>;
+export type TenantBootstrapCommandRow = Selectable<TenantBootstrapCommandTable>;
+export type NewTenantBootstrapCommand = Insertable<TenantBootstrapCommandTable>;
+export type TenantBootstrapGuardRow = Selectable<TenantBootstrapGuardTable>;
+export type NewTenantBootstrapGuard = Insertable<TenantBootstrapGuardTable>;
 
 export type BranchRow = Selectable<BranchTable>;
 export type NewBranch = Insertable<BranchTable>;

@@ -6,10 +6,13 @@ import type { ApplicationDatabaseConnection } from '../../infrastructure/runtime
 import { TENANT_SETTINGS_RUNTIME, parseOperatingCurrency } from './index.js';
 import type { TenantSettingsRuntime } from './index.js';
 import { createKyselyTenantRepository } from './infrastructure/persistence/kysely-tenant.repository.js';
+import type { KyselyTenantBootstrapWriter } from './infrastructure/persistence/kysely-tenant-bootstrap.writer.js';
 
 import type { KyselyTenantRepositoryFactory } from './infrastructure/persistence/kysely-tenant.repository.js';
 
-type RegisteredTenancyPersistenceAdapter = KyselyTenantRepositoryFactory;
+type RegisteredTenancyPersistenceAdapter =
+  | KyselyTenantRepositoryFactory
+  | KyselyTenantBootstrapWriter;
 
 @Module({
   imports: [RuntimeInfrastructureModule],
