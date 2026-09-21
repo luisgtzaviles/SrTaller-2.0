@@ -1,5 +1,9 @@
 # Modelo de trazabilidad
 
+> **HISTORICAL / PROPOSED:** este modelo conserva la propuesta original y no
+> gobierna el workflow actual. Consultar `SOURCE_OF_TRUTH.md`,
+> `WORK_UNIT_LIFECYCLE.md` y `DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`.
+
 ## Estado del documento
 
 - **Estado:** Propuesta

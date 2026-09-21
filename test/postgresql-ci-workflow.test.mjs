@@ -161,6 +161,39 @@ test('workflow selects DOCS_ONLY fail closed and executes one atomic base gate p
   );
 });
 
+test('authoritative promotion gate always resolves the selected non-reductive path', () => {
+  const promotionGate = workflow.slice(
+    workflow.indexOf('  promotion-gate:'),
+  );
+
+  assert.match(promotionGate, /name: Authoritative promotion gate/u);
+  assert.match(
+    promotionGate,
+    /needs:\s*\n\s*- classify-change\s*\n\s*- docs-only-gate\s*\n\s*- authoritative-gate\s*\n\s*- compare-authoritative-gates/u,
+  );
+  assert.match(promotionGate, /if: always\(\)/u);
+  assert.match(
+    promotionGate,
+    /CLASSIFICATION_RESULT: \$\{\{ needs\.classify-change\.result \}\}/u,
+  );
+  assert.match(
+    promotionGate,
+    /DOCS_ONLY_RESULT: \$\{\{ needs\.docs-only-gate\.result \}\}/u,
+  );
+  assert.match(
+    promotionGate,
+    /FULL_RESULT: \$\{\{ needs\.authoritative-gate\.result \}\}/u,
+  );
+  assert.match(
+    promotionGate,
+    /COMPARISON_RESULT: \$\{\{ needs\.compare-authoritative-gates\.result \}\}/u,
+  );
+  assert.match(
+    promotionGate,
+    /if \[\[ "\$\{DOCS_ONLY\}" == "true" \]\]; then[\s\S]*DOCS_ONLY_RESULT[\s\S]*FULL_RESULT[\s\S]*COMPARISON_RESULT[\s\S]*else[\s\S]*DOCS_ONLY_RESULT[\s\S]*FULL_RESULT[\s\S]*COMPARISON_RESULT/u,
+  );
+});
+
 test('PostgreSQL runner pins the governed digest and exact suite inventory', () => {
   assert.match(runner, /postgresqlImage/u);
   assert.doesNotMatch(runner, /postgres(?::latest|:18\b)/u);

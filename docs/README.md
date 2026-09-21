@@ -1,30 +1,18 @@
 # Documentación de SR Taller 2.0
 
-Este índice organiza la documentación actual e histórica. La entrada operativa
-obligatoria es [CONTRIBUTING.md](../CONTRIBUTING.md) y el manual end-to-end es el
+Este índice organiza la documentación actual e histórica. La constitución
+operativa obligatoria es [AGENTS.md](../AGENTS.md), complementada por
+[CONTRIBUTING.md](../CONTRIBUTING.md); el manual end-to-end es el
 [workflow canónico de desarrollo y delivery](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md).
 Los documentos `Proposed` o históricos no sustituyen la baseline materializada.
-La [fotografía auditada del estado actual](CURRENT_STATE.md) separa foundation,
-producto y condiciones pendientes antes de la siguiente iteración.
+La [matriz de fuentes de verdad](delivery/SOURCE_OF_TRUTH.md) define dónde se
+consulta cada hecho actual; `CURRENT_STATE.md` es sólo un puntero deprecated.
 
 ## Estado del documento
 
-**Estado:** Sprint 00, Sprint 01 y SPRINT-02 `Closed`; PBI-030, PBI-027,
-PBI-029, PBI-024, PBI-032 y PBI-033 `Done`; `Released: NO` para todos.
-SPRINT-03 está `Closed`.
-**Fase:** Pricing Catalog; PBI-025/PBI-034/PBI-026/PBI-028/PBI-038/PBI-039/
-PBI-043 están `Done` y G3–G5 `PASS`. PBI-040 y PBI-041 están `Done`; no existe
-Current PBI, WIP es `0/1` y Next candidate es `NONE`.
-PBI-042 no está seleccionado ni iniciado.
-**Runtime actual:** Preview en Dokploy con Visual Slice 0, health y PostgreSQL
-18.4; Staging y Production no están materializados.
-**Baseline integrada con CI registrada:** PBI-041 fue integrado por PR #55,
-remediado por PR #56 y recibió la remediación de determinismo por PR #57.
-`main` `9b7a83d02d1cd3fccf735d7e8bebd3ff16aa54ca` pasó exact-main CI
-`35539833596`; PR #58 `cb1dca3` pasó exact-main CI `35544551782`. Preview PASS
-acredita su runtime/seed propio y Owner/local acredita AviCell read-only.
-PBI-041 es `Done`; `Released: NO`.
-Véase [Current Repository State](CURRENT_STATE.md).
+**Estado:** índice vigente. No replica estado de Git, CI, Sprint, PBI ni
+runtime. Consultar sus autoridades mediante
+[SOURCE_OF_TRUTH.md](delivery/SOURCE_OF_TRUTH.md).
 
 ## Revisión dirigida de Sprint 00
 
@@ -60,6 +48,7 @@ auditoría inicial, la remediación y el dictamen final:
 ## Diseño de producto
 
 - [Design System & Application Shell V1](design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
+- [Catálogo operativo de componentes UI](design-system/COMPONENT_CATALOG.md)
 - [PBI-030 — UI Foundation y Application Shell V1](backlog/pbis/PBI-030.md)
 - [PBI-030 — Readiness Review](design-system/PBI_030_READINESS_REVIEW.md)
 - [PBI-030 — Acuerdo técnico de estimación](design-system/PBI_030_ESTIMATION_PROPOSAL.md)
@@ -72,6 +61,14 @@ estimación `XL — agreed`, está integrado en `main` y tiene Owner Acceptance.
 El riesgo AT/cross-browser residual fue aceptado como LOW; no afirma
 certificación. Este candidato registra `Done`; deploy y `Released` siguen
 separados.
+
+## Ingeniería
+
+- [Creación y extensión de módulos](engineering/MODULE_CREATION.md)
+
+La guía de ingeniería encamina hacia la policy DEC-005, tenancy, persistencia,
+errores, UI y verificación vigentes. No reemplaza las decisiones aceptadas ni
+autoriza un cambio de producto.
 
 ## Dominio operativo
 
@@ -132,9 +129,13 @@ separados.
 ## Entrega
 
 - [Workflow canónico de desarrollo, delivery y operación](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md)
-- [Reconciliación de workflow posterior a PBI-041](delivery/WORKFLOW_RECONCILIATION_2026-09.md)
+- [Work Unit Lifecycle](delivery/WORK_UNIT_LIFECYCLE.md)
+- [Matriz de fuentes de verdad](delivery/SOURCE_OF_TRUTH.md)
+- [Clasificación de riesgo Harness 2.0 (shadow)](delivery/RISK_CLASSIFICATION.md)
+- [Contrato futuro de protección de main (diseño)](delivery/MAIN_BRANCH_PROTECTION_CONTRACT.md)
+- [Reconciliación histórica de workflow posterior a PBI-041](delivery/WORKFLOW_RECONCILIATION_2026-09.md)
 - [Desarrollo local](delivery/LOCAL_DEVELOPMENT.md)
-- [Workflow de desarrollo](delivery/DEVELOPMENT_WORKFLOW.md)
+- [Workflow de desarrollo anterior (deprecated pointer)](delivery/DEVELOPMENT_WORKFLOW.md)
 - [Política de ramas](delivery/BRANCH_POLICY.md)
 - [Definition of Ready](delivery/DEFINITION_OF_READY.md)
 - [Definition of Done](delivery/DEFINITION_OF_DONE.md)
@@ -195,8 +196,8 @@ separado y requiere autorización propia.
 
 ## Ruta de lectura recomendada
 
-Para trabajar: comenzar con [CONTRIBUTING.md](../CONTRIBUTING.md), seguir el
-[estado actual auditado](CURRENT_STATE.md), el
+Para trabajar: comenzar con [CONTRIBUTING.md](../CONTRIBUTING.md), seguir la
+[matriz de fuentes de verdad](delivery/SOURCE_OF_TRUTH.md), el
 [workflow canónico](delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md), la
 [política de ramas](delivery/BRANCH_POLICY.md), la
 [estrategia de despliegue](architecture/DEPLOYMENT_STRATEGY.md) y

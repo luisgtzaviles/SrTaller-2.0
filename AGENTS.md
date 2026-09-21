@@ -1,137 +1,141 @@
-
 # AGENTS.md — SR Taller 2.0
 
 ## Propósito
 
-Este archivo es la puerta de entrada para Codex. Resume las reglas operativas;
-no sustituye el roadmap, el Sprint, el PBI ni las decisiones del repositorio.
+Este archivo es la constitución operativa y puerta de entrada del repositorio.
+SR Taller 2.0 es una plataforma SaaS multitenant para talleres de reparación de
+celulares. El repositorio, Git y la evidencia vigente del runtime son la fuente
+de verdad; una conversación o memoria externa nunca los sustituye.
 
-## Fuente de verdad y lectura obligatoria
+AGENTS.md resume cómo trabajar y dirige a los contratos autoritativos. No copia
+sus reglas ni concede por sí solo autorización de producto, merge, datos o
+deploy.
 
-El repositorio, su historial Git y la evidencia vigente de CI/runtime son la
-fuente de verdad. La conversación y la memoria del chat sólo aportan contexto:
-nunca sustituyen ni corrigen silenciosamente al repositorio.
+## Inicio obligatorio
 
-Antes de actuar, leer en este orden:
+Antes de modificar cualquier archivo:
 
-1. [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md).
-2. [`docs/product/MVP_OPERATING_ROADMAP.md`](docs/product/MVP_OPERATING_ROADMAP.md).
-3. [`docs/work/ACTIVE_CHECKLIST.md`](docs/work/ACTIVE_CHECKLIST.md).
-4. Los documentos del Sprint activo.
-5. El documento del PBI actual.
-6. Los ADR/DEC y los contratos de entrega relevantes al alcance, incluidos
-   [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md),
-   [`DEFINITION_OF_DONE.md`](docs/delivery/DEFINITION_OF_DONE.md),
-   [`BRANCH_POLICY.md`](docs/delivery/BRANCH_POLICY.md) y
-   [`TRACEABILITY_MODEL.md`](docs/delivery/TRACEABILITY_MODEL.md).
+1. Inspeccionar ruta, rama, `HEAD`, `origin/main`, divergencia y working tree.
+2. Leer [`docs/work/ACTIVE_CHECKLIST.md`](docs/work/ACTIVE_CHECKLIST.md) y
+   reconciliarlo contra Git. Su estado es operacional y temporal.
+3. Leer el objetivo autorizado y la documentación permanente aplicable desde
+   el [índice de documentación](docs/README.md).
+4. Leer el
+   [Work Unit Lifecycle](docs/delivery/WORK_UNIT_LIFECYCLE.md), el
+   [workflow end-to-end](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md) y
+   la [política de ramas](docs/delivery/BRANCH_POLICY.md).
+5. Confirmar alcance, exclusiones, riesgo, ambiente, datos involucrados,
+   autoridad y gates antes de actuar.
 
-Usar roadmap, Sprint y PBI para determinar el trabajo vigente y el siguiente
-candidato. Si no existe Sprint activo, PBI actual, readiness o autoridad
-suficiente, fallar cerrado y detener la ejecución, salvo una tarea explícita
-de governance o revisión autorizada dentro de su alcance.
+Si Git, runtime y documentos discrepan, detener las afirmaciones de estado,
+investigar y reconciliar. No corregir silenciosamente al repositorio desde la
+memoria del chat.
 
-## Disciplina de ejecución
+## Work Unit y disciplina de ejecución
 
-- Antes de cualquier comando del repositorio que ejecute Node.js o pnpm, usar
-  `./scripts/pnpm-governed` o activar explícitamente los pins del repositorio
-  (Node.js `24.18.0`, pnpm `11.15.1`). No usar el Node ambiental sólo porque
-  aparezca primero en `PATH` ni relajar `verify:toolchain`.
-- WIP operacional: un solo PBI.
-- No iniciar trabajo sin alcance y autorización vigentes.
-- No inventar decisiones, prioridades, aceptación ni excepciones del Owner.
-- No inferir Owner Acceptance ni autoridad de merge o deploy a partir de tests,
-  CI, estado mergeable, revisión técnica o silencio.
-- No ampliar el alcance ni absorber trabajo de otro PBI.
-- Al llegar a `Owner Review`, detenerse y entregar un resultado revisable.
-- Nunca iniciar automáticamente el siguiente PBI. Su selección sólo lo deja
-  como candidato; requiere sus propios gates y autorización.
+Una **Work Unit** es un objetivo coherente ejecutado en una rama corta, con un
+checklist activo y un lifecycle de promoción. Puede abarcar varias sesiones,
+agentes, conversaciones y commits; no equivale necesariamente a un PBI, chat o
+commit.
 
-## Checklist operacional de progreso
+- Mantener una sola Work Unit activa, salvo autorización explícita contraria.
+- Crear la rama desde `main` actualizado y preservar trabajo ajeno o no
+  rastreado.
+- No iniciar producto sin PBI/readiness/selección/autorización cuando esos
+  contratos apliquen. Bugs, recovery y governance también requieren objetivo y
+  autoridad explícitos, aunque no sean un PBI nuevo.
+- No ampliar alcance, inventar decisiones, prioridades, aceptación, waivers ni
+  excepciones.
+- Una decisión Accepted se aplica; el trabajo normal no vuelve a decidirla.
+  Cambiar arquitectura, una decisión Accepted o un contrato fundamental exige
+  el proceso ADR/DEC aplicable.
+- Al llegar al checkpoint autorizado, detenerse. Nunca iniciar automáticamente
+  la siguiente Work Unit o PBI.
 
-Para cualquier Goal, milestone o tarea de implementación que abarque más de un
-bloque significativo de trabajo, mantener un checklist operacional visible para
-el Owner.
+El contrato completo, incluidos los estados `ACTIVE`,
+`READY_FOR_PROMOTION`, cierre derivado y transición con PBI/Sprint, está en
+[`WORK_UNIT_LIFECYCLE.md`](docs/delivery/WORK_UNIT_LIFECYCLE.md).
 
-Archivo canónico del trabajo activo:
+## Mapa de conocimiento permanente
 
-`docs/work/ACTIVE_CHECKLIST.md`
+Leer sólo las fuentes necesarias para el cambio, sin confundir documentos
+`Proposed` o históricos con política vigente.
 
-El checklist existe para responder rápidamente:
+| Tema | Fuente autoritativa o índice |
+|---|---|
+| Producto, alcance y prioridad | [`PRODUCT_VISION.md`](docs/product/PRODUCT_VISION.md), [`PRODUCT_SCOPE.md`](docs/product/PRODUCT_SCOPE.md), [`MVP_OPERATING_ROADMAP.md`](docs/product/MVP_OPERATING_ROADMAP.md) |
+| Arquitectura y módulos | [`MODULE_CREATION.md`](docs/engineering/MODULE_CREATION.md), [`APPLICATION_ARCHITECTURE.md`](docs/architecture/APPLICATION_ARCHITECTURE.md), [`MODULE_MAP.md`](docs/product/MODULE_MAP.md), [`architecture/dec-005-policy.json`](architecture/dec-005-policy.json) |
+| Tenant, sucursal y datos | [`MULTITENANCY_MODEL.md`](docs/architecture/MULTITENANCY_MODEL.md), [`DATA_ARCHITECTURE.md`](docs/architecture/DATA_ARCHITECTURE.md) |
+| Identidad, sesiones y autorización | [`IDENTITY_ACCESS_AND_PERMISSIONS.md`](docs/architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md), [`BRANCH_AND_DEVICE_MODEL.md`](docs/architecture/BRANCH_AND_DEVICE_MODEL.md), ADR-010 a ADR-014 en el [registro de decisiones](docs/decisions/README.md) |
+| Persistencia y migraciones | [`DATA_ARCHITECTURE.md`](docs/architecture/DATA_ARCHITECTURE.md), [DEC-049](docs/decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md), [`MIGRATION_POLICY.md`](docs/operations/MIGRATION_POLICY.md) |
+| Errores | [DEC-044](docs/decisions/dec-044-error-strategy/DECISION_PROPOSAL.md) |
+| Seguridad y secretos | [`SECURITY_BASELINE.md`](docs/architecture/SECURITY_BASELINE.md), [`SECURITY_TESTING.md`](docs/quality/SECURITY_TESTING.md) |
+| UI y componentes | [`COMPONENT_CATALOG.md`](docs/design-system/COMPONENT_CATALOG.md), [`DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md`](docs/design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md), `apps/dev-preview-web/src/components/ui/` |
+| Accesibilidad | [`ACCESSIBILITY_STRATEGY.md`](docs/quality/ACCESSIBILITY_STRATEGY.md) |
+| Testing y gates | [`QUALITY_STRATEGY.md`](docs/quality/QUALITY_STRATEGY.md), [DEC-051](docs/decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md), [`DEFINITION_OF_DONE.md`](docs/delivery/DEFINITION_OF_DONE.md) |
+| Delivery, ramas y ambientes | [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md), [`BRANCH_POLICY.md`](docs/delivery/BRANCH_POLICY.md), [`ENVIRONMENTS.md`](docs/delivery/ENVIRONMENTS.md) |
+| Autoridad de estado | [`SOURCE_OF_TRUTH.md`](docs/delivery/SOURCE_OF_TRUTH.md): Git/GitHub/CI/runtime para hechos derivables; contratos para reglas |
+| Trabajo actual | [`ACTIVE_CHECKLIST.md`](docs/work/ACTIVE_CHECKLIST.md) |
 
-1. ¿Qué estamos construyendo?
-2. ¿Qué ya terminó?
-3. ¿Qué está haciendo Codex ahora?
-4. ¿Qué sigue?
-5. ¿Existe algún bloqueo?
-6. ¿Cuánto falta para llegar al checkpoint visible actual?
+Antes de crear UI, buscar primero componentes, patrones y tokens compartidos.
+Una pantalla no introduce primitivas, colores, spacing, modal, tabla o patrón
+responsive paralelo sin justificar que el sistema actual no cubre la necesidad.
 
-El checklist es una superficie de visibilidad operacional. No sustituye
-`CURRENT_STATE.md`, Roadmap, Sprint, PBI, ADR/DEC, Definition of Done ni
-evidencia.
+Antes de crear o extender un módulo, seguir
+[`MODULE_CREATION.md`](docs/engineering/MODULE_CREATION.md): buscar contratos y
+owners existentes antes de duplicar; resolver explícitamente scope de tenant y
+sucursal antes de persistir; y evaluar autorización backend antes de exponer
+una acción en API o UI.
 
-### Reglas del checklist
+Antes de persistir, consultar, filtrar, agrupar o presentar fechas/horas, leer
+[`DATA_ARCHITECTURE.md`](docs/architecture/DATA_ARCHITECTURE.md). La timezone
+del browser, servidor o proceso no sustituye `Branch.timeZone`.
 
-- Leer `docs/work/ACTIVE_CHECKLIST.md` al inicio de cualquier Goal de
-  desarrollo. Crearlo antes de continuar si existe trabajo activo y falta.
-- Mantener un único checklist activo.
-- Al reanudar trabajo existente, leer primero el checklist y reconciliarlo
-  contra Git, `CURRENT_STATE.md`, Roadmap, Sprint y PBI antes de confiar en él.
-- El estado real del repositorio tiene prioridad sobre el checklist si existe
-  divergencia.
-- Actualizar el checklist después de bloques significativos de trabajo, no
-  después de cada comando o edición.
-- No marcar un ítem como completado sólo porque se escribió código.
-- Marcar un ítem como completado únicamente cuando su condición material de
-  aceptación para la etapa actual esté satisfecha.
-- Reflejar inmediatamente cualquier bloqueo material.
-- No marcar PR, CI, review, merge, Owner Acceptance, `Done` o `Released` antes
-  de que realmente ocurran.
-- No usar el checklist para otorgar autoridad, cerrar gates o cambiar el estado
-  canónico de un PBI.
-- Mantener el checklist comprensible para una persona no técnica.
-- Evitar detalles de implementación que no ayuden a entender el progreso.
-- Cuando cambie el PBI dentro de un milestone autorizado, reconciliar la sección
-  del PBI actual sin perder la vista general del milestone.
-- Cuando el milestone termine, archivar el checklist en
-  `docs/work/history/` con un nombre estable y crear uno nuevo cuando comience
-  el siguiente milestone.
-- Reconciliarlo antes de entregar el turno: milestone/meta funcional, Sprint,
-  Current PBI, WIP, progreso, Current, Next, blockers y timestamp.
+## Desarrollo y verificación
 
-### Estados visuales
+- Antes de cualquier comando Node.js o pnpm usar `./scripts/pnpm-governed` o
+  activar Node.js `24.18.0` y pnpm `11.15.1`. No usar el toolchain ambiental
+  por conveniencia ni relajar `verify:toolchain`.
+- Durante iteración ejecutar preflight y checks focalizados proporcionales al
+  delta. No usar `verify:full` repetidamente como feedback ordinario.
+- Antes de promoción ejecutar los gates vigentes del riesgo y tipo de cambio.
+  El clasificador general continúa `SHADOW`; sólo `DOCS_ONLY` puede reducir el
+  pipeline cuando su allowlist fail-closed lo demuestra.
+- Persistencia, migraciones, tenancy, autenticación, autorización, secretos,
+  infraestructura y datos exigen sus pruebas materiales y negativas.
+- Registrar en el checklist qué se ejecutó y qué queda pendiente; no declarar
+  un gate por código escrito o evidencia de otro SHA.
 
-Usar:
+## Git, remoto y ambientes
 
-- `[ ]` pendiente.
-- `[~]` en progreso.
-- `[x]` completado.
-- `[!]` bloqueado.
+- `main` es la única baseline integrada. Usar ramas cortas `feature/*`,
+  `fix/*`, `ops/*` o `chore/*` conforme a
+  [`BRANCH_POLICY.md`](docs/delivery/BRANCH_POLICY.md).
+- No descartar cambios existentes, reescribir historia, hacer force push,
+  merge, deploy, tocar datos remotos o cambiar infraestructura sin autoridad.
+- Checks verdes no conceden merge, aceptación de producto, release ni deploy.
+- Preview es el único ambiente remoto materializado. Staging y Production
+  siguen planeados; no afirmar que existen ni promover hacia ellos.
+- Commits, PR, CI, merge, deploy, validación y cierre son estados distintos.
+  Cada resultado debe estar ligado al SHA exacto al que corresponde.
 
-No representar como `[x]` algo que sólo esté parcialmente implementado.
+## ACTIVE_CHECKLIST
 
-### Cabecera obligatoria
+`docs/work/ACTIVE_CHECKLIST.md` es la memoria operacional compartida de la Work
+Unit actual, no historia canónica, arquitectura, roadmap, Git status ni base de
+datos de CI.
 
-El checklist debe incluir como mínimo:
+- Inicializarlo al comenzar la rama y actualizarlo después de bloques
+  significativos.
+- Reflejar objetivo, alcance, contratos, riesgos, plan, progreso, bloqueos,
+  descubrimientos, verificación y handoff.
+- No marcar PR, CI, review, merge, aceptación, `Done`, `Released` o deploy antes
+  de que ocurran.
+- Antes de promoción mover toda decisión duradera a su fuente permanente.
+- No ponerlo en `IDLE` mientras el cambio siga sin integrar. El cierre se
+  resuelve mediante el predicado verificable definido en el Work Unit
+  Lifecycle, sin crear un PR post-merge sólo para cambiar wording.
 
-- Milestone actual.
-- Sprint.
-- PBI actual.
-- Estado general.
-- Progreso (`completados / total`).
-- Trabajo actual.
-- Siguiente bloque.
-- Bloqueos.
-- Última actualización.
-
-## Contratos transversales y memoria del repositorio
-
-Antes de modificar una superficie que persista, consulte, filtre, agrupe o
-presente fechas/horas, leer
-[`docs/architecture/DATA_ARCHITECTURE.md`](docs/architecture/DATA_ARCHITECTURE.md).
-La timezone del browser, servidor/proceso o la memoria del chat no sustituyen
-ese contrato canónico.
-
-Las decisiones duraderas deben materializarse en la fuente canónica del
-repositorio. Si una decisión transversal aprobada cambia durante el trabajo,
-identificar y actualizar esa fuente antes del cierre; no usar
-`ACTIVE_CHECKLIST.md` como registro permanente de arquitectura.
+Las decisiones duraderas siempre se materializan en la fuente canónica
+correspondiente. El checklist nunca puede otorgar autoridad ni modificar por sí
+solo el estado de un PBI, Sprint, decisión o release.

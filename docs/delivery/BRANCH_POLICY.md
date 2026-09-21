@@ -14,20 +14,27 @@
 1. `main` es la única baseline integrada y la fuente del ambiente Preview.
 2. El trabajo ordinario usa ramas de vida corta creadas desde `main` y vuelve a
    `main` mediante un cambio revisado y verificable.
-   Los prefijos normales son `feature/*`, `fix/*` y `ops/*`.
+   Los prefijos normales son `feature/*`, `fix/*`, `ops/*` y `chore/*`;
+   `chore/*` se reserva para mantenimiento o governance sin cambio de producto.
 3. No se mantienen ramas permanentes por ambiente o por etapa. Una rama de
    recuperación, operación, PBI o experimento no constituye una segunda
    baseline.
 4. Los commits y merges deben conservar trazabilidad del alcance, pruebas y
    autorización aplicable.
-5. Por defecto una funcionalidad aprobada viaja en un solo candidato de
-   integración con pruebas, hardening, evidencia, documentación canónica y
-   `ACTIVE_CHECKLIST.md`. Un PR documental posterior es excepcional y no se
-   usa sólo para convertir wording pre-merge a `Done`.
+5. Por defecto una funcionalidad aprobada viaja en un solo cambio de
+   integración con pruebas, hardening, documentación canónica y evidencia no
+   derivable. Un PR posterior existe sólo si hay otro cambio real; no para
+   copiar CI/SHA ni convertir wording pre-merge.
 6. Preview puede desplegar el nuevo `main` cuando el alcance de runtime lo
    autoriza, el mecanismo sea claro y observable y no amplíe a otros ambientes.
 7. Staging y Production requieren su propia autorización y no se infieren de un
    despliegue exitoso en Preview.
+
+Cada objetivo se organiza como una Work Unit conforme a
+[`WORK_UNIT_LIFECYCLE.md`](./WORK_UNIT_LIFECYCLE.md). La Work Unit añade memoria
+operacional y handoff. El trabajo de producto conserva roadmap/backlog/PBI;
+bugs, recovery, mantenimiento y governance no necesitan inventar uno. Ninguna
+Work Unit reduce los gates vigentes.
 
 ## Una meta activa, una rama
 
@@ -51,7 +58,7 @@
    local y remota ya absorbidas y se ejecuta `fetch --prune`, siempre después
    de confirmar que no contienen trabajo exclusivo.
 
-La rama `feature/pbi-040-catalog-pricing-core` fue una excepción de transición:
+La rama `feature/pbi-040-catalog-pricing-core` fue una excepción histórica de transición:
 su WIP Price List permaneció congelado durante PBI-043. Después del cierre de
 PBI-043 se reconcilió por merge explícito con `main` `5be5cd6`, preservando el
 HEAD histórico `68843ba` como padre y sin reescribir el historial. PR #49 la
