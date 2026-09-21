@@ -625,6 +625,17 @@ export interface UserCreateCommandTable {
 export type AccessCapabilityCode =
   | 'access_matrix.read'
   | 'access_matrix.manage'
+  | 'tenant.profile.read'
+  | 'tenant.profile.manage'
+  | 'branches.read'
+  | 'branches.manage'
+  | 'branches.deactivate'
+  | 'stations.read'
+  | 'stations.manage'
+  | 'stations.enrollment.issue'
+  | 'stations.enrollment.cancel'
+  | 'stations.revoke'
+  | 'stations.relink'
   | 'repairs.add_note'
   | 'repairs.create'
   | 'repairs.correct_intake'
@@ -666,6 +677,8 @@ export interface AccessRoleTable {
   readonly description: MutableColumn<string | null>;
   readonly status: MutableColumn<'active' | 'disabled' | 'archived'>;
   readonly version: MutableColumn<number>;
+  readonly management_mode: DefaultedImmutableColumn<'TENANT_MANAGED' | 'SYSTEM_MANAGED'>;
+  readonly policy_version: ImmutableColumn<number | null>;
   readonly created_at: ImmutableColumn<Date>;
   readonly updated_at: MutableColumn<Date>;
 }

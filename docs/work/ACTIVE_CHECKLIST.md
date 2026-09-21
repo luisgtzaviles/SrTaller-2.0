@@ -17,9 +17,9 @@ Milestone: Tenant Lifecycle MVP
 Sprint: NONE
 Current PBI: NONE
 General State: Authorized implementation / Functional foundation
-Progress: 1 / 8 implementation blocks complete
-Current Work: Protected starter authority policy
-Next Block: Transaction-aware owner persistence ports
+Progress: 2 / 8 implementation blocks complete
+Current Work: Transaction-aware owner persistence ports
+Next Block: Internal bootstrap domain/application contract
 Blocking: NONE
 Last Updated: 2026-09-21
 
@@ -72,8 +72,8 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Resolve Owner decisions TL3D-001–004.
 - [x] Receive separate implementation authorization.
 - [x] Block 1 — Tenant schema, trustworthy backfill and bootstrap journal.
-- [~] Block 2 — Protected/versioned starter Role and capability policy.
-- [ ] Block 3 — Transaction-aware owner persistence ports.
+- [x] Block 2 — Protected/versioned starter Role and capability policy.
+- [~] Block 3 — Transaction-aware owner persistence ports.
 - [ ] Block 4 — Internal bootstrap domain/application contract.
 - [ ] Block 5 — Atomic orchestration and sanitized audit.
 - [ ] Block 6 — Idempotency, concurrency and failure injection.
@@ -82,11 +82,11 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Current
 
-Implementing Block 2: protected starter Role metadata and exact administrative capability bundle.
+Implementing Block 3: owner-specific transactional writers over one shared context.
 
 ## Next
 
-Complete Block 2 with ordinary-mutation protection and focused regressions.
+Complete Block 3 without nested transactions or cross-owner direct writes.
 
 ## Blockers
 
@@ -104,6 +104,9 @@ None.
   migration backfill.
 - Block 1 materializes the only approved legacy mapping (`SR Taller`) and fails
   closed for every unexpected preexisting Tenant instead of fabricating a name.
+- Block 2 adds only the approved administrative capabilities, a protected
+  `SYSTEM_MANAGED` policy v1 Role and ordinary-mutation guards; no operational
+  capability is part of the starter bundle.
 
 ## Focused Verification
 
@@ -115,6 +118,9 @@ None.
 - [x] Block 1 typecheck/build and focused schema/ownership tests PASS.
 - [x] PostgreSQL 18.4 applied the additive Tenant foundation migration; second
   execution reported `0 pending`.
+- [x] Block 2 typecheck/build, capability catalog, Role contract and starter
+  policy regressions PASS; PostgreSQL 18.4 applied the policy migration and a
+  second execution reported `0 pending`.
 - [ ] Implementation authorization will require unit/contracts, PostgreSQL
   18.4 migration/atomicity/concurrency/failure injection, TL-02 regressions,
   architecture, full promotion verification and security review.

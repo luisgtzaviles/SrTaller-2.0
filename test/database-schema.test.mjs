@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 77);
+  assert.equal(first.manifest.migrations.length, 78);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -503,6 +503,12 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260921120000_tenancy_create_bootstrap_foundation',
         order: 76,
         owner: 'tenancy',
+      },
+      {
+        fileName: '20260921121000_access_create_starter_tenant_admin_policy.js',
+        migrationName: '20260921121000_access_create_starter_tenant_admin_policy',
+        order: 77,
+        owner: 'access',
       },
     ],
   );

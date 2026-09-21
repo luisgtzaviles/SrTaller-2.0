@@ -238,6 +238,7 @@ test('productive migration root remains exact and governed', async () => {
       '20260917190200_access_add_granular_catalog_capabilities.ts',
       '20260920180000_access_create_admin_identity_sessions.ts',
       '20260921120000_tenancy_create_bootstrap_foundation.ts',
+      '20260921121000_access_create_starter_tenant_admin_policy.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');
