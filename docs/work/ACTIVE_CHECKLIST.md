@@ -8,7 +8,7 @@ risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: feature/tl-02-admin-identity-session
 base_sha: 5a0289f46e0c90bb85b49d4326dc786c2e37d50d
-status: ACTIVE
+status: BLOCKED
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -21,15 +21,15 @@ last_updated: 2026-09-21
 - **Current PBI:** `NONE`; Tenant Lifecycle is proceeding through governed
   Work Units.
 Current PBI: NONE
-- **Status:** `ACTIVE`; implementation is complete and the authorized Stage 8
-  PostgreSQL readiness remediation is in progress.
+- **Status:** `BLOCKED`; the authorized Stage 8 readiness remediation is
+  complete and focused-green, but the exact FULL campaign cannot pass Stage 7.
 - **Progress:** `13 / 14` Work Unit blocks complete.
-- **Current work:** make Stage 8 prove the published PostgreSQL endpoint is
-  reachable before migrations begin.
-- **Next block:** focused regression and material TL-02 verification, one
-  logical commit, then exact-candidate `verify:full`.
-- **Blockers:** none while the narrowly authorized harness remediation is in
-  progress; remote promotion remains unavailable until FULL passes.
+- **Current work:** preserve the focused-green Stage 8 remediation and the
+  failed exact-candidate FULL evidence without changing PBI-041.
+- **Next block:** obtain separate Owner direction for the PBI-041 performance
+  gate/host instability, then rerun FULL; do not begin TL-03.
+- **Blockers:** PBI-041 publish measured 35.46s inside FULL and 34.53s in the
+  single isolated diagnostic, above its governed 30s budget.
 - **Last updated:** 2026-09-21, America/Hermosillo.
 
 ## Objective
@@ -98,23 +98,24 @@ Station + PIN boundary.
 The eight authorized product blocks are complete. PBI-041 now passes inside
 FULL. Stage 8 exposed a separate harness race: Docker can report PostgreSQL
 healthy inside the container before its published loopback endpoint accepts
-the connection used by the migrator. The bounded endpoint probe and focused
-regressions now pass; the coherent remediation is ready to commit before the
-required exact-candidate FULL campaign. No remote promotion is allowed yet.
+the connection used by the migrator. The bounded endpoint probe, focused
+regressions and material TL-02 suite pass, and the coherent remediation is
+committed. The exact-candidate FULL campaign is now blocked earlier by the
+PBI-041 performance gate. No remote promotion is allowed yet.
 
 ## Next
 
-Add deterministic, bounded readiness for the exact Stage 8 loopback endpoint,
-prove it with focused tests and the TL-02 PostgreSQL suite, commit the coherent
-remediation, then rerun the exact full campaign. Do not begin TL-03.
+Request a separate quality/harness decision for PBI-041's current 10k publish
+performance instability. Do not patch that unrelated gate, promote remotely or
+begin TL-03 under the Stage 8 authorization.
 
 ## Blockers
 
-No active implementation blocker. The superseding failure occurred at Stage 8:
-container-internal health passed, but the migrator raced Docker's published
-loopback endpoint and failed with `DATABASE_MIGRATION_INVALID_STATE`. An
-immediate isolated TL-02 run passed 2/2 with 76 migrations and 0 pending on the
-second run. The readiness fix must not weaken, skip or retry the migration.
+The exact remediation candidate passed Stages 0–6 but failed Stage 7 because
+PBI-041 publish measured 35.46 seconds against its governed 30-second budget.
+The single isolated diagnostic also failed at 34.53 seconds. Stage 8 therefore
+did not run inside FULL. Its focused material suite passes 2/2 with 76
+migrations and 0 pending on the second run; no migration or gate was weakened.
 
 ## Important Discoveries
 
@@ -165,8 +166,10 @@ second run. The readiness fix must not weaken, skip or retry the migration.
 - [x] Remediated TL-02 material PostgreSQL — 2 PASS; 76 migrations, second run
   0 pending.
 - [x] Focused typecheck, architecture and Work Unit checks — PASS.
-- [~] Exact `verify:full` — Stage 8 readiness remediation and revalidation in
-  progress; the prior candidate reached Stage 8 with all earlier stages PASS.
+- [!] Exact `verify:full` — FAIL at Stage 7; Stages 0–6 PASS, PBI-041 publish
+  35.46s / 30s, cleanup and final fingerprint PASS. Stage 8 was not reached.
+- [!] Isolated PBI-041 diagnostic — FAIL at 34.53s / 30s; no PBI-041 change is
+  authorized in this Work Unit.
 
 ## Promotion Gates
 
