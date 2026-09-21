@@ -24,8 +24,9 @@ Current PBI: NONE
 - **Trabajo actual:** artefacto y propuesta listos para revisión del Owner.
 - **Siguiente bloque:** decisiones Owner `TL-001` a `TL-016`; no se inició
   ningún Work Unit de implementación.
-- **Bloqueos:** ninguno para discovery; implementación deliberadamente en
-  espera de decisiones Owner.
+- **Bloqueos:** ninguno para discovery/Owner Review; promoción remota no está
+  autorizada y el último `verify:full` quedó bloqueado por el benchmark 10k
+  heredado de PBI-041 (`33,305 ms / 30,000 ms`).
 - **Última actualización:** 2026-09-21, America/Hermosillo.
 
 ## Objective
@@ -96,8 +97,12 @@ primer Work Unit de implementación propuesto; ninguno quedó seleccionado.
 
 ## Blockers
 
-Ninguno para este discovery. La implementación está intencionalmente detenida
-hasta recibir decisiones Owner explícitas.
+Ninguno para completar este discovery. La implementación está
+intencionalmente detenida hasta recibir decisiones Owner explícitas. Una
+promoción futura requiere resolver o reproducir de forma autoritativa el fallo
+no determinista del benchmark 10k heredado de PBI-041: el primer gate pasó en
+`2,034.5 ms`, pero el rerun sobre el HEAD final tardó `33,305 ms` y excedió el
+presupuesto de `30,000 ms`; no se remedia dentro de este alcance.
 
 ## Important Discoveries
 
@@ -126,8 +131,11 @@ hasta recibir decisiones Owner explícitas.
 - [x] Consistency/source-of-truth y secret-pattern scan: `PASS`.
 - [x] Clasificación de cambio: `FULL` por tocar el mapa de producto; la ruta
   `docs-only` falló cerrada como exige el contrato.
-- [x] `verify:full`: `PASS` en etapas `0–13`; PostgreSQL `18.4`, `75`
-  migraciones y cleanup `PASS`. Warning de bundle ya aceptado.
+- [!] `verify:full` exacto del HEAD final: `FAIL` sólo en Stage 7 porque el
+  benchmark 10k de PBI-041 tardó `33,305 ms / 30,000 ms`; preflight, integridad,
+  base verify, PostgreSQL composite/PBI-039/PBI-040 y cleanup pasaron. Un gate
+  inmediatamente anterior había pasado completo con publish `2,034.5 ms`.
+  Se conserva como bloqueo de promoción fuera del scope de discovery.
 - [x] `git diff --check`: `PASS`.
 - [x] `work-unit:check` final: `PASS`.
 
