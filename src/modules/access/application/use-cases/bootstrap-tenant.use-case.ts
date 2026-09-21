@@ -66,7 +66,7 @@ function sameBytes(left: Uint8Array, right: Uint8Array): boolean {
 function replayOrConflict(
   journal: BootstrapJournal,
   grant: VerifiedRegistrationBootstrapGrant,
-): TenantBootstrapResult {
+): TenantBootstrapResult | null {
   if (
     journal.registrationRevision !== grant.registrationRevision ||
     !sameBytes(journal.approvedInputDigest, grant.approvedInputDigest) ||
@@ -74,7 +74,7 @@ function replayOrConflict(
     journal.firstUserId !== grant.firstUserId ||
     journal.adminIdentityId !== grant.adminIdentityId
   ) {
-    throw new TenantBootstrapError('TENANT_BOOTSTRAP_IDEMPOTENCY_CONFLICT');
+    return null;
   }
   return tenantBootstrapResultFromJournal(journal);
 }
@@ -109,7 +109,7 @@ export class BootstrapTenantUseCase {
 
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       try {
-        return await this.transactions.execute(async (context) => {
+        const outcome = await this.transactions.execute(async (context) => {
           const existing = await this.tenancy.lockAndFind(
             scope,
             grant.verifiedRegistrationId,
@@ -117,7 +117,10 @@ export class BootstrapTenantUseCase {
             context,
           );
           await this.failures.after('after-lock');
-          if (existing) return replayOrConflict(existing, grant);
+          if (existing) {
+            const replay = replayOrConflict(existing, grant);
+            return replay ?? Object.freeze({ idempotencyConflict: true as const });
+          }
 
           await this.tenancy.createTenant(scope, {
             displayName: grant.workshopDisplayName,
@@ -182,6 +185,10 @@ export class BootstrapTenantUseCase {
           await this.failures.after('after-journal');
           return tenantBootstrapResultFromJournal(journal);
         });
+        if ('idempotencyConflict' in outcome) {
+          throw new TenantBootstrapError('TENANT_BOOTSTRAP_IDEMPOTENCY_CONFLICT');
+        }
+        return outcome;
       } catch (error) {
         if (error instanceof TenantBootstrapError) throw error;
         if (error instanceof TenantBootstrapTransactionError) {

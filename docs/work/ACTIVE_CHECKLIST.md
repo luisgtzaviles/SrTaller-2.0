@@ -17,9 +17,9 @@ Milestone: Tenant Lifecycle MVP
 Sprint: NONE
 Current PBI: NONE
 General State: Authorized implementation / Functional foundation
-Progress: 5 / 8 implementation blocks complete
-Current Work: Idempotency, concurrency and failure injection
-Next Block: TL-02 login, isolation and operational-auth regression
+Progress: 6 / 8 implementation blocks complete
+Current Work: TL-02 login, isolation and operational-auth regression
+Next Block: Evidence, full verification and promotion handoff
 Blocking: NONE
 Last Updated: 2026-09-21
 
@@ -76,17 +76,17 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 3 — Transaction-aware owner persistence ports.
 - [x] Block 4 — Internal bootstrap domain/application contract.
 - [x] Block 5 — Atomic orchestration and sanitized audit.
-- [~] Block 6 — Idempotency, concurrency and failure injection.
-- [ ] Block 7 — TL-02 login, isolation and operational-auth regression.
+- [x] Block 6 — Idempotency, concurrency and failure injection.
+- [~] Block 7 — TL-02 login, isolation and operational-auth regression.
 - [ ] Block 8 — Evidence, full verification and promotion handoff.
 
 ## Current
 
-Implementing Block 6: material rollback, replay and concurrent duplicate proof.
+Implementing Block 7: integrated identity login and preexisting auth regressions.
 
 ## Next
 
-Prove rollback at each write boundary and exactly-once concurrent behavior.
+Run TL-02 and operational authentication regression suites against the new schema.
 
 ## Blockers
 
@@ -115,6 +115,9 @@ None.
 - Block 5 composes Tenant, User, TL-02 identity/credential, protected Role,
   capability bundle, assignment, sanitized event and journal in one transaction;
   it never creates an Admin or Operational Session.
+- Block 6 proves PostgreSQL rollback at all nine material boundaries, concurrent
+  duplicate serialization, stable replay, ambiguous-timeout recovery, conflict
+  rejection, duplicate names, normalized-email conflict and tenant isolation.
 
 ## Focused Verification
 
@@ -131,6 +134,8 @@ None.
   second execution reported `0 pending`.
 - [x] Block 3 typecheck/build, ownership/schema/architecture regressions PASS;
   PostgreSQL 18.4 applied the guard migration and rerun reported `0 pending`.
+- [x] Block 6 focused contract/use-case tests PASS; fresh PostgreSQL 18.4 ran
+  79 migrations, rerun `0 pending`, and all 3 material TL-03 suites PASS.
 - [ ] Implementation authorization will require unit/contracts, PostgreSQL
   18.4 migration/atomicity/concurrency/failure injection, TL-02 regressions,
   architecture, full promotion verification and security review.

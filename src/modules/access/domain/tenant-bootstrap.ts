@@ -132,7 +132,14 @@ export function validateVerifiedRegistrationBootstrapGrant(
     throw new TenantBootstrapError('TENANT_BOOTSTRAP_GRANT_INVALID');
   }
   const timestamp = Date.parse(value.verifiedAt);
+  const allowedKeys = [
+    'adminIdentityId', 'approvedInputDigest', 'emailDisplay', 'firstUserId',
+    'normalizedEmail', 'passwordVerifier', 'personDisplayName',
+    'registrationRevision', 'tenantId', 'termsAcceptanceEvidenceId',
+    'verifiedAt', 'verifiedRegistrationId', 'workshopDisplayName',
+  ];
   if (
+    Object.keys(value).some((key) => !allowedKeys.includes(key)) ||
     value.verifiedRegistrationId !== expectedRegistrationId ||
     !canonicalUuid.test(value.verifiedRegistrationId) ||
     !canonicalUuid.test(value.tenantId) ||

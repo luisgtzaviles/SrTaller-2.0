@@ -65,6 +65,7 @@ test('verified registration grant validates immutable server-owned authority', (
     { ...value, approvedInputDigest: new Uint8Array(31) },
     { ...value, normalizedEmail: 'other@example.com' },
     { ...value, passwordVerifier: { ...value.passwordVerifier, algorithm: 'plain' } },
+    { ...value, password: 'must-never-cross-the-grant-boundary' },
   ]) {
     assert.throws(
       () => validateVerifiedRegistrationBootstrapGrant(invalid, ids.registration),
