@@ -2,13 +2,13 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-02 — Administrative Identity + Session Foundation
-iteration: 3 - Implementation
+iteration: 4 - Post-Quality Reconciliation
 type: PRODUCT
 risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: feature/tl-02-admin-identity-session
 base_sha: 5a0289f46e0c90bb85b49d4326dc786c2e37d50d
-status: BLOCKED
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -21,28 +21,22 @@ last_updated: 2026-09-21
 - **Current PBI:** `NONE`; Tenant Lifecycle is proceeding through governed
   Work Units.
 Current PBI: NONE
-- **Status:** `BLOCKED`; the authorized Stage 8 readiness remediation is
-  complete and focused-green, but the exact FULL campaign cannot pass Stage 7.
+- **Status:** `ACTIVE`; the Quality dependency is integrated into `main` and
+  the preserved TL-02 candidate is being reconciled against that baseline.
 - **Progress:** `13 / 14` Work Unit blocks complete.
-- **Current work:** preserve the focused-green Stage 8 remediation and the
-  failed exact-candidate FULL evidence without changing PBI-041.
-- **Next block:** obtain separate Owner direction for the PBI-041 performance
-  gate/host instability, then rerun FULL; do not begin TL-03.
-- **Blockers:** PBI-041 publish measured 35.46s inside FULL and 34.53s in the
-  single isolated diagnostic, above its governed 30s budget.
+- **Current work:** validate the ordinary `main` merge, focused TL-02/Quality
+  interaction and exact reconciled promotion candidate.
+- **Next block:** run the authoritative FULL gate on the exact reconciled HEAD;
+  stop before any remote promotion.
+- **Blockers:** none currently; promotion readiness remains contingent on the
+  exact-candidate FULL result.
 - **Last updated:** 2026-09-21, America/Hermosillo.
 
 ## Objective
 
-Plan and, after the explicit planning checkpoint, implement the minimum secure
-administrative identity and stateful Admin Session foundation required by
-ADR-015, preserving strict separation from Station/PIN/Operational Sessions.
-
-## Why
-
-Tenant Lifecycle needs a secure control-plane identity before public
-registration/bootstrap can be implemented, without weakening the operational
-Station + PIN boundary.
+Implement the minimum secure administrative identity and stateful Admin
+Session foundation required by ADR-015, preserving strict separation from
+Station/PIN/Operational Sessions.
 
 ## In Scope
 
@@ -52,13 +46,14 @@ Station + PIN boundary.
 - Login/logout, individual/global revocation and recent password reauth 10m.
 - Internal recovery foundation, abuse controls and secret-free audit.
 - Two-tenant negative tests and strict separation from operational auth.
+- Reconciliation with the integrated PBI-041 governed performance harness.
 
 ## Out of Scope
 
 - Public registration/email delivery, Tenant bootstrap and starter authority.
 - Branch/Station management or enrollment, admin product shell and TL-03.
 - PIN/Operational Session redesign, Super Admin, billing, MFA/SSO/passkeys.
-- Push, PR, merge, deploy, infrastructure or GitHub configuration.
+- Push, PR, remote merge, deploy, infrastructure or GitHub configuration.
 
 ## Applicable Contracts
 
@@ -78,6 +73,8 @@ Station + PIN boundary.
 - KDF/rate-limit choices can create enumeration, stuffing or availability risk.
 - Revocation/recovery races could leave stale authority.
 - Secret-bearing values could leak through HTTP, logs, fixtures or audit.
+- Harness reconciliation could accidentally weaken either Stage 8 readiness or
+  the governed PBI-041 performance measurement.
 
 ## Plan
 
@@ -85,42 +82,42 @@ Station + PIN boundary.
 - [x] Audit identity, User/Tenant, PIN, Sessions, authorization, HTTP and DB.
 - [x] Define reuse/new boundaries, owner modules and proposed data model.
 - [x] Complete threat model selections and migration/test plan.
-- [x] Identify remaining Owner decisions and readiness status.
 - [x] Obtain Owner authorization to cross the planning checkpoint.
 - [x] Implement administrative identity/session/recovery domain contracts.
 - [x] Implement password cryptography/configuration and focused tests.
 - [x] Implement migration/repositories and material PostgreSQL tests.
 - [x] Implement use cases, HTTP boundary and authorization executor.
-- [x] Complete local proof, hardening, documentation and promotion gates.
+- [x] Complete local proof, hardening and documentation.
+- [x] Preserve TL-02 while the separate Quality dependency was remediated.
+- [~] Reconcile current `main` and validate the exact combined candidate.
+- [ ] Establish exact-candidate FULL PASS and promotion readiness.
+- [ ] Remote promotion requires separate Owner authorization.
 
 ## Current
 
-The eight authorized product blocks are complete. PBI-041 now passes inside
-FULL. Stage 8 exposed a separate harness race: Docker can report PostgreSQL
-healthy inside the container before its published loopback endpoint accepts
-the connection used by the migrator. The bounded endpoint probe, focused
-regressions and material TL-02 suite pass, and the coherent remediation is
-committed. The exact-candidate FULL campaign is now blocked earlier by the
-PBI-041 performance gate. No remote promotion is allowed yet.
+The completed TL-02 product candidate has been restored after the external
+Quality dependency closed on `main`. The ordinary merge preserves the TL-02
+Stage 8 loopback-readiness remediation and combines it with the native
+architecture PBI-041 performance harness. The only expected semantic adjustment
+is the PBI-041 material runner's schema expectation from 75 to 76 migrations.
 
 ## Next
 
-Request a separate quality/harness decision for PBI-041's current 10k publish
-performance instability. Do not patch that unrelated gate, promote remotely or
-begin TL-03 under the Stage 8 authorization.
+Run focused interaction checks, material PostgreSQL proof and the authoritative
+FULL campaign. If and only if every required gate passes on the unchanged final
+candidate, reconcile this Work Unit to `READY_FOR_PROMOTION` and stop before
+push or PR.
 
 ## Blockers
 
-The exact remediation candidate passed Stages 0–6 but failed Stage 7 because
-PBI-041 publish measured 35.46 seconds against its governed 30-second budget.
-The single isolated diagnostic also failed at 34.53 seconds. Stage 8 therefore
-did not run inside FULL. Its focused material suite passes 2/2 with 76
-migrations and 0 pending on the second run; no migration or gate was weakened.
+None at reconciliation start. Any real TL-02 regression, Stage 8 readiness
+failure or governed PBI-041 benchmark failure blocks promotion and requires a
+new scoped remediation decision.
 
 ## Important Discoveries
 
 - Existing User lifecycle and role composition are reusable; email/password
-  identity is absent and belongs to Access, not the User row.
+  identity is absent from the legacy model and belongs to Access.
 - Existing PIN/Operational Session code provides patterns, not shared
   credentials, cookies, guards or audience.
 - No capability registry change is necessary for self-session foundation.
@@ -128,66 +125,43 @@ migrations and 0 pending on the second run; no migration or gate was weakened.
   backfill was required.
 - Recovery transport/provider remains TL-04 and does not block the internal
   recovery contract.
+- The Quality Work Unit changed the PBI-041 test harness, not product behavior;
+  its native image selection, timing boundaries and threshold remain intact.
 
 ## Focused Verification
 
-- [x] `work-unit:check` — PASS.
-- [x] Markdown relative links — PASS, 173 checked across changed docs.
-- [x] Documentation policy consistency — PASS; Current PBI `NONE`.
-- [x] Secret-pattern scan — PASS, 6 governed patterns.
-- [x] `verify:architecture` — PASS, DEC-005 policy 9.
-- [x] `git diff --check` — PASS.
-- [x] Current classifier: `CROSS_MODULE_HIGH_RISK` / `FULL`; shadow:
-  `SENSITIVE` / `FULL_PLUS_OWNER_AND_DOMAIN_SECURITY_REVIEW`, no gates reduced.
-- [x] Docs-only gate — correctly rejected as not applicable because the
-  security/readiness contract classifies `FULL`.
-- [x] Focused TL-02 domain/application/HTTP/PostgreSQL tests — PASS.
-- [x] TL-02 focused domain/security/application/HTTP/authorization/provisioner
-  package — 17 PASS.
-- [x] TL-02 domain tests — 3 PASS; password/token tests — 2 PASS.
-- [x] TL-02 application use-case tests — 4 PASS.
-- [x] TL-02 PostgreSQL persistence — PASS; 76 migrations, second run 0 pending.
-- [x] TL-02 HTTP/session audience tests — 4 PASS, including infrastructure
-  failure preservation during revocation.
-- [x] TL-02 administrative authorization tests — 3 PASS.
-- [x] Local provisioner guard/input tests — 2 PASS.
-- [x] Material TL-02 PostgreSQL proof — 2 PASS; concurrent sessions, abuse,
-  recovery and audit covered.
-- [x] Local runtime — `/livez` 200 and unauthenticated `/api/admin/session`
-  returns a distinct login-CSRF challenge with `no-store` and no Station.
-- [x] Typecheck and architecture checks — PASS through implementation block 4.
-- [x] Current base `verify` — PASS: 975 pass, 32 governed material skips, zero
-  failures.
-- [x] PBI-041 inside the latest FULL campaigns — PASS twice; publish 1.98s and
-  2.07s, below the governed 30s budget.
-- [x] Published PostgreSQL endpoint readiness regression — 4 PASS; delayed
-  availability, bounded failure, migration failure propagation and cleanup.
-- [x] Affected orchestration plus readiness tests — 12 PASS.
-- [x] Remediated TL-02 material PostgreSQL — 2 PASS; 76 migrations, second run
-  0 pending.
-- [x] Focused typecheck, architecture and Work Unit checks — PASS.
-- [!] Exact `verify:full` — FAIL at Stage 7; Stages 0–6 PASS, PBI-041 publish
-  35.46s / 30s, cleanup and final fingerprint PASS. Stage 8 was not reached.
-- [!] Isolated PBI-041 diagnostic — FAIL at 34.53s / 30s; no PBI-041 change is
-  authorized in this Work Unit.
+- [x] Preserved TL-02 HEAD `bda3a70d63dcc7c37e15ec2c8c419941c9731790`
+  confirmed before reconciliation.
+- [x] Quality dependency merge `4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5`
+  confirmed as local and `origin/main` baseline with exact-main CI GREEN.
+- [x] Tracked worktree clean before the merge; unrelated `.DS_Store` preserved.
+- [~] Ordinary merge and conflict reconciliation.
+- [ ] TL-02 focused identity/session/security/isolation package.
+- [ ] TL-02 material PostgreSQL: 76 migrations and second run 0 pending.
+- [ ] Stage 8 deterministic endpoint-readiness regressions.
+- [ ] PBI-041 performance diagnostics and material PostgreSQL suite.
+- [ ] Typecheck, architecture, Work Unit and diff checks.
+- [ ] Exact reconciled `verify:full`.
 
 ## Promotion Gates
 
 - Planning checkpoint reviewed and implementation authorized by Owner.
-- Material PostgreSQL, security, isolation and abuse tests pass.
-- Full promotion pipeline/review required by the final classified diff remains
-  pending; remote promotion is blocked until an exact campaign passes.
-- No remote action, merge or deploy is implied.
+- Material PostgreSQL, security, isolation and abuse tests must pass after the
+  current-main reconciliation.
+- Full promotion pipeline/review remains required by the final classified diff.
+- No remote action, merge to `main` or deploy is implied by local readiness.
 
 ## Remote Actions / Authorization
 
-- No push, PR, merge, deploy or remote/infrastructure change is authorized.
+- The ordinary local merge of current `origin/main` is authorized.
+- No push, PR, merge to `main`, deploy or remote/infrastructure change is
+  authorized.
 
 ## Handoff Notes
 
 - Preserve `apps/dev-preview-web/src/.DS_Store` as unrelated Owner artifact.
-- Base is the exact merged TL-01 main SHA recorded in metadata.
-- Planning document contains the transferable implementation contract.
+- Preserve both parents of the reconciliation merge; do not rebase or rewrite.
+- TL-03 remains unstarted.
 
 ## Closure Predicate
 
