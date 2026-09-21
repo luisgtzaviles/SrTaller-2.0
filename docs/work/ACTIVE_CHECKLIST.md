@@ -2,13 +2,13 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-02 — Administrative Identity + Session Foundation
-iteration: 4 - Post-Quality Reconciliation
+iteration: 5 - Final Main Reconciliation
 type: PRODUCT
 risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: feature/tl-02-admin-identity-session
 base_sha: 5a0289f46e0c90bb85b49d4326dc786c2e37d50d
-status: BLOCKED
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -21,15 +21,14 @@ last_updated: 2026-09-21
 - **Current PBI:** `NONE`; Tenant Lifecycle is proceeding through governed
   Work Units.
 Current PBI: NONE
-- **Status:** `BLOCKED`; reconciliation and TL-02 material validation pass,
-  but the governed PBI-041 transaction benchmark failed before FULL.
-- **Progress:** `13 / 14` Work Unit blocks complete.
-- **Current work:** preserve the reconciled candidate and the first focused
-  failure without retrying or absorbing another Quality remediation.
-- **Next block:** obtain Owner direction for a separate investigation of the
-  environmentally unstable PBI-041 transaction benchmark; do not begin TL-03.
-- **Blockers:** PBI-041 focused material measured a 20.534 s database
-  transaction against its governed 15 s budget on native arm64 PostgreSQL.
+- **Status:** `ACTIVE`; the preserved TL-02 branch is resumed and current
+  `main` is being reconciled into its final local candidate.
+- **Progress:** `12 / 14` Work Unit blocks complete.
+- **Current work:** audit the combined TL-02, Stage 8 readiness and PBI-041
+  Quality harness after the authorized ordinary merge from current `main`.
+- **Next block:** run focused verification, then one authoritative
+  `verify:full` on the exact reconciled candidate.
+- **Blockers:** none. Both external PBI-041 Quality dependencies are closed.
 - **Last updated:** 2026-09-21, America/Hermosillo.
 
 ## Objective
@@ -96,33 +95,29 @@ gate that makes the shared FULL campaign deterministic on this host.
 - [x] Implement use cases, HTTP boundary and authorization executor.
 - [x] Complete local proof, hardening and documentation.
 - [x] Preserve TL-02 while the separate Quality dependency was remediated.
-- [x] Reconcile current `main` and validate the combined TL-02 mechanics.
-- [!] Establish exact-candidate FULL PASS and promotion readiness.
+- [~] Reconcile current `main` and validate the combined TL-02 mechanics.
+- [ ] Establish exact-candidate FULL PASS and promotion readiness.
 - [ ] Remote promotion requires separate Owner authorization.
 
 ## Current
 
-The completed TL-02 product candidate has been restored after the external
-Quality dependency closed on `main`. The ordinary merge preserves the TL-02
-Stage 8 loopback-readiness remediation and combines it with the native
-architecture PBI-041 performance harness. Focused TL-02 and harness contract
-checks pass, but the first material PBI-041 run exceeded its 15-second database
-transaction budget while remaining inside the 30-second service budget.
+The completed TL-02 product candidate is resumed after both external Quality
+dependencies closed on `main`. The authorized ordinary merge brings in native
+PostgreSQL architecture selection and the corrected PBI-041 transaction
+capacity diagnostic while preserving the TL-02 Stage 8 loopback-readiness
+remediation. The combined candidate is under focused verification.
 
 ## Next
 
-Keep TL-02 paused on its reconciled history. A separately authorized Quality
-investigation must explain the remaining benchmark variance before another
-PBI-041 run or the authoritative FULL campaign. Do not push, open a PR or start
-TL-03.
+Complete the combined harness audit and focused TL-02/PostgreSQL verification.
+If green, run exactly one authoritative `verify:full`, reconcile this checklist
+and stop before push, PR, merge, deploy or TL-03.
 
 ## Blockers
 
-Classified `ENVIRONMENTAL_UNRESOLVED`: the native arm64 image and governed
-thresholds are intact, TL-02 changes no catalog production path, and its
-material suite passes. The focused PBI-041 transaction was 20.534 s against
-15 s; publication was 20.534 s against 30 s. FULL was not started after this
-failed prerequisite.
+None. The former native-image and transaction-budget blockers are resolved by
+the two integrated PBI-041 Quality Work Units. Any new material failure must be
+classified from the exact reconciled candidate without blind retry.
 
 ## Important Discoveries
 
@@ -135,34 +130,38 @@ failed prerequisite.
   backfill was required.
 - Recovery transport/provider remains TL-04 and does not block the internal
   recovery contract.
-- The Quality Work Unit changed the PBI-041 test harness, not product behavior;
-  its native image selection, timing boundaries and threshold remain intact.
+- The first Quality Work Unit integrated native host-architecture PostgreSQL
+  selection without changing product behavior or performance thresholds.
+- The second Quality Work Unit preserved publish above 30 seconds as a hard
+  failure, retained mandatory transaction timing and correctly treats one
+  observation above 15 seconds as
+  `TRANSACTION_CAPACITY_TARGET_EXCEEDED`, pending future calibrated p95 work.
 
 ## Focused Verification
 
-- [x] Preserved TL-02 HEAD `bda3a70d63dcc7c37e15ec2c8c419941c9731790`
-  confirmed before reconciliation.
-- [x] Quality dependency merge `4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5`
-  confirmed as local and `origin/main` baseline with exact-main CI GREEN.
+- [x] Preserved TL-02 checkpoint
+  `6ea9d15874acce1c006c204ee70933f15cb5dec1` confirmed before reconciliation.
+- [x] Quality dependency merges `4f3cf8c4ecf4827d7a92ed80386cf7738e6e4cc5`
+  and `aaccbf61f54b3b7cb3560ae422bc0906019a40ea` confirmed integrated with
+  exact-main CI GREEN.
 - [x] Tracked worktree clean before the merge; unrelated `.DS_Store` preserved.
-- [x] Ordinary merge and conflict reconciliation.
-- [x] TL-02 focused identity/session/security/isolation package — 18 PASS.
-- [x] TL-02 material PostgreSQL — 2 PASS; 76 migrations, second run 0 pending.
-- [x] Stage 8 deterministic endpoint-readiness regressions — 4 PASS.
-- [x] PBI-041 performance diagnostics/orchestration regressions — 12 PASS.
-- [!] PBI-041 material PostgreSQL — 9 PASS, 1 FAIL; transaction 20.534 s /
-  15 s, publication 20.534 s / 30 s.
-- [x] Typecheck, build, architecture, Work Unit and diff checks.
-- [!] Exact reconciled `verify:full` — not run after the failed focused
-  prerequisite; no retry used as evidence.
+- [~] Ordinary merge and checklist conflict reconciliation.
+- [ ] Combined verification-harness audit.
+- [ ] TL-02 focused identity/session/security/isolation package.
+- [ ] TL-02 material PostgreSQL; 76 migrations and second run 0 pending.
+- [ ] Stage 8 deterministic endpoint-readiness regressions.
+- [ ] PBI-041 corrected performance contract and material PostgreSQL suite.
+- [ ] Typecheck, build, architecture, Work Unit and diff checks.
+- [ ] Exact reconciled `verify:full`; one canonical run only.
 
 ## Promotion Gates
 
 - Planning checkpoint reviewed and implementation authorized by Owner.
-- TL-02 material PostgreSQL, security, isolation and abuse tests pass after the
-  current-main reconciliation.
-- The governed PBI-041 prerequisite does not pass reliably on this host, so the
-  FULL promotion pipeline is blocked and readiness cannot be declared.
+- TL-02 material PostgreSQL, security, isolation and abuse tests must pass
+  after the final current-main reconciliation.
+- PBI-041 publish above 30 seconds remains blocking; transaction timing remains
+  mandatory and a single observation above 15 seconds is diagnostic rather
+  than an independently blocking p95 verdict.
 - Full promotion pipeline/review remains required by the final classified diff.
 - No remote action, merge to `main` or deploy is implied by local readiness.
 
