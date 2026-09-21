@@ -17,9 +17,9 @@ Milestone: Tenant Lifecycle MVP
 Sprint: NONE
 Current PBI: NONE
 General State: Authorized implementation / Functional foundation
-Progress: 3 / 8 implementation blocks complete
-Current Work: Internal bootstrap domain/application contract
-Next Block: Atomic orchestration and sanitized audit
+Progress: 4 / 8 implementation blocks complete
+Current Work: Atomic orchestration and sanitized audit
+Next Block: Idempotency, concurrency and failure injection
 Blocking: NONE
 Last Updated: 2026-09-21
 
@@ -74,19 +74,19 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 1 — Tenant schema, trustworthy backfill and bootstrap journal.
 - [x] Block 2 — Protected/versioned starter Role and capability policy.
 - [x] Block 3 — Transaction-aware owner persistence ports.
-- [~] Block 4 — Internal bootstrap domain/application contract.
-- [ ] Block 5 — Atomic orchestration and sanitized audit.
+- [x] Block 4 — Internal bootstrap domain/application contract.
+- [~] Block 5 — Atomic orchestration and sanitized audit.
 - [ ] Block 6 — Idempotency, concurrency and failure injection.
 - [ ] Block 7 — TL-02 login, isolation and operational-auth regression.
 - [ ] Block 8 — Evidence, full verification and promotion handoff.
 
 ## Current
 
-Implementing Block 4: trusted grant, stable result/errors and redacted contracts.
+Implementing Block 5: one SERIALIZABLE orchestration over all owner writers.
 
 ## Next
 
-Complete the internal grant/result contract without exposing registration publicly.
+Complete atomic orchestration, journal replay and sanitized success audit.
 
 ## Blockers
 
@@ -110,6 +110,8 @@ None.
 - Block 3 adds owner-scoped transactional writers over one SERIALIZABLE-capable
   context. A dedicated PostgreSQL guard serializes duplicate Registration IDs
   without raw SQL or application-only check-then-insert.
+- Block 4 accepts only opaque Registration/correlation IDs at the command edge;
+  validates the trusted immutable grant and exposes a stable, secret-free result.
 
 ## Focused Verification
 
