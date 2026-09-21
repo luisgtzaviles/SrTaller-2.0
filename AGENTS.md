@@ -64,13 +64,13 @@ Leer sólo las fuentes necesarias para el cambio, sin confundir documentos
 | Tema | Fuente autoritativa o índice |
 |---|---|
 | Producto, alcance y prioridad | [`PRODUCT_VISION.md`](docs/product/PRODUCT_VISION.md), [`PRODUCT_SCOPE.md`](docs/product/PRODUCT_SCOPE.md), [`MVP_OPERATING_ROADMAP.md`](docs/product/MVP_OPERATING_ROADMAP.md) |
-| Arquitectura y módulos | [`APPLICATION_ARCHITECTURE.md`](docs/architecture/APPLICATION_ARCHITECTURE.md), [`MODULE_MAP.md`](docs/product/MODULE_MAP.md), [`architecture/dec-005-policy.json`](architecture/dec-005-policy.json) |
+| Arquitectura y módulos | [`MODULE_CREATION.md`](docs/engineering/MODULE_CREATION.md), [`APPLICATION_ARCHITECTURE.md`](docs/architecture/APPLICATION_ARCHITECTURE.md), [`MODULE_MAP.md`](docs/product/MODULE_MAP.md), [`architecture/dec-005-policy.json`](architecture/dec-005-policy.json) |
 | Tenant, sucursal y datos | [`MULTITENANCY_MODEL.md`](docs/architecture/MULTITENANCY_MODEL.md), [`DATA_ARCHITECTURE.md`](docs/architecture/DATA_ARCHITECTURE.md) |
 | Identidad, sesiones y autorización | [`IDENTITY_ACCESS_AND_PERMISSIONS.md`](docs/architecture/IDENTITY_ACCESS_AND_PERMISSIONS.md), [`BRANCH_AND_DEVICE_MODEL.md`](docs/architecture/BRANCH_AND_DEVICE_MODEL.md), ADR-010 a ADR-014 en el [registro de decisiones](docs/decisions/README.md) |
 | Persistencia y migraciones | [`DATA_ARCHITECTURE.md`](docs/architecture/DATA_ARCHITECTURE.md), [DEC-049](docs/decisions/dec-049-persistence-ownership/DECISION_PROPOSAL.md), [`MIGRATION_POLICY.md`](docs/operations/MIGRATION_POLICY.md) |
 | Errores | [DEC-044](docs/decisions/dec-044-error-strategy/DECISION_PROPOSAL.md) |
 | Seguridad y secretos | [`SECURITY_BASELINE.md`](docs/architecture/SECURITY_BASELINE.md), [`SECURITY_TESTING.md`](docs/quality/SECURITY_TESTING.md) |
-| UI y componentes | [`DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md`](docs/design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md), `apps/dev-preview-web/src/components/ui/` |
+| UI y componentes | [`COMPONENT_CATALOG.md`](docs/design-system/COMPONENT_CATALOG.md), [`DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md`](docs/design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md), `apps/dev-preview-web/src/components/ui/` |
 | Accesibilidad | [`ACCESSIBILITY_STRATEGY.md`](docs/quality/ACCESSIBILITY_STRATEGY.md) |
 | Testing y gates | [`QUALITY_STRATEGY.md`](docs/quality/QUALITY_STRATEGY.md), [DEC-051](docs/decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md), [`DEFINITION_OF_DONE.md`](docs/delivery/DEFINITION_OF_DONE.md) |
 | Delivery, ramas y ambientes | [`DEVELOPMENT_AND_DELIVERY_WORKFLOW.md`](docs/delivery/DEVELOPMENT_AND_DELIVERY_WORKFLOW.md), [`BRANCH_POLICY.md`](docs/delivery/BRANCH_POLICY.md), [`ENVIRONMENTS.md`](docs/delivery/ENVIRONMENTS.md) |
@@ -80,6 +80,12 @@ Leer sólo las fuentes necesarias para el cambio, sin confundir documentos
 Antes de crear UI, buscar primero componentes, patrones y tokens compartidos.
 Una pantalla no introduce primitivas, colores, spacing, modal, tabla o patrón
 responsive paralelo sin justificar que el sistema actual no cubre la necesidad.
+
+Antes de crear o extender un módulo, seguir
+[`MODULE_CREATION.md`](docs/engineering/MODULE_CREATION.md): buscar contratos y
+owners existentes antes de duplicar; resolver explícitamente scope de tenant y
+sucursal antes de persistir; y evaluar autorización backend antes de exponer
+una acción en API o UI.
 
 Antes de persistir, consultar, filtrar, agrupar o presentar fechas/horas, leer
 [`DATA_ARCHITECTURE.md`](docs/architecture/DATA_ARCHITECTURE.md). La timezone

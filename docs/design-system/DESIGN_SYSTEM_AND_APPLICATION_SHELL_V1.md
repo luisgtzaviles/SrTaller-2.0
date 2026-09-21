@@ -2,14 +2,18 @@
 
 ## Estado y autoridad
 
-- **Estado:** dirección aprobada por el Owner para documentación y preparación
-  de PBI.
+- **Estado:** contrato V1 aprobado y materializado por PBI-030; cambios futuros
+  conservan su propio workflow y autorización.
 - **Autoridad:** `APPROVED — DESIGN SYSTEM & APPLICATION SHELL V1 DIRECTION`.
 - **Alcance de la aprobación:** identidad, foundation visual, gobierno de
   estilos, patrones responsive, Application Shell y orden inicial de
   consumidores.
-- **No autoriza:** implementación, instalación de dependencias, commit, push,
-  pull request, deploy ni cambios de infraestructura.
+- **Implementación actual:** tokens, foundation, primitivas y Application Shell
+  viven en `apps/dev-preview-web/src/`; su inventario operativo está en el
+  [catálogo de componentes](./COMPONENT_CATALOG.md).
+- **Límite de autoridad:** este documento no autoriza por sí solo una nueva
+  implementación, dependencia, commit, push, pull request, deploy o cambio de
+  infraestructura.
 - **Baseline a la que aplica:** el cliente React/Vite actual. Este documento no
   acepta Next.js ni cambia el estado `Proposed` de ADR-006.
 
@@ -159,8 +163,8 @@ imports estáticos nombrados, nunca `DynamicIcon`, `currentColor` y tamaños
 canónicos `16/20/24`. Los controles sólo-icono necesitan accessible name. No se
 admiten emojis, una segunda librería ni caracteres improvisados como
 iconografía estándar. Logo/branding e iconos funcionales son sistemas
-independientes. La dependencia sólo puede incorporarse durante la
-implementación autorizada de PBI-030, no durante su preparación.
+independientes. La dependencia fue incorporada por la implementación autorizada
+de PBI-030; cambiarla exige el workflow vigente.
 
 ### Breakpoints
 

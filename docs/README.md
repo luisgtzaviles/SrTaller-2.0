@@ -61,6 +61,7 @@ auditoría inicial, la remediación y el dictamen final:
 ## Diseño de producto
 
 - [Design System & Application Shell V1](design-system/DESIGN_SYSTEM_AND_APPLICATION_SHELL_V1.md)
+- [Catálogo operativo de componentes UI](design-system/COMPONENT_CATALOG.md)
 - [PBI-030 — UI Foundation y Application Shell V1](backlog/pbis/PBI-030.md)
 - [PBI-030 — Readiness Review](design-system/PBI_030_READINESS_REVIEW.md)
 - [PBI-030 — Acuerdo técnico de estimación](design-system/PBI_030_ESTIMATION_PROPOSAL.md)
@@ -73,6 +74,14 @@ estimación `XL — agreed`, está integrado en `main` y tiene Owner Acceptance.
 El riesgo AT/cross-browser residual fue aceptado como LOW; no afirma
 certificación. Este candidato registra `Done`; deploy y `Released` siguen
 separados.
+
+## Ingeniería
+
+- [Creación y extensión de módulos](engineering/MODULE_CREATION.md)
+
+La guía de ingeniería encamina hacia la policy DEC-005, tenancy, persistencia,
+errores, UI y verificación vigentes. No reemplaza las decisiones aceptadas ni
+autoriza un cambio de producto.
 
 ## Dominio operativo
 
