@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-06` is implementing its authorized scope.
 - **Overall status:** `ACTIVE` implementation.
-- **Progress:** readiness `8 / 8`; implementation `2 / 8`.
-- **Current work:** Block 3 — atomic invitation acceptance and password establishment.
-- **Next block:** Block 4 — Admin Users/Roles authorization and HTTP surface.
+- **Progress:** readiness `8 / 8`; implementation `3 / 8`.
+- **Current work:** Block 4 — Admin Users/Roles authorization and HTTP surface.
+- **Next block:** Block 5 — last-effective-admin coordinator and Level-2 actions.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -78,8 +78,8 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Receive explicit Owner implementation authorization.
 - [x] Block 1 — invitation persistence, domain and audit foundation.
 - [x] Block 2 — TL-04 email transport reuse and durable dispatch.
-- [~] Block 3 — atomic invitation acceptance and password establishment.
-- [ ] Block 4 — Admin Users/Roles authorization and HTTP surface.
+- [x] Block 3 — atomic invitation acceptance and password establishment.
+- [~] Block 4 — Admin Users/Roles authorization and HTTP surface.
 - [ ] Block 5 — last-effective-admin coordinator and Level-2 actions.
 - [ ] Block 6 — Admin UI Users/Roles/invitation acceptance.
 - [ ] Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
@@ -87,13 +87,13 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Current
 
-The TL-04 local/Resend transport is now shared with an invitation-specific
-template while retaining redacted inspection and provider failure semantics.
+Issue/resend/revoke/accept use server IDs, digest-only challenges, immutable
+grant intent and TL-02 Argon2id password protection in SERIALIZABLE storage.
 
 ## Next
 
-Implement transactional issue/resend/revoke/accept orchestration and invited
-person password establishment without context crossover.
+Expose tenant-derived Admin Users/Roles/invitation commands through the Admin
+Session authority boundary and a safe public acceptance endpoint.
 
 ## Blockers
 
