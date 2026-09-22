@@ -823,7 +823,7 @@ export interface AccessRoleTable {
 export interface AccessRoleCommandTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly client_request_id: ImmutableColumn<string>;
-  readonly command_type: ImmutableColumn<'create' | 'update' | 'replace_capabilities'>;
+  readonly command_type: ImmutableColumn<'create' | 'update' | 'replace_capabilities' | 'deactivate' | 'reactivate'>;
   readonly role_id: ImmutableColumn<string>;
   readonly request_fingerprint: ImmutableColumn<Uint8Array>;
   readonly result_role_key: ImmutableColumn<string>;

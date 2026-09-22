@@ -122,6 +122,7 @@ import { KyselyAdminInvitationRepository } from './infrastructure/persistence/ky
 import { AdminInvitationService } from './application/use-cases/admin-invitation.use-cases.js';
 import { AdminUsersRolesOperations } from './application/admin-users-roles.operations.js';
 import { AdminUsersRolesController, PublicAdminInvitationController } from './presentation/admin-users-roles.controller.js';
+import { KyselyAdminLifecycleRepository } from './infrastructure/persistence/kysely-admin-lifecycle.repository.js';
 
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
@@ -362,13 +363,14 @@ type RegisteredAccessUseCases =
     },
     {
       provide: AdminUsersRolesOperations,
-      inject: [ADMIN_AUTHORIZATION_EXECUTOR, USER_PRODUCT_RUNTIME, ACCESS_SESSION_RUNTIME, ADMIN_INVITATION_SERVICE],
+      inject: [ADMIN_AUTHORIZATION_EXECUTOR, USER_PRODUCT_RUNTIME, ACCESS_SESSION_RUNTIME, ADMIN_INVITATION_SERVICE, APPLICATION_DATABASE_CONNECTION],
       useFactory: (
         authorization: AdminAuthorizationExecutor,
         users: UserProductRuntime,
         runtime: AccessSessionRuntime,
         invitations: AdminInvitationService,
-      ): AdminUsersRolesOperations => new AdminUsersRolesOperations(authorization, users, runtime, invitations),
+        database: ApplicationDatabaseConnection,
+      ): AdminUsersRolesOperations => new AdminUsersRolesOperations(authorization, users, runtime, invitations, new KyselyAdminLifecycleRepository(database)),
     },
     {
       provide: AccessSelfPreferencesOperations,
