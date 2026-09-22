@@ -57,11 +57,11 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
   ]);
 });
 
-test('policy v9 registers exact directed public module composition', async () => {
+test('policy v10 registers exact directed public module composition', async () => {
   const policy = JSON.parse(
     await readFile('architecture/dec-005-policy.json', 'utf8'),
   );
-  assert.equal(policy.policyVersion, 9);
+  assert.equal(policy.policyVersion, 10);
   assert.deepEqual(policy.directedModuleComposition, {
     decorator: 'Module',
     edges: [
@@ -132,6 +132,12 @@ test('policy v9 registers exact directed public module composition', async () =>
           importSpecifier: '../stations/stations.module.js',
         },
         publicBindings: [
+          {
+            token: 'BRANCH_ADMINISTRATION_RUNTIME',
+            contract: 'BranchAdministrationRuntime',
+            consumerImportSpecifier: '../stations/index.js',
+            producerImportSpecifier: './index.js',
+          },
           {
             token: 'BRANCH_SETTINGS_RUNTIME',
             contract: 'BranchSettingsRuntime',
@@ -308,6 +314,27 @@ test('policy v9 registers exact directed public module composition', async () =>
           },
         ],
       },
+      {
+        consumer: 'stations',
+        producer: 'tenancy',
+        consumerModule: {
+          file: 'src/modules/stations/stations.module.ts',
+          className: 'StationsModule',
+        },
+        producerModule: {
+          file: 'src/modules/tenancy/tenancy.module.ts',
+          className: 'TenancyModule',
+          importSpecifier: '../tenancy/tenancy.module.js',
+        },
+        publicBindings: [
+          {
+            token: 'TENANT_LIFECYCLE_COMMIT_RUNTIME',
+            contract: 'TenantLifecycleCommitRuntime',
+            consumerImportSpecifier: '../tenancy/index.js',
+            producerImportSpecifier: './index.js',
+          },
+        ],
+      },
     ],
   });
   for (const edge of policy.directedModuleComposition.edges) {
@@ -462,10 +489,13 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts',
     'src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts',
     'src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts',
+    'src/infrastructure/database/migrations/20260921160000_stations_materialize_branch_management.ts',
+    'src/infrastructure/database/migrations/20260921161000_tenancy_create_lifecycle_events.ts',
+    'src/infrastructure/database/migrations/20260921162000_stations_extend_branch_command_snapshots.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy', 'registration', 'registration'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy', 'registration', 'registration', 'stations', 'tenancy', 'stations'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -513,6 +543,7 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260917190200_access_add_granular_catalog_capabilities.ts',
       'src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts',
       'src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts',
+      'src/infrastructure/database/migrations/20260921162000_stations_extend_branch_command_snapshots.ts',
     ].includes(migration)) {
       assert.deepEqual(registration.functions, []);
       assert.deepEqual(registration.triggers, []);
@@ -547,6 +578,15 @@ test('registered module presentation and Health are the explicitly governed HTTP
           file: 'src/modules/access/access.module.ts',
           className: 'AccessModule',
           importSpecifier: './presentation/branch-settings-administration.controller.js',
+        },
+      },
+      'src/modules/access/presentation/admin-branches.controller.ts': {
+        owner: 'access',
+        className: 'AdminBranchesController',
+        composition: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: './presentation/admin-branches.controller.js',
         },
       },
       'src/modules/access/presentation/access-session.controller.ts': {

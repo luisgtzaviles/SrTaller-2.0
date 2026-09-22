@@ -444,58 +444,30 @@ test('branch-restricted administration authority cannot read or mutate tenant-wi
   );
 });
 
-test('branch timezone settings use contextual Branch authority and require access management', async () => {
+test('legacy branch timezone settings remain contextual read-only', async () => {
   const { calls, operations } = operationsFixture();
   const current = await operations.readBranchSettings(requestEvidence);
-  const updated = await operations.updateBranchSettings(requestEvidence, {
-    timeZone: 'America/Tijuana',
-  });
 
   assert.deepEqual(current, { timeZone: 'America/Hermosillo' });
-  assert.deepEqual(updated, { timeZone: 'America/Tijuana' });
   assert.deepEqual(call(calls, 'readBranchTimeZone').scope, { tenantId, branchId });
-  assert.deepEqual(call(calls, 'updateBranchTimeZone'), {
-    operation: 'updateBranchTimeZone',
-    scope: { tenantId, branchId },
-    timeZone: 'America/Tijuana',
-  });
   assert.deepEqual(
     calls.filter(({ operation }) => operation === 'authorize').map(({ requirement }) => requirement),
-    [
-      { capability: 'access_matrix.manage', kind: 'read' },
-      { capability: 'access_matrix.manage', kind: 'state-change' },
-    ],
+    [{ capability: 'access_matrix.manage', kind: 'read' }],
   );
 });
 
-test('restricted administration cannot read or update branch timezone settings', async () => {
+test('restricted operational administration cannot read branch timezone settings', async () => {
   const { calls, operations } = operationsFixture('BRANCH_RESTRICTED');
-  for (const request of [
-    () => operations.readBranchSettings(requestEvidence),
-    () => operations.updateBranchSettings(requestEvidence, { timeZone: 'America/Tijuana' }),
-  ]) {
-    await assert.rejects(
-      request,
-      (error) => error instanceof ContextualAuthorizationError && error.code === 'ACCESS_DENIED',
-    );
-  }
+  await assert.rejects(
+    operations.readBranchSettings(requestEvidence),
+    (error) => error instanceof ContextualAuthorizationError && error.code === 'ACCESS_DENIED',
+  );
   assert.equal(call(calls, 'readBranchTimeZone'), undefined);
-  assert.equal(call(calls, 'updateBranchTimeZone'), undefined);
 });
 
-test('branch timezone settings reject client scope and unexpected fields before persistence', async () => {
-  const { calls, operations } = operationsFixture();
-  for (const body of [
-    { timeZone: 'America/Tijuana', branchId },
-    { timeZone: 'America/Tijuana', tenantId },
-    { branchId },
-  ]) {
-    await assert.rejects(
-      operations.updateBranchSettings(requestEvidence, body),
-      AccessAdministrationRequestError,
-    );
-  }
-  assert.equal(call(calls, 'updateBranchTimeZone'), undefined);
+test('legacy operational branch settings expose no mutation command', () => {
+  const { operations } = operationsFixture();
+  assert.equal(operations.updateBranchSettings, undefined);
 });
 
 test('administration mutations reject unknown fields and invalid request IDs before effects', async () => {

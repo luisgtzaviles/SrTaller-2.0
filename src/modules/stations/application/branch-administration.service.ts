@@ -1,17 +1,16 @@
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { inspect } from 'node:util';
 
-import type { DatabaseConnection } from '../../../infrastructure/database/database-connection.js';
-import { DatabaseTransactionError, runInTransaction } from '../../../infrastructure/database/transaction-runner.js';
 import type { TenantId } from '../../tenancy/index.js';
-import { createTransactionalKyselyTenantRepository } from '../../tenancy/infrastructure/persistence/kysely-tenant.repository.js';
-import { TenantPersistenceError } from '../../tenancy/application/ports/tenant-repository.port.js';
+import { TenantLifecycleCommitError } from '../../tenancy/index.js';
+import type { TenantLifecycleCommitRuntime } from '../../tenancy/index.js';
 import { parseBranchDisplayName } from '../domain/branch.js';
 import { parseBranchTimeZone } from './branch-time-zone.js';
-import { createKyselyBranchRepository, createTransactionalKyselyBranchRepository } from '../infrastructure/persistence/kysely-branch.repository.js';
+import { BranchAdministrationTransactionError } from './ports/branch-administration-transaction.port.js';
+import type { BranchAdministrationTransactionPort } from './ports/branch-administration-transaction.port.js';
 import { parseBranchId } from './ports/branch-repository.port.js';
 import { BranchPersistenceError } from './ports/branch-repository.port.js';
-import type { BranchCommandKind, BranchRecord } from './ports/branch-repository.port.js';
+import type { BranchCommandKind, BranchRecord, BranchRepositoryPort } from './ports/branch-repository.port.js';
 
 export type BranchAdministrationErrorCode =
   | 'BRANCH_NOT_FOUND'
@@ -97,14 +96,13 @@ function sameDigest(left: Uint8Array, right: Uint8Array): boolean {
 }
 
 export class BranchAdministrationService implements BranchAdministrationRuntime {
-  private readonly repository;
   constructor(
-    private readonly connection: DatabaseConnection,
+    private readonly repository: BranchRepositoryPort,
+    private readonly transactions: BranchAdministrationTransactionPort,
+    private readonly tenants: TenantLifecycleCommitRuntime,
     private readonly clock: () => Date = () => new Date(),
     private readonly createId: () => string = randomUUID,
-  ) {
-    this.repository = createKyselyBranchRepository(connection as never);
-  }
+  ) {}
 
   async list(context: BranchAdministrationContext): Promise<readonly BranchRecord[]> {
     return this.repository.listBranchesByTenant({ tenantId: context.tenantId });
@@ -120,10 +118,10 @@ export class BranchAdministrationService implements BranchAdministrationRuntime 
 
   async create(context: BranchAdministrationContext, value: unknown): Promise<BranchRecord> {
     const input = parseCommand(value, 'CREATE');
-    return this.mutate(context, 'CREATE', null, input, async ({ branches, tenants, now, correlationId, transactionContext }) => {
+    return this.mutate(context, 'CREATE', null, input, async ({ branches, now, correlationId, transactionContext }) => {
       const branchId = parseBranchId(this.createId());
       const branch = await branches.createBranch({ tenantId: context.tenantId, branchId }, { tenantId: context.tenantId, branchId, displayName: input.displayName!, timeZone: input.timeZone!, createdAt: now });
-      await this.maybeActivate(context, branches, tenants, transactionContext, now, correlationId);
+      await this.maybeActivate(context, branches, transactionContext, now, correlationId);
       return branch;
     });
   }
@@ -141,8 +139,8 @@ export class BranchAdministrationService implements BranchAdministrationRuntime 
 
   async deactivate(context: BranchAdministrationContext, branchIdValue: unknown, value: unknown): Promise<BranchRecord> {
     const branchId = this.branchId(branchIdValue); const input = parseCommand(value, 'DEACTIVATE');
-    return this.mutate(context, 'DEACTIVATE', branchId, input, async ({ branches, tenants, now }) => {
-      const tenant = await tenants.lockTenant({ tenantId: context.tenantId });
+    return this.mutate(context, 'DEACTIVATE', branchId, input, async ({ branches, transactionContext, now }) => {
+      const tenant = await this.tenants.lock({ tenantId: context.tenantId }, transactionContext);
       const current = await branches.findBranchById({ tenantId: context.tenantId, branchId });
       if (!current) throw new BranchAdministrationError('BRANCH_NOT_FOUND');
       if (current.version !== input.expectedVersion) throw new BranchAdministrationError('BRANCH_VERSION_CONFLICT');
@@ -154,13 +152,13 @@ export class BranchAdministrationService implements BranchAdministrationRuntime 
 
   async reactivate(context: BranchAdministrationContext, branchIdValue: unknown, value: unknown): Promise<BranchRecord> {
     const branchId = this.branchId(branchIdValue); const input = parseCommand(value, 'REACTIVATE');
-    return this.mutate(context, 'REACTIVATE', branchId, input, async ({ branches, tenants, now, correlationId, transactionContext }) => {
+    return this.mutate(context, 'REACTIVATE', branchId, input, async ({ branches, now, correlationId, transactionContext }) => {
       const current = await branches.findBranchById({ tenantId: context.tenantId, branchId });
       if (!current) throw new BranchAdministrationError('BRANCH_NOT_FOUND');
       if (current.version !== input.expectedVersion) throw new BranchAdministrationError('BRANCH_VERSION_CONFLICT');
       if (current.status !== 'INACTIVE') throw new BranchAdministrationError('BRANCH_INVALID_TRANSITION');
       const branch = await branches.setBranchActive({ tenantId: context.tenantId, branchId }, true, input.expectedVersion!, now);
-      await this.maybeActivate(context, branches, tenants, transactionContext, now, correlationId);
+      await this.maybeActivate(context, branches, transactionContext, now, correlationId);
       return branch;
     });
   }
@@ -169,12 +167,12 @@ export class BranchAdministrationService implements BranchAdministrationRuntime 
     try { return parseBranchId(value); } catch { throw new BranchAdministrationError('BRANCH_NOT_FOUND'); }
   }
 
-  private async maybeActivate(context: BranchAdministrationContext, branches: ReturnType<typeof createTransactionalKyselyBranchRepository>, tenants: ReturnType<typeof createTransactionalKyselyTenantRepository>, transactionContext: object, now: string, correlationId: string): Promise<void> {
-    const tenant = await tenants.lockTenant({ tenantId: context.tenantId });
+  private async maybeActivate(context: BranchAdministrationContext, branches: BranchRepositoryPort, transactionContext: object, now: string, correlationId: string): Promise<void> {
+    const tenant = await this.tenants.lock({ tenantId: context.tenantId }, transactionContext);
     if (tenant.lifecycleStatus === 'ACTIVE') return;
     if (await branches.countActiveBranches({ tenantId: context.tenantId }) < 1) return;
     if (!await context.commitGuard.confirmEffectiveTenantAdmin(transactionContext)) return;
-    await tenants.activateTenant({ tenantId: context.tenantId }, { actorUserId: context.userId, adminSessionId: context.sessionId, correlationId, occurredAt: now });
+    await this.tenants.activate({ tenantId: context.tenantId }, { actorUserId: context.userId, adminSessionId: context.sessionId, correlationId, occurredAt: now }, transactionContext);
   }
 
   private async mutate(
@@ -182,18 +180,16 @@ export class BranchAdministrationService implements BranchAdministrationRuntime 
     kind: BranchCommandKind,
     branchId: ReturnType<typeof parseBranchId> | null,
     input: ParsedCommand,
-    operation: (dependencies: Readonly<{ branches: ReturnType<typeof createTransactionalKyselyBranchRepository>; tenants: ReturnType<typeof createTransactionalKyselyTenantRepository>; transactionContext: object; now: string; correlationId: string }>) => Promise<BranchRecord>,
+    operation: (dependencies: Readonly<{ branches: BranchRepositoryPort; transactionContext: object; now: string; correlationId: string }>) => Promise<BranchRecord>,
   ): Promise<BranchRecord> {
     const requestDigest = digest(kind, branchId, input);
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       let safeError: BranchAdministrationError | null = null;
       let retryablePersistence = false;
       try {
-        return await runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (transactionContext) => {
-          const branches = createTransactionalKyselyBranchRepository(transactionContext);
-          const tenants = createTransactionalKyselyTenantRepository(transactionContext);
+        return await this.transactions.execute(async ({ branches, transactionContext }) => {
           try {
-            await tenants.lockTenant({ tenantId: context.tenantId });
+            await this.tenants.lock({ tenantId: context.tenantId }, transactionContext);
             if (!await context.commitGuard.confirmCurrent(transactionContext)) throw new BranchAdministrationError('BRANCH_AUTHORITY_CHANGED');
             const replay = await branches.findCommand({ tenantId: context.tenantId }, kind, input.clientRequestId);
             if (replay) {
@@ -201,21 +197,24 @@ export class BranchAdministrationService implements BranchAdministrationRuntime 
               return replay.branch;
             }
             const now = this.clock().toISOString(); const correlationId = randomUUID();
-            const result = await operation({ branches, tenants, transactionContext, now, correlationId });
+            const result = await operation({ branches, transactionContext, now, correlationId });
             await branches.saveCommand({ tenantId: context.tenantId }, kind, input.clientRequestId, requestDigest, result, now);
-            await branches.appendAudit({ eventId: randomUUID(), tenantId: context.tenantId, branchId: result.branchId, actorUserId: context.userId, actorDisplayName: context.userDisplayName, adminSessionId: context.sessionId, eventType: `BRANCH_${kind === 'CREATE' ? 'CREATED' : kind === 'UPDATE' ? 'UPDATED' : kind === 'DEACTIVATE' ? 'DEACTIVATED' : 'REACTIVATED'}`, capability: context.capability, correlationId, clientRequestId: input.clientRequestId, branchVersion: result.version, occurredAt: now });
+            await branches.appendAudit(
+              { tenantId: context.tenantId },
+              { eventId: randomUUID(), tenantId: context.tenantId, branchId: result.branchId, actorUserId: context.userId, actorDisplayName: context.userDisplayName, adminSessionId: context.sessionId, eventType: `BRANCH_${kind === 'CREATE' ? 'CREATED' : kind === 'UPDATE' ? 'UPDATED' : kind === 'DEACTIVATE' ? 'DEACTIVATED' : 'REACTIVATED'}`, capability: context.capability, correlationId, clientRequestId: input.clientRequestId, branchVersion: result.version, occurredAt: now },
+            );
             return result;
           } catch (error: unknown) {
             if (error instanceof BranchAdministrationError) safeError = error;
             if (error instanceof BranchPersistenceError && error.retryable === 'conditional') retryablePersistence = true;
-            if (error instanceof TenantPersistenceError && error.retryable === 'conditional') retryablePersistence = true;
+            if (error instanceof TenantLifecycleCommitError && error.retryable) retryablePersistence = true;
             throw error;
           }
         });
       } catch (error: unknown) {
         if (safeError) throw safeError;
         if (retryablePersistence && attempt < 3) continue;
-        if (error instanceof DatabaseTransactionError && error.code === 'DATABASE_TRANSACTION_SERIALIZATION_FAILURE' && attempt < 3) continue;
+        if (error instanceof BranchAdministrationTransactionError && error.retryable && attempt < 3) continue;
         throw new BranchAdministrationError('BRANCH_CONCURRENCY_CONFLICT');
       }
     }

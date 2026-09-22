@@ -375,7 +375,14 @@ class KyselyBranchRepository implements BranchRepositoryPort {
     } catch (error: unknown) { throw mapBranchError(error); }
   }
 
-  async appendAudit(record: BranchAuditRecord): Promise<void> {
+  async appendAudit(
+    scope: TenantPersistenceScope,
+    record: BranchAuditRecord,
+  ): Promise<void> {
+    const validatedScope = validateTenantScope(scope);
+    if (record.tenantId !== validatedScope.tenantId) {
+      throw new BranchPersistenceError('PERSISTENCE_TENANT_SCOPE_REQUIRED');
+    }
     try {
       await this.execute(async (executor: BranchExecutor) => {
         await executor.insertInto('branch_audit_events').values({ event_id: record.eventId, tenant_id: record.tenantId, branch_id: record.branchId, actor_user_id: record.actorUserId, actor_display_name: record.actorDisplayName, admin_session_id: record.adminSessionId, event_type: record.eventType, capability: record.capability, correlation_id: record.correlationId, client_request_id: record.clientRequestId, branch_version: record.branchVersion, occurred_at: new Date(record.occurredAt) }).execute();

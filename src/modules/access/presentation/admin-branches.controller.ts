@@ -1,11 +1,13 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, Headers, Inject, NotFoundException, Param, Patch, Post, UnauthorizedException } from '@nestjs/common';
 
-import { BRANCH_ADMINISTRATION_RUNTIME } from '../../stations/index.js';
 import type { BranchAdministrationRuntime } from '../../stations/index.js';
 import { ADMIN_AUTHORIZATION_EXECUTOR, ContextualAuthorizationError } from '../index.js';
 import type { AdminAuthorizationExecutor, ProtectedRequestEvidence } from '../index.js';
 
 type RequestHeaders = Readonly<Record<string, string | string[] | undefined>>;
+export const ACCESS_BRANCH_ADMINISTRATION_RUNTIME = Symbol(
+  'srtaller.access.branch-administration-runtime',
+);
 function scalar(headers: RequestHeaders, name: string): string | undefined {
   const value = Object.entries(headers).find(([key]) => key.toLowerCase() === name)?.[1];
   return typeof value === 'string' ? value : undefined;
@@ -30,7 +32,7 @@ function translate(error: unknown): never {
 export class AdminBranchesController {
   constructor(
     @Inject(ADMIN_AUTHORIZATION_EXECUTOR) private readonly authorization: AdminAuthorizationExecutor,
-    @Inject(BRANCH_ADMINISTRATION_RUNTIME) private readonly branches: BranchAdministrationRuntime,
+    @Inject(ACCESS_BRANCH_ADMINISTRATION_RUNTIME) private readonly branches: BranchAdministrationRuntime,
   ) {}
 
   @Get()

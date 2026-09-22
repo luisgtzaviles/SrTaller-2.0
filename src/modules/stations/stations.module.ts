@@ -9,6 +9,14 @@ import type {
   ApplicationDatabaseConnection,
   LocalRuntimeConfiguration,
 } from '../../infrastructure/runtime/index.js';
+import type { DatabaseConnection } from '../../infrastructure/database/database-connection.js';
+import { TenancyModule } from '../tenancy/tenancy.module.js';
+import {
+  TENANT_LIFECYCLE_COMMIT_RUNTIME,
+} from '../tenancy/index.js';
+import type {
+  TenantLifecycleCommitRuntime,
+} from '../tenancy/index.js';
 import {
   BRANCH_SETTINGS_RUNTIME,
   BRANCH_ADMINISTRATION_RUNTIME,
@@ -32,14 +40,23 @@ import { localStationBootstrapCredential } from './infrastructure/development/lo
 import { serializeStationCredentialCookie } from './infrastructure/http/station-credential-cookie.js';
 import { TrustedStationRequestContextResolver } from './infrastructure/http/trusted-station-request-context.resolver.js';
 import { KyselyStationCredentialVerifier } from './infrastructure/persistence/kysely-station-credential.verifier.js';
+import { KyselyBranchAdministrationTransaction } from './infrastructure/persistence/kysely-branch-administration.transaction.js';
+import { createKyselyBranchRepository } from './infrastructure/persistence/kysely-branch.repository.js';
 import { LocalStationBootstrapController } from './presentation/local-station-bootstrap.controller.js';
 import type { KyselyBranchRepositoryFactory } from './infrastructure/persistence/kysely-branch.repository.js';
 import { BranchAdministrationService } from './application/branch-administration.service.js';
 
 type RegisteredStationsPersistenceAdapter = KyselyBranchRepositoryFactory;
 
+const STATIONS_RUNTIME_COMPOSITION = Symbol('srtaller.stations.runtime-composition');
+type StationsRuntimeComposition = Readonly<{
+  verifier: KyselyStationCredentialVerifier;
+  branchRepository: ReturnType<typeof createKyselyBranchRepository>;
+  branchTransactions: KyselyBranchAdministrationTransaction;
+}>;
+
 @Module({
-  imports: [RuntimeInfrastructureModule],
+  imports: [RuntimeInfrastructureModule, TenancyModule],
   controllers: [LocalStationBootstrapController],
   providers: [
     {
@@ -86,38 +103,50 @@ type RegisteredStationsPersistenceAdapter = KyselyBranchRepositoryFactory;
       },
     },
     {
-      provide: BRANCH_ADMINISTRATION_RUNTIME,
+      provide: STATIONS_RUNTIME_COMPOSITION,
       inject: [APPLICATION_DATABASE_CONNECTION],
-      useFactory: (database: ApplicationDatabaseConnection): BranchAdministrationRuntime =>
-        new BranchAdministrationService(database as never),
+      useFactory: (database: ApplicationDatabaseConnection): StationsRuntimeComposition =>
+        Object.freeze({
+          verifier: new KyselyStationCredentialVerifier(database),
+          branchRepository: createKyselyBranchRepository(database),
+          branchTransactions: new KyselyBranchAdministrationTransaction(
+            database as ApplicationDatabaseConnection & DatabaseConnection,
+          ),
+        }),
     },
     {
-      provide: KyselyStationCredentialVerifier,
-      inject: [APPLICATION_DATABASE_CONNECTION],
-      useFactory: (database: ApplicationDatabaseConnection) =>
-        new KyselyStationCredentialVerifier(database),
+      provide: BRANCH_ADMINISTRATION_RUNTIME,
+      inject: [STATIONS_RUNTIME_COMPOSITION, TENANT_LIFECYCLE_COMMIT_RUNTIME],
+      useFactory: (
+        composition: StationsRuntimeComposition,
+        tenants: TenantLifecycleCommitRuntime,
+      ): BranchAdministrationRuntime => new BranchAdministrationService(
+        composition.branchRepository,
+        composition.branchTransactions,
+        tenants,
+      ),
     },
     {
       provide: BRANCH_SETTINGS_RUNTIME,
-      inject: [KyselyStationCredentialVerifier],
+      inject: [STATIONS_RUNTIME_COMPOSITION],
       useFactory: (
-        verifier: KyselyStationCredentialVerifier,
-      ): BranchSettingsRuntime => verifier,
+        composition: StationsRuntimeComposition,
+      ): BranchSettingsRuntime => composition.verifier,
     },
     {
       provide: TRUSTED_STATION_CONTEXT_RESOLVER,
-      inject: [KyselyStationCredentialVerifier],
-      useFactory: (verifier: KyselyStationCredentialVerifier): TrustedStationContextResolver =>
+      inject: [STATIONS_RUNTIME_COMPOSITION],
+      useFactory: (composition: StationsRuntimeComposition): TrustedStationContextResolver =>
         new TrustedStationRequestContextResolver(
-          new ResolveTrustedStationContextUseCase(verifier),
+          new ResolveTrustedStationContextUseCase(composition.verifier),
         ),
     },
     {
       provide: TRUSTED_STATION_ADMISSION_VALIDATOR,
-      inject: [KyselyStationCredentialVerifier],
+      inject: [STATIONS_RUNTIME_COMPOSITION],
       useFactory: (
-        verifier: KyselyStationCredentialVerifier,
-      ): TrustedStationAdmissionValidator => verifier,
+        composition: StationsRuntimeComposition,
+      ): TrustedStationAdmissionValidator => composition.verifier,
     },
   ],
   exports: [

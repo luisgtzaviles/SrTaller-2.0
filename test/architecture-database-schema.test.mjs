@@ -47,6 +47,9 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     catalog_field_policy_heads: { owner: 'catalog', kind: 'table' },
     catalog_field_policy_versions: { owner: 'catalog', kind: 'table' },
     branches: { owner: 'stations', kind: 'table' },
+    branch_commands: { owner: 'stations', kind: 'table' },
+    branch_audit_events: { owner: 'stations', kind: 'table' },
+    tenant_lifecycle_events: { owner: 'tenancy', kind: 'table' },
     stations: { owner: 'stations', kind: 'table' },
     station_bindings: { owner: 'stations', kind: 'table' },
     station_credentials: { owner: 'stations', kind: 'table' },
@@ -249,6 +252,9 @@ test('productive migration root remains exact and governed', async () => {
       '20260921122000_tenancy_create_bootstrap_guards.ts',
       '20260921150000_registration_create_public_verification.ts',
       '20260921151000_registration_enable_retention_cleanup.ts',
+      '20260921160000_stations_materialize_branch_management.ts',
+      '20260921161000_tenancy_create_lifecycle_events.ts',
+      '20260921162000_stations_extend_branch_command_snapshots.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');
@@ -273,7 +279,7 @@ test('database schema types are immutable and require externally supplied identi
   assert.match(schema, /readonly tenant_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly branch_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly time_zone: MutableColumn<string>/u);
-  assert.match(schema, /readonly active: DefaultedImmutableColumn<boolean>/u);
+  assert.match(schema, /readonly active: DefaultedMutableColumn<boolean>/u);
   assert.match(schema, /readonly revoked_at: ImmutableColumn<Date \| null>/u);
   assert.match(schema, /readonly created_at: ImmutableColumn<Date>/u);
   assert.doesNotMatch(schema, /Generated/u);

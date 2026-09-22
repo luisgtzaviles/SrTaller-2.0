@@ -198,5 +198,8 @@ export interface BranchRepositoryPort {
   countActiveBranches(scope: TenantPersistenceScope): Promise<number>;
   findCommand(scope: TenantPersistenceScope, kind: BranchCommandKind, clientRequestId: string): Promise<BranchCommandReceipt | null>;
   saveCommand(scope: TenantPersistenceScope, kind: BranchCommandKind, clientRequestId: string, requestDigest: Uint8Array, branch: BranchRecord, completedAt: string): Promise<void>;
-  appendAudit(record: BranchAuditRecord): Promise<void>;
+  appendAudit(
+    scope: TenantPersistenceScope,
+    record: BranchAuditRecord,
+  ): Promise<void>;
 }

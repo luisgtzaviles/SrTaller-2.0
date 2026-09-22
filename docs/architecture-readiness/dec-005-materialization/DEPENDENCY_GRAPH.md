@@ -27,7 +27,8 @@ La flecha va del consumidor al productor.
 | --- | --- | --- | --- | --- |
 | `stations` | `tenancy` | `src/modules/stations/index.ts` | `TenancyModuleContract` desde `tenancy/index.ts` | Ninguno; `import type` |
 | `access` | `stations` | `src/modules/access/index.ts` | `StationsModuleContract` desde `stations/index.ts` | Ninguno; `import type` |
-| `access` | `stations` | `src/modules/access/access.module.ts` | `StationsModule` más `BRANCH_SETTINGS_RUNTIME`/`BranchSettingsRuntime`, `TRUSTED_STATION_CONTEXT_RESOLVER`/`TrustedStationContextResolver` y `TRUSTED_STATION_ADMISSION_VALIDATOR`/`TrustedStationAdmissionValidator` registrados | Sí; composición dirigida Option A y contexto transaccional opaco |
+| `access` | `stations` | `src/modules/access/access.module.ts` | `StationsModule` más `BRANCH_ADMINISTRATION_RUNTIME`/`BranchAdministrationRuntime`, `BRANCH_SETTINGS_RUNTIME`/`BranchSettingsRuntime`, `TRUSTED_STATION_CONTEXT_RESOLVER`/`TrustedStationContextResolver` y `TRUSTED_STATION_ADMISSION_VALIDATOR`/`TrustedStationAdmissionValidator` registrados | Sí; composición dirigida Option A y contexto transaccional opaco |
+| `stations` | `tenancy` | `src/modules/stations/stations.module.ts` | `TenancyModule` más `TENANT_LIFECYCLE_COMMIT_RUNTIME`/`TenantLifecycleCommitRuntime` registrados | Sí; activación Tenant dentro de la transacción Branch mediante contexto opaco |
 | `access` | `tenancy` | `src/modules/access/index.ts` | `TenancyModuleContract` desde `tenancy/index.ts` | Ninguno; `import type` |
 | `access` | `tenancy` | `src/modules/access/access.module.ts` | `TENANT_BOOTSTRAP_PERSISTENCE`/`TenantBootstrapPersistence` desde `tenancy/index.ts` | Sí; bootstrap atómico mediante contrato público |
 | `access` | `users` | `src/modules/access/index.ts` | `UsersModuleContract` desde `users/index.ts` | Ninguno; `import type` |
@@ -63,9 +64,10 @@ access->stations, access->tenancy, access->users, catalog->access, catalog->tena
 - `registration/registration.module.ts`.
 
 `AppModule` conserva la composición exterior exacta de esos módulos. Además,
-la policy v9 registra nueve imports de composición interna dirigidos:
+la policy v10 registra diez imports de composición interna dirigidos:
 
 - `AccessModule` importa `StationsModule` porque existe `access->stations`;
+- `StationsModule` importa `TenancyModule` porque existe `stations->tenancy`;
 - `AccessModule` importa `UsersModule` porque existe `access->users`;
 - `AccessModule` importa `TenancyModule` porque existe `access->tenancy` y
   consume la persistencia pública de bootstrap.

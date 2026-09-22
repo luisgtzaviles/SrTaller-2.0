@@ -57,6 +57,7 @@ function campaignFixture({ failAt = null, finalFingerprint = fingerprint() } = {
     tl02Postgresql: operation('tl02-postgresql'),
     tl03Postgresql: operation('tl03-postgresql'),
     tl04Postgresql: operation('tl04-postgresql'),
+    tl05Postgresql: operation('tl05-postgresql'),
     previewRuntime: operation('preview-runtime'),
     smokeProvision: operation('smoke-provision', smoke),
     cleanup: async (activeSmoke) => {
@@ -97,6 +98,7 @@ test('verify:full stage contract preserves the authoritative order', () => {
       'tl02-postgresql',
       'tl03-postgresql',
       'tl04-postgresql',
+      'tl05-postgresql',
       'preview-runtime',
       'smoke-provision',
       'smoke-start',
@@ -204,9 +206,9 @@ test('candidate mutation turns an otherwise green campaign into failure evidence
   assert.equal(fixture.readEvidence().candidateFingerprintAfter.candidateSha256, 'candidate-b');
 });
 
-test('PostgreSQL skip inventory maps all 38 exact material test identities to one authoritative stage', async () => {
+test('PostgreSQL skip inventory maps all 41 exact material test identities to one authoritative stage', async () => {
   const inventory = await inspectPostgresqlSkipInventory();
-  assert.equal(inventory.total, 38);
+  assert.equal(inventory.total, 41);
   assert.equal(inventory.material.postgresqlComposite, 17);
   assert.equal(inventory.material.pbi039Postgresql, 2);
   assert.equal(inventory.material.pbi040Postgresql, 1);
@@ -214,10 +216,11 @@ test('PostgreSQL skip inventory maps all 38 exact material test identities to on
   assert.equal(inventory.material.tl02Postgresql, 2);
   assert.equal(inventory.material.tl03Postgresql, 3);
   assert.equal(inventory.material.tl04Postgresql, 3);
+  assert.equal(inventory.material.tl05Postgresql, 3);
   assert.equal(inventory.files.length, expectedPostgresqlSkipInventory.length);
-  assert.deepEqual(assertBaseSkipSummary('ℹ skipped 38\n', inventory).skipped, 38);
-  assert.throws(() => assertBaseSkipSummary('ℹ skipped 37\n', inventory), /expected 38/u);
-  assert.throws(() => assertBaseSkipSummary('ℹ skipped 38\nℹ skipped 38\n', inventory), /one authoritative/u);
+  assert.deepEqual(assertBaseSkipSummary('ℹ skipped 41\n', inventory).skipped, 41);
+  assert.throws(() => assertBaseSkipSummary('ℹ skipped 40\n', inventory), /expected 41/u);
+  assert.throws(() => assertBaseSkipSummary('ℹ skipped 41\nℹ skipped 41\n', inventory), /one authoritative/u);
 });
 
 test('PostgreSQL skip inventory fails closed on removal, unknown tests and duplicate registrations', async () => {

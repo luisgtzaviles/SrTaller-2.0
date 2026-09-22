@@ -9,6 +9,9 @@ const modules = enabled ? await Promise.all([
   import('../dist/infrastructure/database/database-connection.js'),
   import('../dist/modules/stations/application/branch-administration.service.js'),
   import('../dist/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.js'),
+  import('../dist/modules/stations/infrastructure/persistence/kysely-branch.repository.js'),
+  import('../dist/modules/stations/infrastructure/persistence/kysely-branch-administration.transaction.js'),
+  import('../dist/modules/tenancy/infrastructure/persistence/kysely-tenant.repository.js'),
 ]) : [];
 
 function config(label) { return Object.freeze({ identity: Object.freeze({ host: process.env.SR_TL05_PG_HOST, port: Number(process.env.SR_TL05_PG_PORT), database: process.env.SR_TL05_PG_NAME, user: process.env.SR_TL05_PG_USER, password: process.env.SR_TL05_PG_PASSWORD }), transport: Object.freeze({ sslMode: 'disable' }), pool: Object.freeze({ min: 0, max: 12, idleTimeoutMs: 1_000, connectionTimeoutMs: 2_000, statementTimeoutMs: 30_000, queryTimeoutMs: 30_000 }), runtime: Object.freeze({ environment: 'development', role: 'application', accessMode: 'read-write', migrationsEnabled: false, testRunId: null }), observability: Object.freeze({ applicationName: `srtaller-tl05-${label}`, labels: Object.freeze({ component: 'branches', environment: 'development', role: 'application' }) }) }); }
@@ -29,25 +32,37 @@ async function seedTenant(pool, { withAdmin = true, lifecycle = 'ONBOARDING' } =
 
 function context(guard, tenantId, userId, capability) { return Object.freeze({ tenantId, userId, userDisplayName: 'Admin TL05', sessionId: randomUUID(), capability, commitGuard: Object.freeze({ confirmCurrent: (tx) => guard.confirmCurrent({ tenantId, userId }, capability, tx), confirmEffectiveTenantAdmin: (tx) => guard.confirmEffectiveTenantAdmin(tenantId, tx) }) }); }
 function createInput(displayName, timeZone = 'America/Hermosillo', id = randomUUID()) { return { clientRequestId: id, displayName, timeZone }; }
+function service(connection) {
+  const [, { BranchAdministrationService }, , { createKyselyBranchRepository }, { KyselyBranchAdministrationTransaction }, { createTransactionalKyselyTenantRepository }] = modules;
+  const tenants = Object.freeze({
+    lock: (scope, transactionContext) => createTransactionalKyselyTenantRepository(transactionContext).lockTenant(scope),
+    activate: (scope, input, transactionContext) => createTransactionalKyselyTenantRepository(transactionContext).activateTenant(scope, input),
+  });
+  return new BranchAdministrationService(
+    createKyselyBranchRepository(connection),
+    new KyselyBranchAdministrationTransaction(connection),
+    tenants,
+  );
+}
 
 test('TL-05 creates duplicate-named Branches, activates Tenant and preserves idempotent snapshots', { skip: !enabled, timeout: 60_000 }, async () => {
   const [{ createDatabaseConnection }, { BranchAdministrationService }, { KyselyAdministrationAuthorizationCommitGuard }] = modules;
   const connection = createDatabaseConnection(config('create')); const pool = new Pool({ host: process.env.SR_TL05_PG_HOST, port: Number(process.env.SR_TL05_PG_PORT), database: process.env.SR_TL05_PG_NAME, user: process.env.SR_TL05_PG_USER, password: process.env.SR_TL05_PG_PASSWORD });
   try {
-    const seeded = await seedTenant(pool); await connection.verify(); const guard = new KyselyAdministrationAuthorizationCommitGuard(); const service = new BranchAdministrationService(connection); const actor = context(guard, seeded.tenantId, seeded.userId, 'branches.manage');
-    const request = createInput('Sucursal Centro'); const first = await service.create(actor, request); assert.equal(first.status, 'ACTIVE'); assert.equal(first.version, 0);
-    const replay = await service.create(actor, request); assert.deepEqual(replay, first);
-    const second = await service.create(actor, createInput('Sucursal Centro', 'America/Cancun')); assert.notEqual(second.branchId, first.branchId); assert.equal(second.displayName, first.displayName);
+    const seeded = await seedTenant(pool); await connection.verify(); const guard = new KyselyAdministrationAuthorizationCommitGuard(); const branchService = service(connection); const actor = context(guard, seeded.tenantId, seeded.userId, 'branches.manage');
+    const request = createInput('Sucursal Centro'); const first = await branchService.create(actor, request); assert.equal(first.status, 'ACTIVE'); assert.equal(first.version, 0);
+    const replay = await branchService.create(actor, request); assert.deepEqual(replay, first);
+    const second = await branchService.create(actor, createInput('Sucursal Centro', 'America/Cancun')); assert.notEqual(second.branchId, first.branchId); assert.equal(second.displayName, first.displayName);
     assert.equal((await pool.query('select lifecycle_status from tenants where tenant_id=$1', [seeded.tenantId])).rows[0].lifecycle_status, 'ACTIVE');
     assert.equal(Number((await pool.query('select count(*) from tenant_lifecycle_events where tenant_id=$1', [seeded.tenantId])).rows[0].count), 1);
-    const updated = await service.update(actor, first.branchId, { clientRequestId: randomUUID(), expectedVersion: 0, displayName: 'Sucursal Centro Norte', timeZone: 'America/Tijuana' }); assert.equal(updated.version, 1); assert.equal(updated.timeZone, 'America/Tijuana');
-    await assert.rejects(service.update(actor, first.branchId, { clientRequestId: randomUUID(), expectedVersion: 0, displayName: 'Viejo', timeZone: 'America/Hermosillo' }), (error) => error?.code === 'BRANCH_VERSION_CONFLICT');
-    await assert.rejects(service.create(actor, createInput('Zona inválida', '-07:00')), (error) => error?.code === 'BRANCH_INVALID_INPUT');
+    const updated = await branchService.update(actor, first.branchId, { clientRequestId: randomUUID(), expectedVersion: 0, displayName: 'Sucursal Centro Norte', timeZone: 'America/Tijuana' }); assert.equal(updated.version, 1); assert.equal(updated.timeZone, 'America/Tijuana');
+    await assert.rejects(branchService.update(actor, first.branchId, { clientRequestId: randomUUID(), expectedVersion: 0, displayName: 'Viejo', timeZone: 'America/Hermosillo' }), (error) => error?.code === 'BRANCH_VERSION_CONFLICT');
+    await assert.rejects(branchService.create(actor, createInput('Zona inválida', '-07:00')), (error) => error?.code === 'BRANCH_INVALID_INPUT');
     const lifecycle = context(guard, seeded.tenantId, seeded.userId, 'branches.deactivate');
-    const deactivated = await service.deactivate(lifecycle, second.branchId, { clientRequestId: randomUUID(), expectedVersion: second.version });
+    const deactivated = await branchService.deactivate(lifecycle, second.branchId, { clientRequestId: randomUUID(), expectedVersion: second.version });
     assert.equal(deactivated.status, 'INACTIVE');
     assert.equal((await pool.query('select lifecycle_status from tenants where tenant_id=$1', [seeded.tenantId])).rows[0].lifecycle_status, 'ACTIVE');
-    const reactivated = await service.reactivate(lifecycle, second.branchId, { clientRequestId: randomUUID(), expectedVersion: deactivated.version });
+    const reactivated = await branchService.reactivate(lifecycle, second.branchId, { clientRequestId: randomUUID(), expectedVersion: deactivated.version });
     assert.equal(reactivated.status, 'ACTIVE');
     assert.equal(Number((await pool.query('select count(*) from branch_audit_events where tenant_id=$1', [seeded.tenantId])).rows[0].count), 5);
   } finally { await connection.close(); await pool.end(); }
@@ -56,25 +71,25 @@ test('TL-05 creates duplicate-named Branches, activates Tenant and preserves ide
 test('TL-05 does not activate without effective Tenant Admin and isolates Tenant scope', { skip: !enabled }, async () => {
   const [{ createDatabaseConnection }, { BranchAdministrationService }] = modules; const connection = createDatabaseConnection(config('isolation')); const pool = new Pool({ host: process.env.SR_TL05_PG_HOST, port: Number(process.env.SR_TL05_PG_PORT), database: process.env.SR_TL05_PG_NAME, user: process.env.SR_TL05_PG_USER, password: process.env.SR_TL05_PG_PASSWORD });
   try {
-    const alpha = await seedTenant(pool, { withAdmin: false }); const beta = await seedTenant(pool, { withAdmin: false }); await connection.verify(); const service = new BranchAdministrationService(connection); const allow = (tenantId) => ({ tenantId, userId: randomUUID(), userDisplayName: 'Synthetic', sessionId: randomUUID(), capability: 'branches.manage', commitGuard: { confirmCurrent: async () => true, confirmEffectiveTenantAdmin: async () => false } });
+    const alpha = await seedTenant(pool, { withAdmin: false }); const beta = await seedTenant(pool, { withAdmin: false }); await connection.verify(); const branchService = service(connection); const allow = (tenantId) => ({ tenantId, userId: randomUUID(), userDisplayName: 'Synthetic', sessionId: randomUUID(), capability: 'branches.manage', commitGuard: { confirmCurrent: async () => true, confirmEffectiveTenantAdmin: async () => false } });
     const alphaContext = allow(alpha.tenantId); const betaContext = allow(beta.tenantId);
-    const created = await service.create(alphaContext, createInput('Misma sucursal'));
+    const created = await branchService.create(alphaContext, createInput('Misma sucursal'));
     assert.equal((await pool.query('select lifecycle_status from tenants where tenant_id=$1', [alpha.tenantId])).rows[0].lifecycle_status, 'ONBOARDING');
-    const inactive = await service.deactivate(alphaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: created.version });
+    const inactive = await branchService.deactivate(alphaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: created.version });
     assert.equal(inactive.status, 'INACTIVE');
     assert.equal((await pool.query('select lifecycle_status from tenants where tenant_id=$1', [alpha.tenantId])).rows[0].lifecycle_status, 'ONBOARDING');
-    await assert.rejects(service.read(betaContext, created.branchId), (error) => error?.code === 'BRANCH_NOT_FOUND');
-    await assert.rejects(service.update(betaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version, displayName: 'Intrusión', timeZone: 'America/Cancun' }), (error) => error?.code === 'BRANCH_NOT_FOUND');
-    await assert.rejects(service.deactivate(betaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version }), (error) => error?.code === 'BRANCH_NOT_FOUND');
-    await assert.rejects(service.reactivate(betaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version }), (error) => error?.code === 'BRANCH_NOT_FOUND');
-    assert.equal((await service.list(betaContext)).length, 0);
+    await assert.rejects(branchService.read(betaContext, created.branchId), (error) => error?.code === 'BRANCH_NOT_FOUND');
+    await assert.rejects(branchService.update(betaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version, displayName: 'Intrusión', timeZone: 'America/Cancun' }), (error) => error?.code === 'BRANCH_NOT_FOUND');
+    await assert.rejects(branchService.deactivate(betaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version }), (error) => error?.code === 'BRANCH_NOT_FOUND');
+    await assert.rejects(branchService.reactivate(betaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version }), (error) => error?.code === 'BRANCH_NOT_FOUND');
+    assert.equal((await branchService.list(betaContext)).length, 0);
   } finally { await connection.close(); await pool.end(); }
 });
 
 test('TL-05 serializes simultaneous deactivation and preserves one active Branch', { skip: !enabled, timeout: 60_000 }, async () => {
   const [{ createDatabaseConnection }, { BranchAdministrationService }, { KyselyAdministrationAuthorizationCommitGuard }] = modules; const connections = [createDatabaseConnection(config('race-a')), createDatabaseConnection(config('race-b'))]; const pool = new Pool({ host: process.env.SR_TL05_PG_HOST, port: Number(process.env.SR_TL05_PG_PORT), database: process.env.SR_TL05_PG_NAME, user: process.env.SR_TL05_PG_USER, password: process.env.SR_TL05_PG_PASSWORD });
   try {
-    const seeded = await seedTenant(pool); await Promise.all(connections.map((entry) => entry.verify())); const guard = new KyselyAdministrationAuthorizationCommitGuard(); const manage = context(guard, seeded.tenantId, seeded.userId, 'branches.manage'); const serviceA = new BranchAdministrationService(connections[0]); const serviceB = new BranchAdministrationService(connections[1]); const a = await serviceA.create(manage, createInput('A')); const b = await serviceA.create(manage, createInput('B'));
+    const seeded = await seedTenant(pool); await Promise.all(connections.map((entry) => entry.verify())); const guard = new KyselyAdministrationAuthorizationCommitGuard(); const manage = context(guard, seeded.tenantId, seeded.userId, 'branches.manage'); const serviceA = service(connections[0]); const serviceB = service(connections[1]); const a = await serviceA.create(manage, createInput('A')); const b = await serviceA.create(manage, createInput('B'));
     const lifecycleA = context(guard, seeded.tenantId, seeded.userId, 'branches.deactivate'); const lifecycleB = context(guard, seeded.tenantId, seeded.userId, 'branches.deactivate');
     const settled = await Promise.allSettled([serviceA.deactivate(lifecycleA, a.branchId, { clientRequestId: randomUUID(), expectedVersion: a.version }), serviceB.deactivate(lifecycleB, b.branchId, { clientRequestId: randomUUID(), expectedVersion: b.version })]);
     assert.equal(settled.filter(({ status }) => status === 'fulfilled').length, 1); assert.equal(settled.filter((result) => result.status === 'rejected' && result.reason?.code === 'LAST_ACTIVE_BRANCH_REQUIRED').length, 1);

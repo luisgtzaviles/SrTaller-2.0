@@ -12,6 +12,7 @@ export const authoritativeWorkflowStageNames = Object.freeze([
   'tl02-postgresql',
   'tl03-postgresql',
   'tl04-postgresql',
+  'tl05-postgresql',
   'postgresql-cleanup',
   'compiled-backend-smoke',
   'compiled-ui-smoke',

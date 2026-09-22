@@ -40,6 +40,6 @@ try {
   const testResult = await execute(process.execPath, ['--test', 'test/tl03-bootstrap-postgresql.test.mjs'], { encoding: 'utf8', env: { ...process.env, SR_TL03_PG_TEST: '1', SR_TL03_PG_HOST: '127.0.0.1', SR_TL03_PG_PORT: port, SR_TL03_PG_NAME: database, SR_TL03_PG_USER: user, SR_TL03_PG_PASSWORD: password }, timeout: 120_000 });
   const summary = assertPostgresqlTestSummary(testResult.stdout);
   assert.equal(summary.pass, 3);
-  output = `${testResult.stdout}TL-03 PostgreSQL PASS: 81 migrations, second run 0 pending\n`;
+  output = `${testResult.stdout}TL-03 PostgreSQL PASS: 84 migrations, second run 0 pending\n`;
 } finally { await cleanup(); }
 process.stdout.write(output);

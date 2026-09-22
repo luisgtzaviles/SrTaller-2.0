@@ -37,6 +37,13 @@ PBI-026 extiende el mismo contrato con una sola arista adicional:
   `CONTEXTUAL_AUTHORIZATION_EXECUTOR` /
   `ContextualAuthorizationExecutor`.
 
+TL-05 amplía esa composición dirigida con
+`AccessModule -> StationsModule` mediante
+`BRANCH_ADMINISTRATION_RUNTIME` / `BranchAdministrationRuntime`, y con
+`StationsModule -> TenancyModule` mediante
+`TENANT_LIFECYCLE_COMMIT_RUNTIME` / `TenantLifecycleCommitRuntime`. El contexto
+transaccional continúa opaco y cada owner conserva sus tablas y adapters.
+
 Los validadores reciben únicamente el contexto técnico opaco de la transacción
 compuesta. Cada owner conserva su executor, bloquea sus propias filas y
 devuelve el snapshot monotónico usado por Operational Session; no se exponen
