@@ -219,8 +219,11 @@ test(
       assert.equal(sensitiveCount.rows[0].count, 0);
 
       await admin.query(
-        `insert into branches (tenant_id, branch_id, active, created_at)
-         values ($1, $2, true, now()), ($1, $3, true, now())`,
+        `insert into branches (
+           tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at
+         ) values
+           ($1, $2, 'Authorization Branch', 'America/Hermosillo', true, now(), now()),
+           ($1, $3, 'Authorization Branch', 'America/Hermosillo', true, now(), now())`,
         [tenantId, matrixBranchId, otherBranchId],
       );
       await admin.query(

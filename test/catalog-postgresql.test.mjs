@@ -137,10 +137,12 @@ if (!pbi041Enabled) test('PostgreSQL enforces PBI-040 tenant identity, branch pr
       [tenantA, tenantB],
     );
     await admin.query(
-      `insert into branches (tenant_id, branch_id, time_zone, active, created_at)
-       values ($1, $2, 'America/Hermosillo', true, now()),
-              ($1, $3, 'America/Hermosillo', true, now()),
-              ($4, $5, 'America/Phoenix', true, now())`,
+      `insert into branches (
+         tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at
+       ) values
+         ($1, $2, 'Catalog Branch', 'America/Hermosillo', true, now(), now()),
+         ($1, $3, 'Catalog Branch', 'America/Hermosillo', true, now(), now()),
+         ($4, $5, 'Catalog Branch', 'America/Phoenix', true, now(), now())`,
       [tenantA, branchA1, branchA2, tenantB, branchB1],
     );
 
@@ -697,7 +699,14 @@ if (!pbi040Enabled) test('UX-005.6 promotes one exact pending Brand group atomic
   const service = new CatalogService(new KyselyCatalogRepository(connection), async () => 'MXN');
   try {
     await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Catalog Promotion Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
-    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    await admin.query(
+      `insert into branches (
+         tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at
+       ) values (
+         $1, $2, 'Catalog Promotion Branch', 'America/Hermosillo', true, now(), now()
+       )`,
+      [tenantId, branchId],
+    );
     const productCategory = await category(service, ctx, 'Fundas UX-005.6', 'PRODUCT');
     const samsungOne = await item(service, ctx, { kind: 'PRODUCT', title: 'Funda Samsung A', categoryId: productCategory.categoryId, brandCapturedValue: 'SAMSUNG', basePriceAmountMinor: 120_00 });
     const samsungTwo = await item(service, ctx, { kind: 'PRODUCT', title: 'Funda Samsung B', categoryId: productCategory.categoryId, brandCapturedValue: ' samsung ', basePriceAmountMinor: 130_00 });

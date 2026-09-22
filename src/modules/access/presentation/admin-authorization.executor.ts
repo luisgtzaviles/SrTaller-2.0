@@ -104,6 +104,11 @@ export class AdminAuthorizationExecutorService implements AdminAuthorizationExec
               required.capability,
               transactionContext,
             ),
+          confirmEffectiveTenantAdmin: async (transactionContext: object) =>
+            this.capabilityGuard.confirmEffectiveTenantAdmin(
+              session.tenantId as TenantId,
+              transactionContext,
+            ),
         }),
       });
       return await operation(context);

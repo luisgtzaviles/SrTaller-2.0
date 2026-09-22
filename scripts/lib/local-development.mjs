@@ -372,9 +372,14 @@ export function localSeedRows() {
       LOCAL_BRANCH_IDS.map((branchId, index) => Object.freeze({
         tenantId: LOCAL_TENANT_ID,
         branchId,
+        displayName: index === 0
+          ? 'SR Taller Fixture — Hermosillo'
+          : 'SR Taller Fixture — Tijuana',
         timeZone: LOCAL_BRANCH_TIME_ZONES[index],
         active: true,
+        version: 0,
         createdAt: LOCAL_SEED_TIMESTAMP,
+        updatedAt: LOCAL_SEED_TIMESTAMP,
       })),
     ),
   });

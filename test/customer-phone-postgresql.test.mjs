@@ -70,7 +70,14 @@ test('Customer phone search hydrates matched Customer-owned phones and stays iso
   try {
     await removeFixture(admin);
     await admin.query("insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Customer Tenant A', 'ACTIVE', 'MXN', 0, now(), now()), ($2, 'Customer Tenant B', 'ACTIVE', 'MXN', 0, now(), now())", [tenantA, tenantB]);
-    await admin.query('insert into branches (tenant_id, branch_id, created_at) values ($1, $2, now()), ($3, $4, now())', [tenantA, branchA, tenantB, branchB]);
+    await admin.query(
+      `insert into branches (
+         tenant_id, branch_id, display_name, time_zone, created_at, updated_at
+       ) values
+         ($1, $2, 'Customer Branch', 'America/Hermosillo', now(), now()),
+         ($3, $4, 'Customer Branch', 'America/Hermosillo', now(), now())`,
+      [tenantA, branchA, tenantB, branchB],
+    );
     await admin.query(`insert into customers (customer_id, tenant_id, branch_id, given_name, family_name, created_at)
       values ($1, $2, $3, 'Owner Search Alpha', 'Branch One', now()), ($4, $5, $6, 'Owner Search Beta', 'Branch Two', now())`,
     [customerA, tenantA, branchA, customerB, tenantB, branchB]);
@@ -80,7 +87,14 @@ test('Customer phone search hydrates matched Customer-owned phones and stays iso
         ('aa400000-0000-4000-8000-000000000002', $1, $2, $3, $5, '2026-09-09T00:01:00.000Z'),
         ('bb400000-0000-4000-8000-000000000002', $6, $7, $8, $5, '2026-09-09T00:00:00.000Z')`,
     [tenantA, branchA, customerA, phoneA, sharedPhone, tenantB, branchB, customerB]);
-    await admin.query('insert into branches (tenant_id, branch_id, created_at) values ($1, $2, now())', [tenantA, branchA2]);
+    await admin.query(
+      `insert into branches (
+         tenant_id, branch_id, display_name, time_zone, created_at, updated_at
+       ) values (
+         $1, $2, 'Customer Branch 2', 'America/Hermosillo', now(), now()
+       )`,
+      [tenantA, branchA2],
+    );
     await admin.query("insert into customers (customer_id, tenant_id, branch_id, given_name, family_name, created_at) values ($1, $2, $3, 'Owner Search Neighbor', 'Branch Two', now())", [customerA2, tenantA, branchA2]);
     await admin.query("insert into customer_contact_phones (customer_contact_phone_id, tenant_id, branch_id, customer_id, phone_normalized, created_at) values ('aa400000-0000-4000-8000-000000000003', $1, $2, $3, $4, now())", [tenantA, branchA2, customerA2, sharedPhone]);
 

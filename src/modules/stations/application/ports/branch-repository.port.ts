@@ -2,6 +2,7 @@ import { inspect } from 'node:util';
 
 import type { TenantId } from '../../../tenancy/index.js';
 import type { BranchTimeZone } from '../branch-time-zone.js';
+import type { BranchDisplayName, BranchStatus } from '../../domain/branch.js';
 
 declare const branchIdBrand: unique symbol;
 
@@ -36,15 +37,49 @@ export interface TenantBranchPersistenceScope {
 export interface BranchRecord {
   readonly tenantId: TenantId;
   readonly branchId: BranchId;
+  readonly displayName: BranchDisplayName;
   readonly timeZone: BranchTimeZone;
+  readonly status: BranchStatus;
+  readonly version: number;
+  readonly admissionRevision: number;
   readonly createdAt: string;
+  readonly updatedAt: string;
 }
 
 export interface CreateBranchRecord {
   readonly tenantId: TenantId;
   readonly branchId: BranchId;
+  readonly displayName: BranchDisplayName;
   readonly timeZone: BranchTimeZone;
   readonly createdAt: string;
+}
+
+export interface UpdateBranchRecord {
+  readonly displayName: BranchDisplayName;
+  readonly timeZone: BranchTimeZone;
+  readonly expectedVersion: number;
+  readonly updatedAt: string;
+}
+
+export type BranchCommandKind = 'CREATE' | 'UPDATE' | 'DEACTIVATE' | 'REACTIVATE';
+export interface BranchCommandReceipt {
+  readonly branch: BranchRecord;
+  readonly requestDigest: Uint8Array;
+}
+
+export interface BranchAuditRecord {
+  readonly eventId: string;
+  readonly tenantId: TenantId;
+  readonly branchId: BranchId;
+  readonly actorUserId: string;
+  readonly actorDisplayName: string;
+  readonly adminSessionId: string;
+  readonly eventType: 'BRANCH_CREATED' | 'BRANCH_UPDATED' | 'BRANCH_DEACTIVATED' | 'BRANCH_REACTIVATED';
+  readonly capability: string;
+  readonly correlationId: string;
+  readonly clientRequestId: string;
+  readonly branchVersion: number;
+  readonly occurredAt: string;
 }
 
 export type BranchPersistenceErrorCode =
@@ -52,6 +87,7 @@ export type BranchPersistenceErrorCode =
   | 'PERSISTENCE_BRANCH_SCOPE_REQUIRED'
   | 'BRANCH_PERSISTENCE_TIME_ZONE_INVALID'
   | 'BRANCH_PERSISTENCE_CONFLICT'
+  | 'BRANCH_PERSISTENCE_VERSION_CONFLICT'
   | 'BRANCH_PERSISTENCE_TENANT_NOT_FOUND'
   | 'BRANCH_PERSISTENCE_NOT_FOUND'
   | 'BRANCH_PERSISTENCE_FAILED';
@@ -88,6 +124,10 @@ const errorContracts: Readonly<
   BRANCH_PERSISTENCE_CONFLICT: Object.freeze({
     category: 'Conflict',
     message: 'The branch persistence operation conflicts with existing state.',
+  }),
+  BRANCH_PERSISTENCE_VERSION_CONFLICT: Object.freeze({
+    category: 'Conflict',
+    message: 'The branch version is no longer current.',
   }),
   BRANCH_PERSISTENCE_TENANT_NOT_FOUND: Object.freeze({
     category: 'NotFound',
@@ -153,4 +193,13 @@ export interface BranchRepositoryPort {
     scope: TenantBranchPersistenceScope,
     timeZone: BranchTimeZone,
   ): Promise<BranchRecord>;
+  updateBranch(scope: TenantBranchPersistenceScope, record: UpdateBranchRecord): Promise<BranchRecord>;
+  setBranchActive(scope: TenantBranchPersistenceScope, active: boolean, expectedVersion: number, updatedAt: string): Promise<BranchRecord>;
+  countActiveBranches(scope: TenantPersistenceScope): Promise<number>;
+  findCommand(scope: TenantPersistenceScope, kind: BranchCommandKind, clientRequestId: string): Promise<BranchCommandReceipt | null>;
+  saveCommand(scope: TenantPersistenceScope, kind: BranchCommandKind, clientRequestId: string, requestDigest: Uint8Array, branch: BranchRecord, completedAt: string): Promise<void>;
+  appendAudit(
+    scope: TenantPersistenceScope,
+    record: BranchAuditRecord,
+  ): Promise<void>;
 }

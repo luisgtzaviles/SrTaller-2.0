@@ -17,11 +17,13 @@ import type { TenantBootstrapPersistence } from '../tenancy/index.js';
 import { TENANT_BOOTSTRAP_USER_WRITER } from '../users/index.js';
 import type { TenantBootstrapUserWriter } from '../users/index.js';
 import {
+  BRANCH_ADMINISTRATION_RUNTIME,
   BRANCH_SETTINGS_RUNTIME,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
   TRUSTED_STATION_CONTEXT_RESOLVER,
 } from '../stations/index.js';
 import type {
+  BranchAdministrationRuntime,
   BranchSettingsRuntime,
   TrustedStationAdmissionValidator,
   TrustedStationContextResolver,
@@ -98,6 +100,10 @@ import {
   AccessAdministrationController,
 } from './presentation/access-administration.controller.js';
 import { AdminSessionController } from './presentation/admin-session.controller.js';
+import {
+  ACCESS_BRANCH_ADMINISTRATION_RUNTIME,
+  AdminBranchesController,
+} from './presentation/admin-branches.controller.js';
 import { BranchSettingsAdministrationController } from './presentation/branch-settings-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
 import { TenantWideAuthorizationExecutorService } from './presentation/tenant-wide-authorization.executor.js';
@@ -132,11 +138,19 @@ type RegisteredAccessUseCases =
   controllers: [
     AccessSessionController,
     AdminSessionController,
+    AdminBranchesController,
     AccessAdministrationController,
     BranchSettingsAdministrationController,
     UserPreferencesController,
   ],
   providers: [
+    {
+      provide: ACCESS_BRANCH_ADMINISTRATION_RUNTIME,
+      inject: [BRANCH_ADMINISTRATION_RUNTIME],
+      useFactory: (
+        branches: BranchAdministrationRuntime,
+      ): BranchAdministrationRuntime => branches,
+    },
     {
       provide: ACCESS_SESSION_RUNTIME,
       inject: [
@@ -200,10 +214,6 @@ type RegisteredAccessUseCases =
           readTimeZone: (
             scope: Parameters<BranchSettingsRuntime['readTimeZone']>[0],
           ) => branchSettings.readTimeZone(scope),
-          updateTimeZone: (
-            scope: Parameters<BranchSettingsRuntime['updateTimeZone']>[0],
-            timeZone: Parameters<BranchSettingsRuntime['updateTimeZone']>[1],
-          ) => branchSettings.updateTimeZone(scope, timeZone),
           authenticatePin,
           authenticatePinOnly: pinOnly,
           createSession: new CreateOperationalSessionUseCase(

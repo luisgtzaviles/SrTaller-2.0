@@ -34,12 +34,12 @@ try {
   await waitForPostgresqlEndpoint({ host: '127.0.0.1', port: Number(port), database, user, password });
   const env = { ...process.env, SR_DB_ENVIRONMENT: 'development', SR_DB_HOST: '127.0.0.1', SR_DB_PORT: port, SR_DB_NAME: database, SR_DB_USER: user, SR_DB_PASSWORD: password, SR_DB_SSL_MODE: 'disable', SR_DB_POOL_MIN: '0', SR_DB_POOL_MAX: '8', SR_DB_IDLE_TIMEOUT_MS: '1000', SR_DB_CONNECTION_TIMEOUT_MS: '2000', SR_DB_STATEMENT_TIMEOUT_MS: '30000', SR_DB_QUERY_TIMEOUT_MS: '30000', SR_DB_APPLICATION_NAME: 'srtaller-tl03-migrator', SR_DB_ROLE: 'migration', SR_DB_ACCESS_MODE: 'read-write', SR_DB_MIGRATIONS_ENABLED: 'true' };
   const first = JSON.parse((await execute(process.execPath, ['--enable-source-maps', 'dist/db-migrate.js'], { encoding: 'utf8', env, timeout: 90_000 })).stdout.trim());
-  assert.equal(first.applied, 81); assert.equal(first.pending, 0);
+  assert.equal(first.applied, 84); assert.equal(first.pending, 0);
   const second = JSON.parse((await execute(process.execPath, ['--enable-source-maps', 'dist/db-migrate.js'], { encoding: 'utf8', env, timeout: 90_000 })).stdout.trim());
   assert.equal(second.applied, 0); assert.equal(second.pending, 0);
   const testResult = await execute(process.execPath, ['--test', 'test/tl03-bootstrap-postgresql.test.mjs'], { encoding: 'utf8', env: { ...process.env, SR_TL03_PG_TEST: '1', SR_TL03_PG_HOST: '127.0.0.1', SR_TL03_PG_PORT: port, SR_TL03_PG_NAME: database, SR_TL03_PG_USER: user, SR_TL03_PG_PASSWORD: password }, timeout: 120_000 });
   const summary = assertPostgresqlTestSummary(testResult.stdout);
   assert.equal(summary.pass, 3);
-  output = `${testResult.stdout}TL-03 PostgreSQL PASS: 81 migrations, second run 0 pending\n`;
+  output = `${testResult.stdout}TL-03 PostgreSQL PASS: 84 migrations, second run 0 pending\n`;
 } finally { await cleanup(); }
 process.stdout.write(output);

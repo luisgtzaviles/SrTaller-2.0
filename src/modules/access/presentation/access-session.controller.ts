@@ -80,7 +80,6 @@ export const ACCESS_SESSION_RUNTIME = Symbol('srtaller.access.session-runtime');
 export interface AccessSessionRuntime {
   readonly trustedStations: TrustedStationContextResolver;
   readonly readTimeZone: BranchSettingsRuntime['readTimeZone'];
-  readonly updateTimeZone: BranchSettingsRuntime['updateTimeZone'];
   readonly authenticatePin: AuthenticatePinUseCase;
   readonly authenticatePinOnly: AuthenticatePinOnlyUseCase;
   readonly createSession: CreateOperationalSessionUseCase;

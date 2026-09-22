@@ -46,6 +46,9 @@ export const expectedPostgresqlSkipInventory = Object.freeze([
   materialTest('test/tl04-registration-postgresql.test.mjs', 'TL-04 PostgreSQL executes registration, challenge concurrency, TL-03 bootstrap and TL-02 login end to end', 'tl04-postgresql'),
   materialTest('test/tl04-registration-postgresql.test.mjs', 'TL-04 PostgreSQL purges retained attempt material while preserving independent legal evidence', 'tl04-postgresql'),
   materialTest('test/tl04-registration-postgresql.test.mjs', 'TL-04 PostgreSQL rejects malformed durable lifecycle and preserves append-only legal/audit evidence', 'tl04-postgresql'),
+  materialTest('test/tl05-branch-postgresql.test.mjs', 'TL-05 creates duplicate-named Branches, activates Tenant and preserves idempotent snapshots', 'tl05-postgresql'),
+  materialTest('test/tl05-branch-postgresql.test.mjs', 'TL-05 does not activate without effective Tenant Admin and isolates Tenant scope', 'tl05-postgresql'),
+  materialTest('test/tl05-branch-postgresql.test.mjs', 'TL-05 serializes simultaneous deactivation and preserves one active Branch', 'tl05-postgresql'),
 ]);
 
 function inspectGuardedTests(source, file) {
@@ -122,6 +125,7 @@ export async function inspectPostgresqlSkipInventory(root = process.cwd()) {
       tl02Postgresql: materialCount('tl02-postgresql'),
       tl03Postgresql: materialCount('tl03-postgresql'),
       tl04Postgresql: materialCount('tl04-postgresql'),
+      tl05Postgresql: materialCount('tl05-postgresql'),
     }),
   });
 }

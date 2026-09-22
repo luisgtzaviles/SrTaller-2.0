@@ -11,10 +11,6 @@ export interface BranchSettingsRuntime {
   readTimeZone(
     scope: BranchSettingsScope,
   ): Promise<Readonly<{ timeZone: BranchTimeZone }> | null>;
-  updateTimeZone(
-    scope: BranchSettingsScope,
-    timeZone: unknown,
-  ): Promise<Readonly<{ timeZone: BranchTimeZone }>>;
 }
 
 export const BRANCH_SETTINGS_RUNTIME: unique symbol = Symbol(

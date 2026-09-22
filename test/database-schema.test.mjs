@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 81);
+  assert.equal(first.manifest.migrations.length, 84);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -527,6 +527,24 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260921151000_registration_enable_retention_cleanup',
         order: 80,
         owner: 'registration',
+      },
+      {
+        fileName: '20260921160000_stations_materialize_branch_management.js',
+        migrationName: '20260921160000_stations_materialize_branch_management',
+        order: 81,
+        owner: 'stations',
+      },
+      {
+        fileName: '20260921161000_tenancy_create_lifecycle_events.js',
+        migrationName: '20260921161000_tenancy_create_lifecycle_events',
+        order: 82,
+        owner: 'tenancy',
+      },
+      {
+        fileName: '20260921162000_stations_extend_branch_command_snapshots.js',
+        migrationName: '20260921162000_stations_extend_branch_command_snapshots',
+        order: 83,
+        owner: 'stations',
       },
     ],
   );

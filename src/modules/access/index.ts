@@ -131,6 +131,7 @@ export interface AdminAuthorizationRequirement {
 
 export interface AdminAuthorizationCommitGuard {
   confirmCurrent(transactionContext: object): Promise<boolean>;
+  confirmEffectiveTenantAdmin(transactionContext: object): Promise<boolean>;
 }
 
 export interface AuthorizedAdminContext {

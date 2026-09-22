@@ -110,7 +110,7 @@ const allTables = [
 
 const tenantA = '00000000-0000-4000-8000-000000000001';
 const tenantB = '20000000-0000-4000-8000-000000000034';
-const branchA = '30000000-0000-4000-8000-000000000034';
+const branchA = '00000000-0000-4000-8000-000000000101';
 const branchB = '40000000-0000-4000-8000-000000000034';
 const stationA = '50000000-0000-4000-8000-000000000034';
 const stationASecond = '51000000-0000-4000-8000-000000000034';
@@ -259,7 +259,14 @@ async function seedTenantB(admin) {
      ) values ($1, 'Session Tenant B', 'ACTIVE', 'MXN', 0, now(), now())`,
     [tenantB],
   );
-  await admin.query('insert into branches (tenant_id, branch_id, active, created_at) values ($1,$2,true,now())', [tenantB, branchB]);
+  await admin.query(
+    `insert into branches (
+       tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at
+     ) values (
+       $1, $2, 'Session Branch B', 'America/Hermosillo', true, now(), now()
+     )`,
+    [tenantB, branchB],
+  );
   await admin.query("insert into stations (tenant_id,station_id,status,created_at,updated_at) values ($1,$2,'active',now(),now())", [tenantB, stationB]);
   await admin.query('insert into station_bindings (tenant_id,station_id,branch_id,created_at) values ($1,$2,$3,now())', [tenantB, stationB, branchB]);
   await admin.query("insert into station_credentials (credential_id,credential_hash,tenant_id,station_id,created_at) values ($1,'station-b-hash',$2,$3,now())", [stationCredentialB, tenantB, stationB]);

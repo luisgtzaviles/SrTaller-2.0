@@ -49,3 +49,38 @@ export interface TenantBootstrapPersistence {
 export const TENANT_BOOTSTRAP_PERSISTENCE: unique symbol = Symbol(
   'srtaller.tenancy.bootstrap-persistence',
 );
+
+export type TenantLifecycleRecord =
+  import('./application/ports/tenant-repository.port.js').TenantRecord;
+
+/**
+ * Tenancy-owned operations that must participate in a transaction opened by
+ * another owner. The opaque context never exposes a database driver or tables.
+ */
+export interface TenantLifecycleCommitRuntime {
+  lock(
+    scope: Readonly<{ tenantId: TenantId }>,
+    transactionContext: object,
+  ): Promise<TenantLifecycleRecord>;
+  activate(
+    scope: Readonly<{ tenantId: TenantId }>,
+    input: Readonly<{
+      actorUserId: string;
+      adminSessionId: string;
+      correlationId: string;
+      occurredAt: string;
+    }>,
+    transactionContext: object,
+  ): Promise<TenantLifecycleRecord>;
+}
+
+export class TenantLifecycleCommitError extends Error {
+  constructor(readonly retryable: boolean) {
+    super('The Tenant lifecycle commit operation failed.');
+    this.name = 'TenantLifecycleCommitError';
+  }
+}
+
+export const TENANT_LIFECYCLE_COMMIT_RUNTIME: unique symbol = Symbol(
+  'srtaller.tenancy.lifecycle-commit-runtime',
+);

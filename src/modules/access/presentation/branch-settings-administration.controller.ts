@@ -6,8 +6,6 @@ import {
   Header,
   Headers,
   NotFoundException,
-  Post,
-  Body,
   UnauthorizedException,
 } from '@nestjs/common';
 
@@ -73,17 +71,6 @@ export class BranchSettingsAdministrationController {
   async read(@Headers() headers: RequestHeaders) {
     try {
       const settings = await this.operations.readBranchSettings(evidence(headers));
-      return { timeZone: settings.timeZone };
-    } catch (error: unknown) {
-      return translateError(error);
-    }
-  }
-
-  @Post()
-  @Header('Cache-Control', 'private, no-store')
-  async update(@Body() body: unknown, @Headers() headers: RequestHeaders) {
-    try {
-      const settings = await this.operations.updateBranchSettings(evidence(headers), body);
       return { timeZone: settings.timeZone };
     } catch (error: unknown) {
       return translateError(error);

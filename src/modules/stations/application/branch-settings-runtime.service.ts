@@ -31,16 +31,4 @@ export class BranchSettingsRuntimeService implements BranchSettingsRuntime {
     return branch === null ? null : response(branch.timeZone);
   }
 
-  async updateTimeZone(
-    scope: BranchSettingsScope,
-    timeZone: unknown,
-  ): Promise<Readonly<{ timeZone: BranchTimeZone }>> {
-    // The existing Stations repository performs the authoritative IANA parse
-    // before persisting. A fixed UTC offset therefore cannot become authority.
-    const branch = await this.branches.updateBranchTimeZone(
-      branchScope(scope),
-      timeZone as BranchTimeZone,
-    );
-    return response(branch.timeZone);
-  }
 }

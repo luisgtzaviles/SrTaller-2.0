@@ -47,20 +47,24 @@ function insertExecutor(row, failure) {
     insertInto(table) {
       return {
         values(values) {
+          const executeTakeFirstOrThrow = async () => {
+            if (failure) {
+              throw failure;
+            }
+            return row ?? {
+              ...values,
+              created_at: values.created_at,
+            };
+          };
           return {
             returning(columns) {
               return {
-                async executeTakeFirstOrThrow() {
-                  if (failure) {
-                    throw failure;
-                  }
-                  return row ?? {
-                    ...values,
-                    created_at: values.created_at,
-                  };
-                },
+                executeTakeFirstOrThrow,
                 columns,
               };
+            },
+            returningAll() {
+              return { executeTakeFirstOrThrow };
             },
           };
         },
@@ -194,21 +198,37 @@ test('adapters map immutable records and invoke only their registered owner', as
       insertExecutor({
         tenant_id: tenantA,
         branch_id: branchA,
+        display_name: 'Branch A',
         time_zone: timeZone,
+        active: true,
+        version: 0,
+        admission_revision: 0,
         created_at: new Date(createdAt),
+        updated_at: new Date(createdAt),
       }),
       branchOwners,
     ),
   );
   const branch = await branchRepository.createBranch(
     { tenantId: tenantA, branchId: branchA },
-    { tenantId: tenantA, branchId: branchA, timeZone, createdAt },
+    {
+      tenantId: tenantA,
+      branchId: branchA,
+      displayName: 'Branch A',
+      timeZone,
+      createdAt,
+    },
   );
   assert.deepEqual(branch, {
     tenantId: tenantA,
     branchId: branchA,
+    displayName: 'Branch A',
     timeZone,
+    status: 'ACTIVE',
+    version: 0,
+    admissionRevision: 0,
     createdAt,
+    updatedAt: createdAt,
   });
   assert.ok(Object.isFrozen(branch));
   assert.deepEqual(branchOwners, ['stations']);
@@ -256,7 +276,13 @@ test('driver failures map to stable sanitized owner errors', async () => {
   await assert.rejects(
     duplicate.createBranch(
       { tenantId: tenantA, branchId: branchA },
-      { tenantId: tenantA, branchId: branchA, timeZone, createdAt },
+      {
+        tenantId: tenantA,
+        branchId: branchA,
+        displayName: 'Branch A',
+        timeZone,
+        createdAt,
+      },
     ),
     expectsBranchCode('BRANCH_PERSISTENCE_CONFLICT'),
   );
@@ -267,7 +293,13 @@ test('driver failures map to stable sanitized owner errors', async () => {
   await assert.rejects(
     missingTenant.createBranch(
       { tenantId: tenantA, branchId: branchA },
-      { tenantId: tenantA, branchId: branchA, timeZone, createdAt },
+      {
+        tenantId: tenantA,
+        branchId: branchA,
+        displayName: 'Branch A',
+        timeZone,
+        createdAt,
+      },
     ),
     expectsBranchCode('BRANCH_PERSISTENCE_TENANT_NOT_FOUND'),
   );

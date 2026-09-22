@@ -124,11 +124,56 @@ export interface RegistrationSecurityEventTable {
 export interface BranchTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly branch_id: ImmutableColumn<string>;
+  readonly display_name: MutableColumn<string>;
   readonly time_zone: MutableColumn<string>;
-  readonly active: DefaultedImmutableColumn<boolean>;
+  readonly active: DefaultedMutableColumn<boolean>;
+  readonly version: DefaultedMutableColumn<number>;
   /** Stations-owned monotonic epoch for Session admission authority. */
-  readonly admission_revision: DefaultedImmutableColumn<number>;
+  readonly admission_revision: DefaultedMutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface BranchCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly command_kind: ImmutableColumn<'CREATE' | 'UPDATE' | 'DEACTIVATE' | 'REACTIVATE'>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly request_digest: ImmutableColumn<Uint8Array>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly result_display_name: ImmutableColumn<string>;
+  readonly result_time_zone: ImmutableColumn<string>;
+  readonly result_version: ImmutableColumn<number>;
+  readonly result_status: ImmutableColumn<'ACTIVE' | 'INACTIVE'>;
+  readonly result_admission_revision: ImmutableColumn<number>;
+  readonly result_created_at: ImmutableColumn<Date>;
+  readonly result_updated_at: ImmutableColumn<Date>;
+  readonly completed_at: ImmutableColumn<Date>;
+}
+
+export interface BranchAuditEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly branch_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_display_name: ImmutableColumn<string>;
+  readonly admin_session_id: ImmutableColumn<string>;
+  readonly event_type: ImmutableColumn<'BRANCH_CREATED' | 'BRANCH_UPDATED' | 'BRANCH_DEACTIVATED' | 'BRANCH_REACTIVATED'>;
+  readonly capability: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly branch_version: ImmutableColumn<number>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface TenantLifecycleEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly admin_session_id: ImmutableColumn<string>;
+  readonly event_type: ImmutableColumn<'TENANT_ACTIVATED'>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly tenant_version: ImmutableColumn<number>;
+  readonly occurred_at: ImmutableColumn<Date>;
 }
 
 export interface StationTable {
@@ -1667,6 +1712,9 @@ export interface DatabaseSchema {
   readonly registration_public_action_limits: RegistrationPublicActionLimitTable;
   readonly registration_security_events: RegistrationSecurityEventTable;
   readonly branches: BranchTable;
+  readonly branch_commands: BranchCommandTable;
+  readonly branch_audit_events: BranchAuditEventTable;
+  readonly tenant_lifecycle_events: TenantLifecycleEventTable;
   readonly stations: StationTable;
   readonly station_bindings: StationBindingTable;
   readonly station_credentials: StationCredentialTable;
