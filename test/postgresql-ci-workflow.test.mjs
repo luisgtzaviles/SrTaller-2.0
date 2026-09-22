@@ -95,11 +95,11 @@ test('compiled smoke uses an isolated migrated PostgreSQL service without relaxi
   );
   assert.match(
     workflow,
-    /name: Run compiled artifact smoke[\s\S]*-- pnpm run smoke:start[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
+    /name: Run compiled artifact smoke[\s\S]*-- pnpm run smoke:start[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"[\s\S]*SR_REGISTRATION_ABUSE_PEPPER: [A-Za-z0-9_-]{43}/u,
   );
   assert.match(
     workflow,
-    /name: Run compiled UI route smoke[\s\S]*-- pnpm run smoke:ui[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
+    /name: Run compiled UI route smoke[\s\S]*-- pnpm run smoke:ui[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"[\s\S]*SR_REGISTRATION_ABUSE_PEPPER: [A-Za-z0-9_-]{43}/u,
   );
   assert.ok(
     workflow.indexOf('name: Prepare compiled smoke PostgreSQL schema') <
