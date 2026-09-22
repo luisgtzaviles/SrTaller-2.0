@@ -80,7 +80,7 @@ test('PBI-041 persists immutable supplier versions and publishes one tenant-wide
   const ctxA = context(tenantA, branchA); const ctxB = context(tenantB, branchB); const ctxC = context(tenantC, branchC);
   try {
     await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Bulk Tenant A', 'ACTIVE', 'MXN', 0, now(), now()), ($2, 'Bulk Tenant B', 'ACTIVE', 'USD', 0, now(), now()), ($3, 'Bulk Tenant C', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantA, tenantB, tenantC]);
-    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now()), ($3, $4, 'America/Phoenix', true, now()), ($5, $6, 'America/Hermosillo', true, now())`, [tenantA, branchA, tenantB, branchB, tenantC, branchC]);
+    await admin.query(`insert into branches (tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at) values ($1, $2, 'Bulk Branch', 'America/Hermosillo', true, now(), now()), ($3, $4, 'Bulk Branch', 'America/Phoenix', true, now(), now()), ($5, $6, 'Bulk Branch', 'America/Hermosillo', true, now(), now())`, [tenantA, branchA, tenantB, branchB, tenantC, branchC]);
     await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at)
       values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantB, virginCategoryId]);
     await admin.query(`insert into catalog_brands (tenant_id, brand_id, display_name, normalized_name, status, version, created_at, updated_at)
@@ -739,7 +739,7 @@ test('UX-005.1 keeps safely capturable new references out of manual reconciliati
   const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
   try {
     await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Pending Reference Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
-    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at) values ($1, $2, 'Pending Reference Branch', 'America/Hermosillo', true, now(), now())`, [tenantId, branchId]);
     const categoryId = randomUUID(); const brandId = randomUUID();
     await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantId, categoryId]);
     await admin.query(`insert into catalog_category_kind_applicability (tenant_id, category_id, kind) values ($1, $2, 'PART')`, [tenantId, categoryId]);
@@ -808,7 +808,7 @@ test('PBI-041 material handoff preserves the publisher as the Apply audit actor'
   const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
   try {
     await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Audit Handoff Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
-    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at) values ($1, $2, 'Audit Handoff Branch', 'America/Hermosillo', true, now(), now())`, [tenantId, branchId]);
     const source = await service.createSource(preparer, { name: 'Handoff QA supplier' });
     const draft = await service.createDraft(preparer, { sourceId: source.sourceId, description: 'Prepared by A', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: 'a'.repeat(64), rawPayload: 'handoff-qa', rows: [fullRow(9_401)] });
     const analyzed = await service.analyze(preparer, draft.versionId, { expectedVersion: draft.version });
@@ -832,7 +832,7 @@ test('PBI-041 rejects a stale authorized Apply snapshot after a concurrent decis
   const catalog = new CatalogService(new KyselyCatalogRepository(connection), async () => 'MXN');
   try {
     await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Authorization Snapshot Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
-    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at) values ($1, $2, 'Authorization Snapshot Branch', 'America/Hermosillo', true, now(), now())`, [tenantId, branchId]);
     const category = await catalog.createCategory(preparer, { name: 'Pantallas', applicableKinds: ['PART'], expectedVersion: 0, clientRequestId: randomUUID() });
     const brand = await catalog.createBrand(preparer, { name: 'Apple', applicableKinds: ['PART'], expectedVersion: 0, clientRequestId: randomUUID() });
     const createItem = (title, sku, basePriceAmountMinor) => catalog.createItem(preparer, {
@@ -917,7 +917,7 @@ test('UX-005.3 correction drafts preserve an analyzed source snapshot and reject
   const service = new BulkCatalogService(new KyselyBulkCatalogRepository(connection), async () => 'MXN');
   try {
     await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Correction Draft Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
-    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at) values ($1, $2, 'Correction Draft Branch', 'America/Hermosillo', true, now(), now())`, [tenantId, branchId]);
     const categoryId = randomUUID(); const correctedCategoryId = randomUUID(); const brandId = randomUUID();
     await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now()), ($1, $3, 'PART', 'Pantallas corregidas', 'pantallas corregidas', 'ACTIVE', 1, now(), now())`, [tenantId, categoryId, correctedCategoryId]);
     await admin.query(`insert into catalog_brands (tenant_id, brand_id, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'Apple', 'apple', 'ACTIVE', 1, now(), now())`, [tenantId, brandId]);
@@ -977,7 +977,7 @@ test('UX-003.4 enforces required values from the resulting Catalog state and rec
   const knownRow = { kind: 'PART', supplierObservedTitle: 'Pantalla QA efectiva', title: 'Pantalla QA efectiva', description: null, category: 'Pantallas', brand: 'Apple', supplierItemCode: 'EFFECTIVE-001', sku: 'EFFECTIVE-001', barcode: 'EFFECTIVE-BAR-001', basePriceMinor: 120_00, referenceCostMinor: null };
   try {
     await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Effective Policy Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
-    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at) values ($1, $2, 'Effective Policy Branch', 'America/Hermosillo', true, now(), now())`, [tenantId, branchId]);
     await admin.query(`insert into catalog_categories (tenant_id, category_id, kind, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'PART', 'Pantallas', 'pantallas', 'ACTIVE', 1, now(), now())`, [tenantId, randomUUID()]);
     await admin.query(`insert into catalog_brands (tenant_id, brand_id, display_name, normalized_name, status, version, created_at, updated_at) values ($1, $2, 'Apple', 'apple', 'ACTIVE', 1, now(), now())`, [tenantId, randomUUID()]);
     const source = await service.createSource(ctx, { name: 'Proveedor efectiva QA' });
@@ -1015,7 +1015,7 @@ test('UX-005.6 rejects zero effective base prices at Analyze and independently a
   const policyContext = Object.freeze({ ...ctx, capability: 'catalog.configuration.manage' });
   try {
     await admin.query(`insert into tenants (tenant_id, display_name, lifecycle_status, operating_currency, version, created_at, updated_at) values ($1, 'Zero Price Tenant', 'ACTIVE', 'MXN', 0, now(), now())`, [tenantId]);
-    await admin.query(`insert into branches (tenant_id, branch_id, time_zone, active, created_at) values ($1, $2, 'America/Hermosillo', true, now())`, [tenantId, branchId]);
+    await admin.query(`insert into branches (tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at) values ($1, $2, 'Zero Price Branch', 'America/Hermosillo', true, now(), now())`, [tenantId, branchId]);
     const source = await service.createSource(ctx, { name: 'UX-005.6 integrity fixture' });
     const zeroRow = { kind: 'PART', supplierObservedTitle: 'Precio cero', title: 'Precio cero', description: null, category: 'Pantallas', brand: 'Samsung', supplierItemCode: 'UX0056-ZERO', sku: null, barcode: null, basePriceMinor: 0, referenceCostMinor: 0 };
     const zeroDraft = await service.createDraft(ctx, { sourceId: source.sourceId, description: 'zero must block', clientRequestId: randomUUID(), mode: 'FULL', completeness: 'PARTIAL', columnSignature: '0'.repeat(64), rawPayload: 'zero', rows: [zeroRow] });
