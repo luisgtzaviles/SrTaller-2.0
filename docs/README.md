@@ -103,6 +103,7 @@ autoriza un cambio de producto.
 - [TL-06 — Tenant Administration Users/Roles Integration Readiness](architecture-readiness/tenant-lifecycle/TL-06_TENANT_ADMIN_USERS_ROLES_INTEGRATION_READINESS.md)
 - [TL-06 — Tenant Administration Users/Roles Integration Evidence](quality/evidence/tl-06/README.md)
 - [TL-07 — Station Inventory + Enrollment Authority Readiness](architecture-readiness/tenant-lifecycle/TL-07_STATION_INVENTORY_ENROLLMENT_AUTHORITY_READINESS.md)
+- [TL-07 — Station Inventory + Enrollment Authority Evidence](quality/evidence/tl-07/README.md)
 - [Cierre y priorización de bloqueantes arquitectónicos](architecture-readiness/blocker-closure/README.md)
 - [Baseline técnica de DEC-004](architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md)
 - [Contexto del sistema](architecture/SYSTEM_CONTEXT.md)

@@ -3,13 +3,13 @@
 ## Estado
 
 - **Work Unit:** TL-07 — Station Inventory + Enrollment Authority.
-- **Iteración:** readiness, auditoría y diseño; sin implementación de producto.
+- **Iteración:** implementación autorizada y candidata local.
 - **Tipo / riesgo:** `PRODUCT` / `ARCHITECTURAL`.
 - **Base autoritativa:** `74fe2b5fd5b66ee48428953f3e027f2815c839ca`.
 - **Dependencias satisfechas:** ADR-010–013/015 y TL-02–06 integrados y
   cerrados mediante el lifecycle gobernado.
-- **Resultado:** el modelo técnico puede implementarse después de resolver las
-  decisiones Owner de la sección 19.
+- **Resultado:** las decisiones Owner `TL7D-001`–`TL7D-006` están resueltas y
+  la implementación materializa el contrato sin iniciar redemption TL-08.
 - **Fuera de alcance:** redemption/activation/handoff TL-08, MDM, fingerprints,
   offline, billing, Super Admin, hard delete y telemetría inventada.
 
@@ -166,7 +166,7 @@ StationInventoryItem
 | Read | `GET /api/admin/stations/:stationId` | `stations.read` | Read tenant-scoped y branch-scoped. |
 | Rename | `POST /api/admin/stations/:stationId/rename` | `stations.manage` | Level 1; sólo nombre + expected version + request ID. |
 | Issue enrollment | `POST /api/admin/station-enrollments` | `stations.enrollment.issue` | Level 2; Branch y nombre quedan fijados. |
-| Cancel enrollment | `POST /api/admin/station-enrollments/:challengeId/revocation` | `stations.enrollment.cancel` | Decisión Owner sobre Level 1/2; siempre state-change, CSRF y audit. |
+| Cancel enrollment | `POST /api/admin/station-enrollments/:challengeId/revocation` | `stations.enrollment.cancel` | Level 1; Admin Session, capability, Tenant scope, CSRF y audit, sin reauth. |
 | Unlink | `POST /api/admin/stations/:stationId/unlink` | `stations.relink` | Level 2; cierra binding, revoca credenciales/Sessions y deja `UNLINKED`. |
 | Initiate relink | `POST /api/admin/stations/:stationId/relink` | `stations.relink` | Level 2; source + target authority y challenge TL-08. |
 | Revoke Station | `POST /api/admin/stations/:stationId/revocation` | `stations.revoke` | Level 2; terminal y fail-closed. |
@@ -253,8 +253,8 @@ Admin Context.
   password dentro del comando.
 - Consume: no vuelve a solicitar Admin password al equipo, pero revalida la
   autoridad y estado vigentes del issuer.
-- Cancel challenge: requiere decisión Owner entre Level 1 y Level 2; se
-  recomienda Level 2 por modificar una autoridad de seguridad ya emitida.
+- Cancel challenge: Level 1 con `stations.enrollment.cancel`; elimina una
+  autoridad pendiente y no requiere reauth reciente.
 
 No se introduce remember-me, segundo reauth, OTP, aprobación de supervisor ni
 token long-lived.
@@ -501,16 +501,16 @@ Ningún bloque inicia TL-08 ni habilita consume público.
 | UI | desktop/768/640, keyboard/focus, native controls, screen-reader names, light/dark, no page overflow and direct API/UI agreement. |
 | Security | secret scan plus negative assertions for token, credential, PIN, password, cookies, headers and unrestricted payload. |
 
-## 19. Decisiones Owner requeridas
+## 19. Decisiones Owner resueltas
 
-| ID | Decisión requerida | Recomendación |
-|---|---|---|
-| TL7D-001 | ¿Quién fija Branch y nombre del equipo? | **A:** Admin fija ambos al emitir; TL-08 no los modifica. |
-| TL7D-002 | ¿Cómo se presenta el challenge una sola vez? | QR + código opaco copiable del mismo secreto; no URL durable. |
-| TL7D-003 | ¿Qué significa “Desvincular dispositivo”? | Cerrar binding, revocar credentials/Sessions, conservar Station `UNLINKED`; operar de nuevo exige enrollment. Mantener “Revocar estación” como acción terminal separada. |
-| TL7D-004 | ¿Relink corta confianza inmediatamente y exige redemption nueva? | Sí: A→UNLINKED al iniciar; TL-08 redime en B, conserva Station ID y rota credential. |
-| TL7D-005 | Sensibilidad de cancelar challenge no consumido. | Level 2 con `stations.enrollment.cancel`; no crea autoridad pero modifica un grant de seguridad emitido. |
-| TL7D-006 | Nombre visible de la Station legacy local `...0401`. | Owner debe proporcionar texto exacto; no se propone placeholder persistido. |
+| ID | Decisión aprobada |
+|---|---|
+| TL7D-001 | Modelo A: el Admin fija Branch y nombre al emitir; TL-08 no puede sustituirlos. |
+| TL7D-002 | QR y código manual representan la misma autoridad fuerte, single-use y digest-only. |
+| TL7D-003 | Unlink corta credencial, Sessions y binding; conserva la Station `UNLINKED` recuperable sólo por enrollment nuevo. |
+| TL7D-004 | Relink corta inmediatamente A, deja `UNLINKED` y emite autoridad fijada a B para redemption TL-08. |
+| TL7D-005 | Cancelar challenge sin consumir es Level 1, capability-gated y sin reauth. |
+| TL7D-006 | Sólo `...0401` recibe `SR Taller Fixture — Dispositivo 1`; cualquier otro legacy sin nombre falla cerrado. |
 
 No requieren una decisión nueva: TTL 10 minutos, issue/relink/unlink/revoke
 Level 2, revoke terminal, Branch reactivation sin resurrección de Sessions o
@@ -519,15 +519,13 @@ separación Admin/Operational.
 
 ## 20. ACTIVE_CHECKLIST
 
-El checklist activo registra TL-07, base exacta, riesgo arquitectónico, auditoría
-completa, escritura de readiness en curso, bloqueos Owner y ausencia de cambios
-de producto/datos. Debe permanecer `ACTIVE` y sin items de implementación hasta
-que el Owner resuelva TL7D-001–006 y autorice expresamente la siguiente
-iteración.
+El checklist activo registra TL-07, riesgo arquitectónico, implementación,
+proof material y gates locales. Las decisiones Owner están resueltas; TL-08,
+push, PR, merge y deploy permanecen fuera de alcance.
 
-## 21. Criterio de salida de readiness
+## 21. Criterio de salida de implementación
 
-La readiness documental queda materialmente completa cuando:
+El candidato local queda listo para promoción cuando:
 
 - el audit coincide con código, schema y datos locales actuales;
 - no existe segundo agregado ni segunda autoridad productiva;
@@ -535,7 +533,9 @@ La readiness documental queda materialmente completa cuando:
   authorization, tenancy, migration, audit, UI y tests tienen fronteras
   implementables;
 - links, arquitectura, secretos, diff y lifecycle Work Unit pasan;
-- las decisiones TL7D pendientes quedan visibles al Owner.
+- las decisiones TL7D aprobadas están materializadas sin ampliar TL-08;
+- pruebas focalizadas, PostgreSQL material, UI responsive/accesible y
+  `verify:full` pasan sobre el candidato final.
 
-Hasta resolverlas, el resultado es **OWNER DECISIONS REQUIRED**. No se autoriza
-implementar, iniciar TL-08, push, PR, merge ni deploy.
+El resultado local es **READY_FOR_PROMOTION** sólo después de esos gates. No se
+autoriza iniciar TL-08, push, PR, merge ni deploy.
