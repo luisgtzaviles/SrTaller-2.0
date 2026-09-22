@@ -328,24 +328,6 @@ export class AccessAdministrationOperations {
     );
   }
 
-  updateBranchSettings(evidence: ProtectedRequestEvidence, input: unknown) {
-    return this.authorization.execute(
-      evidence,
-      accessMatrixManageRequirement,
-      async (context) => {
-        await this.requireTenantWideAuthority(
-          context,
-          accessMatrixManageRequirement.capability,
-        );
-        const body = exactObject(input, ['timeZone']);
-        return this.branchSettingsRuntime().updateTimeZone({
-          tenantId: context.tenantId,
-          branchId: context.branchId,
-        }, body.timeZone);
-      },
-    );
-  }
-
   createRole(evidence: ProtectedRequestEvidence, input: unknown) {
     return this.authorization.execute(
       evidence,

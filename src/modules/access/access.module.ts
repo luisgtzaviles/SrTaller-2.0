@@ -98,6 +98,7 @@ import {
   AccessAdministrationController,
 } from './presentation/access-administration.controller.js';
 import { AdminSessionController } from './presentation/admin-session.controller.js';
+import { AdminBranchesController } from './presentation/admin-branches.controller.js';
 import { BranchSettingsAdministrationController } from './presentation/branch-settings-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
 import { TenantWideAuthorizationExecutorService } from './presentation/tenant-wide-authorization.executor.js';
@@ -132,6 +133,7 @@ type RegisteredAccessUseCases =
   controllers: [
     AccessSessionController,
     AdminSessionController,
+    AdminBranchesController,
     AccessAdministrationController,
     BranchSettingsAdministrationController,
     UserPreferencesController,
@@ -200,10 +202,6 @@ type RegisteredAccessUseCases =
           readTimeZone: (
             scope: Parameters<BranchSettingsRuntime['readTimeZone']>[0],
           ) => branchSettings.readTimeZone(scope),
-          updateTimeZone: (
-            scope: Parameters<BranchSettingsRuntime['updateTimeZone']>[0],
-            timeZone: Parameters<BranchSettingsRuntime['updateTimeZone']>[1],
-          ) => branchSettings.updateTimeZone(scope, timeZone),
           authenticatePin,
           authenticatePinOnly: pinOnly,
           createSession: new CreateOperationalSessionUseCase(

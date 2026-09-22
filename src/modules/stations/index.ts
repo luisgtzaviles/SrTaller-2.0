@@ -15,6 +15,8 @@ import {
   parseBranchTimeZone as parseTimeZone,
   presentOperationalDateTime as presentDateTime,
 } from './application/branch-time-zone.js';
+import { BRANCH_ADMINISTRATION_RUNTIME as branchAdministrationRuntimeToken } from './application/branch-administration.service.js';
+import type { BranchAdministrationRuntime as BranchAdministrationRuntimeContract } from './application/branch-administration.service.js';
 import type {
   BranchTimeZone as BranchTimeZoneContract,
   OperationalDateTime as OperationalDateTimeContract,
@@ -32,6 +34,8 @@ export const branchLocalCalendarDate = toBranchLocalCalendarDate;
 export const branchLocalDateTimeToUtc = toBranchLocalDateTime;
 export const parseBranchTimeZone = parseTimeZone;
 export const presentOperationalDateTime = presentDateTime;
+export const BRANCH_ADMINISTRATION_RUNTIME: typeof branchAdministrationRuntimeToken = branchAdministrationRuntimeToken;
+export type BranchAdministrationRuntime = BranchAdministrationRuntimeContract;
 
 export class TrustedStationContextError extends Error {
   constructor() {

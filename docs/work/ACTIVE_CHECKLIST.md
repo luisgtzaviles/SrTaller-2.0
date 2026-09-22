@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
 - **Overall status:** `IMPLEMENTATION IN PROGRESS`.
-- **Progress:** `4 / 9` implementation blocks complete.
-- **Current work:** Admin HTTP and operational-authority retirement.
-- **Next block:** Admin login/session shell.
+- **Progress:** `5 / 9` implementation blocks complete.
+- **Current work:** Admin login/session shell.
+- **Next block:** Branch onboarding and management UI.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -82,22 +82,22 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 2 — Branch V1 schema, migration and persistence.
 - [x] Block 3 — transactional commands and Tenant activation.
 - [x] Block 4 — Admin authorization and cross-Tenant protection.
-- [~] Block 5 — Admin HTTP and operational-authority retirement.
-- [ ] Block 6 — Admin login/session shell.
+- [x] Block 5 — Admin HTTP and operational-authority retirement.
+- [~] Block 6 — Admin login/session shell.
 - [ ] Block 7 — Branch onboarding and management UI.
 - [ ] Block 8 — PostgreSQL concurrency, regression and browser QA.
 - [ ] Block 9 — canonical docs, full verification and candidate freeze.
 
 ## Current
 
-Branch operations are bound to Admin Context, explicit capabilities and
-commit-time Tenant Admin authority; cross-Tenant reads fail closed. Block 5 is
-active.
+The six approved `/api/admin/branches` routes are materialized and the former
+Station/PIN timezone POST path is retired while read presentation remains.
+Block 6 is active.
 
 ## Next
 
-Publish the approved Admin HTTP routes and retire the operational timezone
-write path.
+Build the minimal Admin Session gate and shell without mixing Operational
+Session authority.
 
 ## Blockers
 

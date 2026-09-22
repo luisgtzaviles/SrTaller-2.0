@@ -64,6 +64,8 @@ export interface BranchAdministrationRuntime {
   reactivate(context: BranchAdministrationContext, branchId: unknown, input: unknown): Promise<BranchRecord>;
 }
 
+export const BRANCH_ADMINISTRATION_RUNTIME: unique symbol = Symbol('srtaller.stations.branch-administration-runtime');
+
 type ParsedCommand = Readonly<{ clientRequestId: string; expectedVersion?: number; displayName?: ReturnType<typeof parseBranchDisplayName>; timeZone?: ReturnType<typeof parseBranchTimeZone> }>;
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;

@@ -45,10 +45,6 @@ export class KyselyStationCredentialVerifier
     return this.branchSettings.readTimeZone(scope);
   }
 
-  updateTimeZone(scope: BranchSettingsScope, timeZone: unknown) {
-    return this.branchSettings.updateTimeZone(scope, timeZone);
-  }
-
   async verify(rawCredential: string): Promise<VerifiedStationCredential | null> {
     if (!validCredential(rawCredential)) return null;
     const hash = hashStationCredential(rawCredential);

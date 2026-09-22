@@ -11,11 +11,13 @@ import type {
 } from '../../infrastructure/runtime/index.js';
 import {
   BRANCH_SETTINGS_RUNTIME,
+  BRANCH_ADMINISTRATION_RUNTIME,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
   TRUSTED_STATION_CONTEXT_RESOLVER,
 } from './index.js';
 import type {
   BranchSettingsRuntime,
+  BranchAdministrationRuntime,
   TrustedStationAdmissionValidator,
   TrustedStationContextResolver,
 } from './index.js';
@@ -32,6 +34,7 @@ import { TrustedStationRequestContextResolver } from './infrastructure/http/trus
 import { KyselyStationCredentialVerifier } from './infrastructure/persistence/kysely-station-credential.verifier.js';
 import { LocalStationBootstrapController } from './presentation/local-station-bootstrap.controller.js';
 import type { KyselyBranchRepositoryFactory } from './infrastructure/persistence/kysely-branch.repository.js';
+import { BranchAdministrationService } from './application/branch-administration.service.js';
 
 type RegisteredStationsPersistenceAdapter = KyselyBranchRepositoryFactory;
 
@@ -83,6 +86,12 @@ type RegisteredStationsPersistenceAdapter = KyselyBranchRepositoryFactory;
       },
     },
     {
+      provide: BRANCH_ADMINISTRATION_RUNTIME,
+      inject: [APPLICATION_DATABASE_CONNECTION],
+      useFactory: (database: ApplicationDatabaseConnection): BranchAdministrationRuntime =>
+        new BranchAdministrationService(database as never),
+    },
+    {
       provide: KyselyStationCredentialVerifier,
       inject: [APPLICATION_DATABASE_CONNECTION],
       useFactory: (database: ApplicationDatabaseConnection) =>
@@ -112,6 +121,7 @@ type RegisteredStationsPersistenceAdapter = KyselyBranchRepositoryFactory;
     },
   ],
   exports: [
+    BRANCH_ADMINISTRATION_RUNTIME,
     BRANCH_SETTINGS_RUNTIME,
     TRUSTED_STATION_ADMISSION_VALIDATOR,
     TRUSTED_STATION_CONTEXT_RESOLVER,
