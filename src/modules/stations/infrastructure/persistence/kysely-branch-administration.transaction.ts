@@ -1,4 +1,3 @@
-import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import { DatabaseTransactionError, runInTransaction } from '../../../../infrastructure/database/transaction-runner.js';
 import {
   BranchAdministrationTransactionError,
@@ -11,7 +10,9 @@ import { createTransactionalKyselyBranchRepository } from './kysely-branch.repos
 
 export class KyselyBranchAdministrationTransaction
 implements BranchAdministrationTransactionPort {
-  constructor(private readonly connection: DatabaseConnection) {}
+  constructor(
+    private readonly connection: Parameters<typeof runInTransaction>[0],
+  ) {}
 
   async execute<Result>(
     operation: (

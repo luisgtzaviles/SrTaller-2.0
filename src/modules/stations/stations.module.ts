@@ -9,7 +9,6 @@ import type {
   ApplicationDatabaseConnection,
   LocalRuntimeConfiguration,
 } from '../../infrastructure/runtime/index.js';
-import type { DatabaseConnection } from '../../infrastructure/database/database-connection.js';
 import { TenancyModule } from '../tenancy/tenancy.module.js';
 import {
   TENANT_LIFECYCLE_COMMIT_RUNTIME,
@@ -110,7 +109,9 @@ type StationsRuntimeComposition = Readonly<{
           verifier: new KyselyStationCredentialVerifier(database),
           branchRepository: createKyselyBranchRepository(database),
           branchTransactions: new KyselyBranchAdministrationTransaction(
-            database as ApplicationDatabaseConnection & DatabaseConnection,
+            database as unknown as ConstructorParameters<
+              typeof KyselyBranchAdministrationTransaction
+            >[0],
           ),
         }),
     },
