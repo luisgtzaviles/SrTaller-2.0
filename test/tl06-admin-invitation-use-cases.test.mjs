@@ -19,9 +19,9 @@ function harness() {
       assert.equal(await guard.confirmCurrent({}), true);
       active = { tenantId: input.tenantId, invitationId: input.invitationId, challengeId: input.challengeId, normalizedEmail: input.normalizedEmail, targetUserId: input.targetUserId, proposedDisplayName: input.proposedDisplayName, status: 'ACTIVE', expiresAt: '2026-09-22T12:00:00.000Z' };
       invitation = { tenantId: input.tenantId, invitationId: input.invitationId, normalizedEmail: input.normalizedEmail, emailDisplay: input.emailDisplay, targetUserId: input.targetUserId, proposedDisplayName: input.proposedDisplayName, inviterUserId: input.inviterUserId, inviterAdminIdentityId: input.inviterAdminIdentityId, status: 'PENDING', version: 0, authorityRevision: 0, grants: input.grants, expiresAt: '2026-09-22T12:00:00.000Z', acceptedAt: null, revokedAt: null, createdAt: input.occurredAt, updatedAt: input.occurredAt };
-      return invitation;
+      return { invitation, deliveryRequired: true };
     },
-    async resend(input) { active = { ...active, challengeId: input.challengeId }; invitation = { ...invitation, version: invitation.version + 1 }; return invitation; },
+    async resend(input) { active = { ...active, challengeId: input.challengeId }; invitation = { ...invitation, version: invitation.version + 1 }; return { invitation, deliveryRequired: true }; },
     async revoke() { invitation = { ...invitation, status: 'REVOKED' }; return invitation; },
     async findByChallengeDigest() { return active; },
     async accept(input) { invitation = { ...invitation, status: 'ACCEPTED', acceptedAt: input.occurredAt }; return invitation; },

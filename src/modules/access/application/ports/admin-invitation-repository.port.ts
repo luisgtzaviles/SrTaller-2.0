@@ -32,6 +32,11 @@ export type AdminInvitationChallengeRecord = Readonly<{
   expiresAt: string;
 }>;
 
+export type AdminInvitationWriteResult = Readonly<{
+  invitation: AdminInvitationRecord;
+  deliveryRequired: boolean;
+}>;
+
 export interface AdminInvitationMutationGuard {
   confirmCurrent(transactionContext: object): Promise<boolean>;
 }
@@ -44,12 +49,12 @@ export interface AdminInvitationRepositoryPort {
     proposedDisplayName: string | null; inviterUserId: string; inviterAdminIdentityId: string;
     grants: readonly AdminInvitationGrant[];
     tokenDigest: Uint8Array; clientRequestId: string; correlationId: string; occurredAt: string;
-  }>, guard: AdminInvitationMutationGuard): Promise<AdminInvitationRecord>;
+  }>, guard: AdminInvitationMutationGuard): Promise<AdminInvitationWriteResult>;
   resend(input: Readonly<{
     tenantId: string; invitationId: string; challengeId: string; deliveryId: string;
     tokenDigest: Uint8Array; expectedVersion: number; clientRequestId: string;
     correlationId: string; occurredAt: string;
-  }>, guard: AdminInvitationMutationGuard): Promise<AdminInvitationRecord>;
+  }>, guard: AdminInvitationMutationGuard): Promise<AdminInvitationWriteResult>;
   revoke(input: Readonly<{
     tenantId: string; invitationId: string; expectedVersion: number; clientRequestId: string;
     correlationId: string; actorUserId: string; occurredAt: string;

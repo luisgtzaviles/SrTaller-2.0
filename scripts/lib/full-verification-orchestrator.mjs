@@ -11,12 +11,13 @@ export const fullVerificationStages = Object.freeze([
   Object.freeze({ id: 'tl03-postgresql', name: 'Stage 9 TL-03 PostgreSQL' }),
   Object.freeze({ id: 'tl04-postgresql', name: 'Stage 10 TL-04 PostgreSQL' }),
   Object.freeze({ id: 'tl05-postgresql', name: 'Stage 11 TL-05 PostgreSQL' }),
-  Object.freeze({ id: 'preview-runtime', name: 'Stage 12 Preview-like PostgreSQL runtime' }),
-  Object.freeze({ id: 'smoke-provision', name: 'Stage 13 Provision compiled-smoke PostgreSQL' }),
-  Object.freeze({ id: 'smoke-start', name: 'Stage 14 Compiled backend smoke' }),
-  Object.freeze({ id: 'smoke-ui', name: 'Stage 15 Compiled UI smoke' }),
-  Object.freeze({ id: 'cleanup', name: 'Stage 16 Cleanup proof' }),
-  Object.freeze({ id: 'candidate-final', name: 'Stage 17 Final fingerprint + evidence' }),
+  Object.freeze({ id: 'tl06-postgresql', name: 'Stage 12 TL-06 PostgreSQL' }),
+  Object.freeze({ id: 'preview-runtime', name: 'Stage 13 Preview-like PostgreSQL runtime' }),
+  Object.freeze({ id: 'smoke-provision', name: 'Stage 14 Provision compiled-smoke PostgreSQL' }),
+  Object.freeze({ id: 'smoke-start', name: 'Stage 15 Compiled backend smoke' }),
+  Object.freeze({ id: 'smoke-ui', name: 'Stage 16 Compiled UI smoke' }),
+  Object.freeze({ id: 'cleanup', name: 'Stage 17 Cleanup proof' }),
+  Object.freeze({ id: 'candidate-final', name: 'Stage 18 Final fingerprint + evidence' }),
 ]);
 
 export function renderFullVerificationSummary(evidence) {
@@ -135,6 +136,7 @@ export async function runFullVerificationCampaign({
     results.tl03Postgresql = await stage('tl03-postgresql', operations.tl03Postgresql);
     results.tl04Postgresql = await stage('tl04-postgresql', operations.tl04Postgresql);
     results.tl05Postgresql = await stage('tl05-postgresql', operations.tl05Postgresql);
+    results.tl06Postgresql = await stage('tl06-postgresql', operations.tl06Postgresql);
     results.previewRuntime = await stage('preview-runtime', operations.previewRuntime);
     smoke = await stage('smoke-provision', operations.smokeProvision);
     results.smokeProvision = smoke.evidence;
@@ -185,6 +187,7 @@ export async function runFullVerificationCampaign({
       tl03: results.tl03Postgresql ?? null,
       tl04: results.tl04Postgresql ?? null,
       tl05: results.tl05Postgresql ?? null,
+      tl06: results.tl06Postgresql ?? null,
       previewRuntime: results.previewRuntime ?? null,
     }),
     smoke: Object.freeze({

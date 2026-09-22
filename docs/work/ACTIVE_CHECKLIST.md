@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-06` is implementing its authorized scope.
 - **Overall status:** `ACTIVE` implementation.
-- **Progress:** readiness `8 / 8`; implementation `6 / 8`.
-- **Current work:** Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
-- **Next block:** Block 8 — browser/accessibility proof, docs and full candidate freeze.
+- **Progress:** readiness `8 / 8`; implementation `7 / 8`.
+- **Current work:** Block 8 — browser/accessibility proof, docs and full candidate freeze.
+- **Next block:** reconcile evidence and run the exact-candidate full verification.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -82,18 +82,19 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 4 — Admin Users/Roles authorization and HTTP surface.
 - [x] Block 5 — last-effective-admin coordinator and Level-2 actions.
 - [x] Block 6 — Admin UI Users/Roles/invitation acceptance.
-- [~] Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
-- [ ] Block 8 — browser/accessibility proof, docs and full candidate freeze.
+- [x] Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
+- [~] Block 8 — browser/accessibility proof, docs and full candidate freeze.
 
 ## Current
 
-The Admin shell now includes responsive Users/Roles surfaces, protected Role
-presentation and public one-time invitation acceptance using canonical UI.
+PostgreSQL materially proves invitation replay/supersession/acceptance,
+cross-Tenant and cross-Branch isolation, stale authority rejection and the
+concurrent last-effective-admin invariant across 86 migrations.
 
 ## Next
 
-Run the new migrations materially and prove replay, supersession, cross-Tenant
-isolation and last-admin concurrency against PostgreSQL.
+Complete material browser/accessibility proof, reconcile canonical evidence and
+freeze one exact candidate for `verify:full`.
 
 ## Blockers
 
@@ -113,7 +114,8 @@ None.
 - [x] Architecture and dependency contracts.
 - [x] Secret-pattern scan.
 - [x] `git diff --check`.
-- [x] Read-only PostgreSQL material audit; 84 migrations, no writes.
+- [x] PostgreSQL 18.4 migration upgrade and rerun; 86 migrations, 0 pending.
+- [x] TL-02 through TL-06 material PostgreSQL regressions.
 
 ## Promotion Gates
 

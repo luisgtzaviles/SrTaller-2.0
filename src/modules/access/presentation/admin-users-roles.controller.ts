@@ -4,12 +4,14 @@ import { ADMIN_INVITATION_SERVICE, ContextualAuthorizationError } from '../index
 import type { ProtectedRequestEvidence } from '../index.js';
 import { AdminUsersRolesOperations } from '../application/admin-users-roles.operations.js';
 import { AdminInvitationError, AdminInvitationService } from '../application/use-cases/admin-invitation.use-cases.js';
+import { AdminPasswordInputError } from '../domain/admin-password.js';
 
 type RequestHeaders = Readonly<Record<string, string | string[] | undefined>>;
 function scalar(headers: RequestHeaders, name: string): string | undefined { const value = Object.entries(headers).find(([key]) => key.toLowerCase() === name)?.[1]; return typeof value === 'string' ? value : undefined; }
 function evidence(headers: RequestHeaders): ProtectedRequestEvidence { return Object.freeze({ cookieHeader: scalar(headers, 'cookie'), origin: scalar(headers, 'origin'), host: scalar(headers, 'host'), forwardedProto: scalar(headers, 'x-forwarded-proto'), fetchSite: scalar(headers, 'sec-fetch-site'), contentType: scalar(headers, 'content-type'), csrfToken: scalar(headers, 'x-sr-admin-csrf-token') }); }
 function object(value: unknown): Readonly<Record<string, unknown>> { if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new BadRequestException({ code: 'ADMIN_INPUT_INVALID' }); return value as Readonly<Record<string, unknown>>; }
 function translate(error: unknown): never {
+  if (error instanceof AdminPasswordInputError) throw new BadRequestException({ code: error.code });
   if (error instanceof ContextualAuthorizationError) { if (error.code === 'AUTHENTICATION_REQUIRED') throw new UnauthorizedException({ code: error.code }); throw new ForbiddenException({ code: 'ACCESS_DENIED' }); }
   if (error instanceof AdminInvitationError) { if (error.code === 'ADMIN_INVITATION_NOT_FOUND') throw new ConflictException({ code: error.code }); if (error.code === 'ADMIN_INVITATION_AUTHORITY_CHANGED') throw new ForbiddenException({ code: 'ACCESS_DENIED' }); throw new ConflictException({ code: error.code }); }
   throw error;

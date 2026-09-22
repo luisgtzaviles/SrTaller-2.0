@@ -51,7 +51,7 @@ export class AdminInvitationService {
     const grants = canonicalizeAdminInvitationGrants(input.grants);
     const invitationId = this.createId(); const challengeId = this.createId(); const deliveryId = this.createId();
     const token = this.createToken();
-    const invitation = await this.repository.issue({
+    const result = await this.repository.issue({
       tenantId: input.tenantId, inviterUserId: input.inviterUserId,
       inviterAdminIdentityId: input.inviterAdminIdentityId,
       targetUserId: input.targetUserId, proposedDisplayName: input.proposedDisplayName,
@@ -61,8 +61,8 @@ export class AdminInvitationService {
       clientRequestId: input.clientRequestId, correlationId: input.correlationId,
       occurredAt: at,
     }, input.guard);
-    await this.deliver(invitation, challengeId, deliveryId, token.token, at);
-    return invitation;
+    if (result.deliveryRequired) await this.deliver(result.invitation, challengeId, deliveryId, token.token, at);
+    return result.invitation;
   }
 
   async resend(input: Readonly<{
@@ -70,9 +70,9 @@ export class AdminInvitationService {
     correlationId: string; guard: AdminInvitationMutationGuard;
   }>): Promise<AdminInvitationRecord> {
     const at = this.now().toISOString(); const challengeId = this.createId(); const deliveryId = this.createId(); const token = this.createToken();
-    const invitation = await this.repository.resend({ ...input, challengeId, deliveryId, tokenDigest: token.digest, occurredAt: at }, input.guard);
-    await this.deliver(invitation, challengeId, deliveryId, token.token, at);
-    return invitation;
+    const result = await this.repository.resend({ ...input, challengeId, deliveryId, tokenDigest: token.digest, occurredAt: at }, input.guard);
+    if (result.deliveryRequired) await this.deliver(result.invitation, challengeId, deliveryId, token.token, at);
+    return result.invitation;
   }
 
   revoke(input: Parameters<AdminInvitationRepositoryPort['revoke']>[0] & Readonly<{ guard: AdminInvitationMutationGuard }>) {

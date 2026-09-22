@@ -8,7 +8,7 @@ import type { AccessAdminInvitationTable, DatabaseSchema } from '../../../../inf
 import type { ApplicationDatabaseConnection } from '../../../../infrastructure/runtime/index.js';
 import type { AdminInvitationGrant } from '../../domain/admin-invitation.js';
 import { digestAdminInvitationGrants } from '../../domain/admin-invitation.js';
-import type { AdminInvitationChallengeRecord, AdminInvitationRecord, AdminInvitationRepositoryPort } from '../../application/ports/admin-invitation-repository.port.js';
+import type { AdminInvitationChallengeRecord, AdminInvitationRecord, AdminInvitationRepositoryPort, AdminInvitationWriteResult } from '../../application/ports/admin-invitation-repository.port.js';
 import { AdminInvitationError } from '../../application/use-cases/admin-invitation.use-cases.js';
 
 type AccessDatabase = Kysely<DatabaseSchema> | Transaction<DatabaseSchema>;
@@ -26,11 +26,11 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
     });
   }
 
-  async issue(input: Parameters<AdminInvitationRepositoryPort['issue']>[0], guard: Parameters<AdminInvitationRepositoryPort['issue']>[1]): Promise<AdminInvitationRecord> {
+  async issue(input: Parameters<AdminInvitationRepositoryPort['issue']>[0], guard: Parameters<AdminInvitationRepositoryPort['issue']>[1]): Promise<AdminInvitationWriteResult> {
     return this.connection[databaseTransactionCapability]({ isolationLevel: 'serializable', accessMode: 'read write' }, async (raw) => {
       const db = raw as unknown as AccessDatabase; const at = new Date(input.occurredAt);
       const replay = await this.replay(db, input.tenantId, input.clientRequestId, 'ISSUE', input.invitationId, fingerprint({ email: input.normalizedEmail, grants: input.grants, target: input.targetUserId, name: input.proposedDisplayName }));
-      if (replay) return replay;
+      if (replay) return Object.freeze({ invitation: replay, deliveryRequired: false });
       if (!await guard.confirmCurrent(raw)) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
       const authorityRevision = await this.validateAuthorityAndGrants(db, input.tenantId, input.inviterUserId, input.inviterAdminIdentityId, null, input.grants);
       await db.insertInto('access_admin_invitations').values({ tenant_id: input.tenantId, invitation_id: input.invitationId, normalized_email: input.normalizedEmail, email_display: input.emailDisplay, target_user_id: input.targetUserId, proposed_display_name: input.proposedDisplayName, inviter_user_id: input.inviterUserId, inviter_admin_identity_id: input.inviterAdminIdentityId, status: 'PENDING', version: 0, authority_revision: authorityRevision, intended_grants_digest: digestAdminInvitationGrants(input.grants), expires_at: new Date(at.getTime() + 86_400_000), accepted_at: null, revoked_at: null, created_at: at, updated_at: at }).execute();
@@ -38,14 +38,14 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
       await this.insertChallengeDispatch(db, input.tenantId, input.invitationId, input.challengeId, input.deliveryId, input.normalizedEmail, input.tokenDigest, at);
       await this.command(db, input.tenantId, input.clientRequestId, 'ISSUE', input.invitationId, fingerprint({ email: input.normalizedEmail, grants: input.grants, target: input.targetUserId, name: input.proposedDisplayName }), 'PENDING', 0, at);
       await this.event(db, { tenantId: input.tenantId, eventType: 'INVITATION_ISSUED', actorUserId: input.inviterUserId, invitationId: input.invitationId, correlationId: input.correlationId, level: 1, at });
-      return this.read(db, input.tenantId, input.invitationId);
+      return Object.freeze({ invitation: await this.read(db, input.tenantId, input.invitationId), deliveryRequired: true });
     });
   }
 
-  async resend(input: Parameters<AdminInvitationRepositoryPort['resend']>[0], guard: Parameters<AdminInvitationRepositoryPort['resend']>[1]): Promise<AdminInvitationRecord> {
+  async resend(input: Parameters<AdminInvitationRepositoryPort['resend']>[0], guard: Parameters<AdminInvitationRepositoryPort['resend']>[1]): Promise<AdminInvitationWriteResult> {
     return this.connection[databaseTransactionCapability]({ isolationLevel: 'serializable', accessMode: 'read write' }, async (raw) => {
       const db = raw as unknown as AccessDatabase; const at = new Date(input.occurredAt); const fp = fingerprint({ invitationId: input.invitationId, expectedVersion: input.expectedVersion });
-      const replay = await this.replay(db, input.tenantId, input.clientRequestId, 'RESEND', input.invitationId, fp); if (replay) return replay;
+      const replay = await this.replay(db, input.tenantId, input.clientRequestId, 'RESEND', input.invitationId, fp); if (replay) return Object.freeze({ invitation: replay, deliveryRequired: false });
       if (!await guard.confirmCurrent(raw)) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
       const current = await db.selectFrom('access_admin_invitations').selectAll().where('tenant_id', '=', input.tenantId).where('invitation_id', '=', input.invitationId).forUpdate().executeTakeFirst();
       if (!current) throw new AdminInvitationError('ADMIN_INVITATION_NOT_FOUND');
@@ -56,7 +56,7 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
       await db.updateTable('access_admin_invitations').set({ version, updated_at: at }).where('tenant_id', '=', input.tenantId).where('invitation_id', '=', input.invitationId).execute();
       await this.command(db, input.tenantId, input.clientRequestId, 'RESEND', input.invitationId, fp, 'PENDING', version, at);
       await this.event(db, { tenantId: input.tenantId, eventType: 'INVITATION_RESENT', actorUserId: current.inviter_user_id, invitationId: input.invitationId, correlationId: input.correlationId, level: 1, at });
-      return this.read(db, input.tenantId, input.invitationId);
+      return Object.freeze({ invitation: await this.read(db, input.tenantId, input.invitationId), deliveryRequired: true });
     });
   }
 
@@ -135,7 +135,8 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
   private async replay(db: AccessDatabase, tenantId: string, requestId: string, type: string, invitationId: string, fp: Uint8Array): Promise<AdminInvitationRecord | null> {
     const command = await db.selectFrom('access_admin_invitation_commands').selectAll().where('tenant_id', '=', tenantId).where('client_request_id', '=', requestId).executeTakeFirst();
     if (!command) return null;
-    if (command.command_type !== type || command.invitation_id !== invitationId || !sameBytes(command.request_fingerprint, fp)) throw new AdminInvitationError('ADMIN_INVITATION_INVALID');
+    const invitationMatches = type === 'ISSUE' || command.invitation_id === invitationId;
+    if (command.command_type !== type || !invitationMatches || !sameBytes(command.request_fingerprint, fp)) throw new AdminInvitationError('ADMIN_INVITATION_INVALID');
     return this.read(db, tenantId, command.invitation_id);
   }
 
