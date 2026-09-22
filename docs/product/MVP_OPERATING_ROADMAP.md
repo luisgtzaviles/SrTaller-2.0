@@ -6,7 +6,7 @@
   gates de producto; Git/GitHub/CI/runtime gobiernan la materialización.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
-- **Fase:** Tenant Lifecycle MVP — Branch Management V1 readiness.
+- **Fase:** Tenant Lifecycle MVP — Branch Management V1 implementation.
 - **Checkpoint alcanzado:** Pricing Catalog cerrado conforme a los PBI y
   autoridades técnicas enlazadas; TL-01–04 están cerrados por integración
   gobernada, exact-main CI y closure refs. `Released` permanece separado.
@@ -15,11 +15,12 @@
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** TL-05 requiere las decisiones Owner `TL5D-001–004` antes
-  de autorizar implementación. Production no está autorizada.
+- **Blocking gate:** ninguno para implementación local TL-05; `TL5D-001–004`
+  y los bloques 2–9 fueron autorizados. Production no está autorizada.
 - **WIP operacional:** `1/1 Work Unit`; `0/1 PBI`.
 - **Autoridad:** decisiones Owner TL-001–016/TLD-001–009 y TL-01–04 cerrados;
-  TL-05 sólo tiene autoridad de discovery/readiness.
+  TL-05 tiene autoridad local para implementar sus bloques 2–9, sin promoción,
+  merge ni deploy.
 
 ## Objetivo
 
@@ -84,14 +85,14 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 |---|---|
 | Program | MVP Operating Roadmap |
 | Stage | MVP |
-| Phase | Tenant Lifecycle MVP — Branch Management V1 readiness |
+| Phase | Tenant Lifecycle MVP — Branch Management V1 implementation |
 | Sprint | NONE; SPRINT-03 remains Closed |
 | Sprint status | No active Sprint |
 | Current PBI | NONE |
 | Active Work Unit | TL-05 — Branch Management V1 + Tenant Activation (`ACTIVE`) |
 | Work Unit WIP | 1/1 |
 | Next PBI candidate | NONE; future TL Work Units are not PBIs and are not started |
-| Blocking gate | Owner decisions `TL5D-001–004`; implementation is not authorized |
+| Blocking gate | None for local implementation; promotion remains separately gated |
 
 ## Fases aprobadas
 

@@ -2,8 +2,8 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-05 — Branch Management V1 + Tenant Activation
-iteration: 1 - Readiness
-type: DISCOVERY
+iteration: 2 - Implementation
+type: PRODUCT
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-05-branch-management-readiness
@@ -19,19 +19,18 @@ Current PBI: NONE
 
 - **Milestone:** Tenant Lifecycle MVP.
 - **Sprint:** none selected.
-- **Current PBI:** none; Work Unit `TL-05` is in readiness only.
-- **Overall status:** `WAITING FOR LEGACY BRANCH MAPPING`.
-- **Progress:** `9 / 11` readiness steps complete.
-- **Current work:** `TL5D-001–003` recorded; legacy Branches inspected
-  read-only.
-- **Next block:** Owner provides the two truthful `displayName` mappings for
-  `TL5D-004`.
-- **Blockers:** `TL5D-004` only; no technical/runtime blocker.
+- **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
+- **Overall status:** `IMPLEMENTATION IN PROGRESS`.
+- **Progress:** `1 / 9` implementation blocks complete.
+- **Current work:** Branch V1 schema, legacy mapping and persistence contracts.
+- **Next block:** authoritative Branch commands and Tenant activation.
+- **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
 ## Objective
 
-Audit and define an implementation-ready Branch Management V1 and authoritative ONBOARDING-to-ACTIVE Tenant transition without implementing product functionality.
+Implement Branch Management V1 and the authoritative ONBOARDING-to-ACTIVE
+Tenant transition through the Tenant Admin Context.
 
 ## Why
 
@@ -44,10 +43,11 @@ To execute one authorized objective with a transferable repository-native handof
 - Define atomic Tenant activation and last-active-Branch concurrency protection.
 - Define authorization, Level-2 reauth, timezone, migration, audit and minimal Admin UI boundaries.
 - Produce implementation blocks, material test plan and explicit Owner decisions.
+- Materialize the approved schema, commands, HTTP surface, Admin UI and audit.
+- Prove concurrency, authorization, tenant isolation and regression safety.
 
 ## Out of Scope
 
-- Product code, schema migrations or data mutation.
 - TL-06, Station enrollment, billing, plans or Super Admin.
 - Push, PR, merge, deploy or infrastructure changes.
 
@@ -63,10 +63,10 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Risks
 
-- Legacy Branch rows have no persisted name; no mapping may be invented.
+- Legacy mapping is exact-ID-only and must fail closed for any extra unnamed row.
 - Last-active-Branch enforcement must survive concurrent deactivation.
 - Operational Branch settings currently expose a conflicting mutation path.
-- Legacy Branch rows still require truthful Owner-provided display names.
+- The operational timezone mutation must be retired without breaking reads.
 
 ## Plan
 
@@ -78,23 +78,27 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Define timezone, migration/backfill and audit contracts.
 - [x] Define minimal Admin UI/onboarding scope.
 - [x] Define implementation blocks and material test plan.
-- [x] Record Owner decisions `TL5D-001–003`.
-- [~] Obtain legacy Branch mapping `TL5D-004`.
-- [ ] Receive explicit implementation authorization.
+- [x] Record `TL5D-001–004` and explicit implementation authorization.
+- [~] Block 2 — Branch V1 schema, migration and persistence.
+- [ ] Block 3 — transactional commands and Tenant activation.
+- [ ] Block 4 — Admin authorization and cross-Tenant protection.
+- [ ] Block 5 — Admin HTTP and operational-authority retirement.
+- [ ] Block 6 — Admin login/session shell.
+- [ ] Block 7 — Branch onboarding and management UI.
+- [ ] Block 8 — PostgreSQL concurrency, regression and browser QA.
+- [ ] Block 9 — canonical docs, full verification and candidate freeze.
 
 ## Current
 
-Readiness contract complete; waiting only for the two legacy Branch names in
-`TL5D-004` before implementation can be authorized.
+Owner decisions and implementation authority are complete. Block 2 is active.
 
 ## Next
 
-Owner maps each legacy `branchId` to its truthful `displayName`; then authorize
-or reject the proposed implementation scope.
+Implement the additive Branch V1 migration and material persistence tests.
 
 ## Blockers
 
-- `TL5D-004`: authoritative names for legacy Branch rows.
+- None.
 
 ## Important Discoveries
 
@@ -105,6 +109,8 @@ or reject the proposed implementation scope.
 - Current operational timezone mutation must not remain an alternate authority after TL-05.
 - Both legacy rows belong to Tenant `SR Taller`; Branch `...0101` has one
   active linked Station and Branch `...0102` has none.
+- Approved mapping is exact-ID-only and identifies development fixtures, not
+  Avicell business data or physical locations.
 
 ## Focused Verification
 
@@ -118,8 +124,8 @@ or reject the proposed implementation scope.
 
 - Existing authoritative promotion policy remains unchanged.
 - The current classifier requires `FULL` before promotion because the readiness
-  contract lives under `docs/architecture-readiness/`; that gate has not been
-  claimed or bypassed in this decision-blocked iteration.
+  contract lives under `docs/architecture-readiness/`; it will run once on the
+  frozen implementation candidate and is not bypassed.
 
 ## Remote Actions / Authorization
 
@@ -129,13 +135,13 @@ or reject the proposed implementation scope.
 
 - Permanent readiness artifact:
   [`TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md`](../architecture-readiness/tenant-lifecycle/TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md).
-- No product implementation or database write occurred in this iteration.
+- Product implementation is authorized locally; no remote action is implied.
 - Preserve `apps/dev-preview-web/src/.DS_Store` untracked.
 - TL-06 remains unstarted.
 
 ## Closure Predicate
 
-For this discovery Work Unit: Owner decisions recorded, implementation contract
-authorized or explicitly rejected, required local documentation gates PASS, and
-the resulting repository-native handoff promoted under the normal Work Unit
-lifecycle. This iteration does not satisfy that predicate by itself.
+For this product Work Unit: authorized scope implemented, focused and full
+verification PASS, Owner-reviewable browser proof complete, candidate promoted,
+merged under explicit authority, exact-main CI GREEN and deterministic closure
+ref published. This local iteration does not satisfy that predicate by itself.

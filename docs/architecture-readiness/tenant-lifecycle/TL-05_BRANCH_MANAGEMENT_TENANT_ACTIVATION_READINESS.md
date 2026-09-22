@@ -3,13 +3,13 @@
 ## Estado
 
 - **Work Unit:** TL-05 — Branch Management V1 + Tenant Activation.
-- **Iteración:** discovery y readiness; no implementación de producto.
+- **Iteración:** readiness aprobada; implementación local de bloques 2–9
+  autorizada.
 - **Tipo / riesgo:** `DISCOVERY` / `ARCHITECTURAL`.
 - **Dependencias satisfechas:** ADR-015, Tenant Lifecycle MVP y TL-02–04
   integrados y cerrados.
-- **Resultado:** `WAITING FOR LEGACY BRANCH MAPPING`; `TL5D-001–003` fueron
-  aprobadas y sólo `TL5D-004` permanece pendiente antes de autorizar
-  implementación.
+- **Resultado:** `READY FOR IMPLEMENTATION`; `TL5D-001–004` están aprobadas y
+  los bloques 2–9 fueron autorizados en la misma Work Unit.
 - **Fuera de alcance:** TL-06, Station enrollment, billing, planes, Super Admin,
   hard delete y cambios de producto no descritos aquí.
 
@@ -419,7 +419,7 @@ backend; la operación existente sigue leyendo timezone para presentar fechas.
 | `TL5D-001` | **APPROVED** | Nombres duplicados permitidos. `branchId` es identidad; `displayName` es sólo presentación y nunca autoridad, routing ni tenancy boundary. |
 | `TL5D-002` | **APPROVED** | Zona IANA explícitamente seleccionada/confirmada. Sugerencia UX permitida; default silencioso y fixed offsets prohibidos. El cambio no reescribe timestamps históricos. |
 | `TL5D-003` | **APPROVED** | Reactivación Level 2 con Admin Session, `branches.deactivate` y la ventana de password reauth de 10 minutos de TL-02. El primitivo vigente expira al alcanzar `600000 ms`; no se crea otro mecanismo. |
-| `TL5D-004` | **PENDING** | El Owner debe asignar un `displayName` verdadero a cada Branch legacy por su `branchId`. No se permite fallback, placeholder ni inferencia desde timezone, Station o fixtures. |
+| `TL5D-004` | **APPROVED** | Mapping exacto: `...0101` → `SR Taller Fixture — Hermosillo`; `...0102` → `SR Taller Fixture — Tijuana`. Sólo aplica a esos IDs conocidos; toda otra fila legacy sin nombre hace fallar la migración. |
 
 La inspección local read-only delimitó el input pendiente:
 
@@ -441,7 +441,8 @@ ADR nuevo.
   bloques y pruebas definidos.
 - Producto, schema y datos permanecen sin cambios.
 - `TL5D-001–003` aprobadas y registradas.
-- `TL5D-004` bloquea únicamente autorización de implementación.
+- `TL5D-004` aprobada con mapping exacto y fail-closed.
+- Implementación local de bloques 2–9 autorizada; promoción permanece separada.
 - TL-06 no está iniciado.
 
 ## 17. Readiness
@@ -449,7 +450,8 @@ ADR nuevo.
 TL-05 es compatible con ADR-015 y puede extender los owners existentes sin un
 nuevo agregado, capability bundle o mecanismo de autenticación. El diseño
 protege activación, aislamiento y última Branch en una transacción material.
-Antes de implementar, el Owner debe proporcionar únicamente el mapping de
-nombres legacy `TL5D-004`.
+No queda una decisión Owner pendiente antes de implementar. Los nombres legacy
+son identificadores explícitos de fixtures de desarrollo y no afirmaciones
+físicas ni datos Avicell.
 
-**TL-05 READINESS: `WAITING FOR LEGACY BRANCH MAPPING`.**
+**TL-05 READINESS: `READY FOR IMPLEMENTATION`.**
