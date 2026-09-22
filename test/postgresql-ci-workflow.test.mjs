@@ -38,6 +38,10 @@ const ownerScopedRunner = await readFile(
   'scripts/test-owner-scoped-persistence-postgresql.mjs',
   'utf8',
 );
+const accessPinPostgresqlTest = await readFile(
+  'test/access-pin-postgresql.test.mjs',
+  'utf8',
+);
 const pbi039Runner = await readFile(
   'scripts/test-pbi039-postgresql.mjs',
   'utf8',
@@ -237,21 +241,62 @@ test('owner-scoped PostgreSQL runner retains the exact material adapter inventor
     'test/access-session-postgresql.test.mjs',
     'test/contextual-authorization-postgresql.test.mjs',
   ]);
+  assert.doesNotMatch(ownerScopedRunner, /Promise\.allSettled/u);
   assert.match(
     ownerScopedRunner,
-    /for \(const file of ownerScopedPostgresqlTestFiles\)/u,
+    /for \(const file of executionOrder\)[\s\S]*executions\[index\] = await runFileOnce\(file, campaign\)/u,
   );
   assert.match(
     ownerScopedRunner,
-    /fresh database and container per test file/u,
+    /fresh database per test file within one governed campaign container/u,
   );
+  assert.match(ownerScopedRunner, /executionMode: 'serial-fresh-database'/u);
+  assert.match(ownerScopedRunner, /containerCount: 1/u);
+  assert.match(ownerScopedRunner, /async function createDatabase/u);
+  assert.match(ownerScopedRunner, /async function dropDatabase/u);
+  assert.match(ownerScopedRunner, /async function assertDatabaseAbsent/u);
+  assert.match(ownerScopedRunner, /dropdb'[\s\S]*'--force'/u);
+  assert.match(
+    ownerScopedRunner,
+    /runIndex % 2 === 0[\s\S]*ownerScopedPostgresqlTestFiles\]\.reverse\(\)/u,
+  );
+  assert.match(
+    ownerScopedRunner,
+    /for \(let index = 0; index < requestedRuns; index \+= 1\) \{\s*results\.push\(await runOnce\(campaign, index\)\)/u,
+  );
+  assert.doesNotMatch(ownerScopedRunner, /retry/iu);
+  assert.match(ownerScopedRunner, /timeout: 150_000/u);
   assert.match(ownerScopedRunner, /randomBytes\(6\)/u);
   assert.match(
     ownerScopedRunner,
-    /finally \{\s*if \(started\)/u,
+    /finally \{\s*await measure\(timings, 'databaseDropMs'/u,
+  );
+  assert.equal(
+    ownerScopedRunner.match(/\['pull', image\]/gu)?.length,
+    1,
+  );
+  assert.match(
+    ownerScopedRunner,
+    /fileResults = executions\.map\(\(\{ result \}\) => result\)/u,
+  );
+  assert.equal(
+    ownerScopedRunner.match(/'run',\s*'--detach'/gu)?.length,
+    1,
+  );
+  assert.match(
+    runner,
+    /timeout: 240_000/u,
+  );
+  assert.match(
+    runner,
+    /PostgreSQL owner-scoped timing diagnostics are incomplete/u,
   );
   assert.match(ownerScopedRunner, /process\.once\('SIGINT'/u);
   assert.match(ownerScopedRunner, /process\.once\('SIGTERM'/u);
+  assert.match(
+    accessPinPostgresqlTest,
+    /new NodeArgon2PinHasher\(pepper, \{\s*maxActive: 1,\s*maxQueued: 16,/u,
+  );
 });
 
 test('PBI-039 PostgreSQL runner isolates each focused test file from local and shared databases', () => {

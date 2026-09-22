@@ -2,51 +2,45 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-06 — Tenant Administration Users/Roles Integration
-iteration: 2 - Implementation
+iteration: 3 - Main Reconciliation and Remote Revalidation
 type: PRODUCT
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-06-admin-users-roles-readiness
 base_sha: 81b57994c69ed3584776ff080253f9a772e6425b
-status: READY_FOR_PROMOTION
+status: PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
 
-## Status Snapshot
-
 Current PBI: NONE
-
-- **Milestone:** Tenant Lifecycle MVP.
-- **Sprint:** none selected.
-- **Current PBI:** none; Work Unit `TL-06` completed its authorized local scope.
-- **Overall status:** `READY_FOR_PROMOTION`.
-- **Progress:** readiness `8 / 8`; implementation `8 / 8`.
-- **Current work:** local implementation, material proof and candidate freeze complete.
-- **Next block:** remote promotion only after separate Owner authorization.
-- **Blockers:** none.
-- **Last updated:** 2026-09-22.
 
 ## Objective
 
-Design and prepare the minimum Tenant Administration Users/Roles capability for verified invitations, explicit administrative authority delegation, context separation and last-effective-admin safety.
+Deliver the minimum Tenant Administration Users/Roles capability for verified
+invitations, explicit administrative authority delegation, context separation
+and last-effective-admin safety.
 
 ## Why
 
-To execute one authorized objective with a transferable repository-native handoff.
+Complete the authorized Tenant Lifecycle administrative identity boundary
+without coupling Admin Context to Station/PIN or weakening tenant isolation.
 
 ## In Scope
 
-- Audit the current Tenant User, Admin Identity, PIN, Role and assignment model.
-- Define verified-email invitations and invitee-owned password establishment.
-- Define custom Role/assignment administration from Admin Context.
-- Define the transaction-safe last-effective-Tenant-Admin invariant.
-- Define Level-2 boundaries, cross-tenant isolation, migrations and tests.
+- Verified-email invitations and invitee-owned password establishment.
+- Tenant-managed Roles and multiple assignments from Admin Context.
+- Admin-only, operational-only and combined User modes.
+- Transaction-safe last-effective-Tenant-Admin protection.
+- Level-2 reauthentication for sensitive authority/lifecycle mutations.
+- Cross-tenant isolation, durable sanitized audit and reusable email delivery.
+- Reconciliation with the integrated owner-scoped PostgreSQL harness.
 
 ## Out of Scope
 
 - TL-07, Station enrollment, Super Admin, billing and Production email setup.
-- Push, PR, merge and deploy.
+- Changes to the 240-second owner-scoped budget, retries or suite parallelism.
+- Merge of PR #69, deploy and unrelated cleanup.
 
 ## Applicable Contracts
 
@@ -60,81 +54,99 @@ To execute one authorized objective with a transferable repository-native handof
 ## Risks
 
 - Concurrent authority removal could leave a Tenant without an effective Admin.
-- Invitation replay or stale issuer authority could elevate a recipient.
-- Reusing Operational UI/guards could couple Admin Context to Station/PIN.
+- Invitation replay, expiry or stale issuer authority could elevate a recipient.
+- Reusing Operational guards could couple Admin Context to Station/PIN.
 - IDs or email lookup could leak or mutate another Tenant.
+- Reconciliation could accidentally restore the obsolete per-suite PostgreSQL
+  container lifecycle or weaken the material eight-suite campaign.
 
 ## Plan
 
-- [x] Initialize the governed Work Unit from clean `main`.
-- [x] Audit User, credentials, Roles, assignments and current local material.
-- [x] Define the identity/context relationship without a second User aggregate.
-- [x] Threat-model invitation, acceptance, resend, replay and concurrency.
-- [x] Select the minimum Role Management V1 boundary.
-- [x] Define last-admin serialization and Level-2 actions.
-- [x] Reconcile TL-04 email delivery reuse and Access ownership.
-- [x] Define migrations, audit, HTTP/UI blocks and test plan.
-- [x] Complete focused documentary validation and Owner handoff.
-- [x] Receive explicit Owner implementation authorization.
-- [x] Block 1 — invitation persistence, domain and audit foundation.
-- [x] Block 2 — TL-04 email transport reuse and durable dispatch.
-- [x] Block 3 — atomic invitation acceptance and password establishment.
-- [x] Block 4 — Admin Users/Roles authorization and HTTP surface.
-- [x] Block 5 — last-effective-admin coordinator and Level-2 actions.
-- [x] Block 6 — Admin UI Users/Roles/invitation acceptance.
-- [x] Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
-- [x] Block 8 — browser/accessibility proof, docs and full candidate freeze.
+- [x] Complete readiness and Owner decisions.
+- [x] Implement invitation persistence, email dispatch and atomic acceptance.
+- [x] Implement Admin Users/Roles APIs and UI.
+- [x] Implement last-effective-admin and Level-2 protections.
+- [x] Prove tenant isolation, concurrency and responsive accessibility.
+- [x] Complete the original focused and full candidate verification.
+- [x] Remediate invitation expiry/resend lifecycle on the preserved branch.
+- [x] Preserve the reviewed TL-06 checkpoint during the external Quality work.
+- [x] Confirm the Quality Work Unit is closed and current `main` is authoritative.
+- [~] Merge current `main` ordinarily and audit the combined state.
+- [ ] Run focused TL-06 and integrated PostgreSQL verification.
+- [ ] Run one canonical `verify:full` on the reconciled exact HEAD.
+- [ ] Push normally, require fresh PR #69 CI and review the exact final HEAD.
 
 ## Current
 
-All eight authorized implementation blocks, responsive browser proof,
-PostgreSQL material verification and the canonical full gate are complete.
+TL-06 has resumed on its preserved branch. Its previous remote promotion found
+the invitation expiry/resend lifecycle defect, which is fixed at the preserved
+checkpoint. The external owner-scoped PostgreSQL Quality dependency is now
+integrated and closed; current `main` is being merged ordinarily into TL-06.
 
 ## Next
 
-Await separate Owner authorization to promote the frozen local candidate.
+Complete the checklist conflict resolution, audit the combined product and
+harness contracts, then execute focused TL-06 verification.
 
 ## Blockers
 
-None.
+None. PR #69 remains open and unmerged while the reconciled candidate is
+revalidated.
 
 ## Important Discoveries
 
-- A single User already supports admin-only, operational-only and combined identities.
-- Local material has 4 Users: 3 operational-only and 1 combined; no fabricated backfill is required.
-- The legacy Users/Roles surface is Operational Context and cannot be reused as the TL-06 authorization boundary.
-- The protected `tenant_admin` Role already rejects content edits; assignment removal still needs the last-admin guard.
-- TL-04 provider infrastructure is reusable, but invitation dispatch persistence must remain Access-owned.
+- A single User supports admin-only, operational-only and combined identities.
+- The legacy Users/Roles surface is Operational Context and is not the TL-06
+  authorization boundary.
+- The protected `tenant_admin` Role rejects content edits; assignments remain
+  subject to the serialized last-effective-admin invariant.
+- TL-04 email provider infrastructure is reused while invitation persistence
+  remains Access-owned.
+- Expired invitations transition durably to `EXPIRED`, release pending-email
+  uniqueness, expire the active challenge and cannot have their original
+  deadline extended by resend.
+- The integrated Quality harness uses one governed PostgreSQL container, eight
+  exact serial suites and a fresh random database with deterministic drop and
+  absence verification per suite.
 
 ## Focused Verification
 
-- [x] Markdown local links.
-- [x] Architecture and dependency contracts.
-- [x] Secret-pattern scan.
-- [x] `git diff --check`.
-- [x] PostgreSQL 18.4 migration upgrade and rerun; 88 migrations, 0 pending.
-- [x] TL-02 through TL-06 material PostgreSQL regressions.
-- [x] Desktop, 768, 640, light/dark and keyboard accessibility proof.
-- [x] Canonical `verify` and `verify:full` on the frozen candidate.
-- [x] Promotion review remediation: expired invitations and their active challenges transition durably to `EXPIRED`, resend keeps the original deadline and the normalized email can be invited again.
+- [x] Original TL-06 domain/application/UI and material PostgreSQL proof.
+- [x] Invitation lifecycle remediation focused proof.
+- [ ] Reconciled invitation, identity, User-mode, Role and last-admin suites.
+- [ ] Reconciled Level-2, tenancy, email and audit suites.
+- [ ] TL-06 PostgreSQL 3/3 with current migrations and zero pending on rerun.
+- [ ] Owner-scoped PostgreSQL campaign 8/8 under the unchanged budget.
+- [ ] Typecheck, build, architecture, links, secret scan and `git diff --check`.
+- [ ] Canonical `verify:full` on one exact reconciled HEAD.
 
 ## Promotion Gates
 
-- Existing authoritative promotion policy remains unchanged.
+- [x] Existing PR #69 and prior remote promotion are preserved.
+- [x] External Quality dependency integrated and closed on `main`.
+- [~] Ordinary `main` reconciliation in progress.
+- [ ] Local focused and full gates on the reconciled candidate.
+- [ ] Fresh authoritative run-1, run-2, comparison and promotion gate.
+- [ ] Exact-HEAD security/architectural review without material findings.
+- [ ] Merge/exact-main closure — not authorized.
 
 ## Remote Actions / Authorization
 
-- No push, PR, merge or deploy is authorized.
+- Normal push to the existing TL-06 branch and reuse of Draft PR #69 are
+  authorized after local verification.
+- Merge, deploy, TL-07 and force push remain unauthorized.
 
 ## Handoff Notes
 
-- Branch creation/switching is explicit and occurred before this command.
-- `.DS_Store` remains an unrelated untracked Owner artifact.
-- Owner authorized all eight implementation blocks in this Work Unit.
+- Preserve the invitation-lifecycle remediation at the reviewed checkpoint.
+- Preserve `apps/dev-preview-web/src/.DS_Store` as unrelated Owner material.
+- Do not reopen Quality merely because a passing owner-scoped run is near its
+  unchanged 240-second contract.
 
 ## Closure Predicate
 
-All eight authorized blocks are implemented and evidenced; focused and full
-verification pass on one exact local HEAD; tracked tree is clean except the
-preserved Owner `.DS_Store`; Work Unit is `READY_FOR_PROMOTION`. Remote actions
-remain separately unauthorized.
+The reconciled TL-06 branch preserves all authorized product and invitation
+semantics; focused and canonical full verification pass on one exact HEAD;
+fresh PR #69 run-1/run-2 materially execute owner-scoped 8/8 and TL-06 3/3,
+comparison and promotion gate pass; security/architectural review has no
+material findings; merge and exact-main closure remain separately authorized.

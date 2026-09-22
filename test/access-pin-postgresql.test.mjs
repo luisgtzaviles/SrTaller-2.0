@@ -405,7 +405,7 @@ function pinUseCases(connection, now) {
   const accessRepository = createKyselyAccessRepository(connection);
   const users = createKyselyAuthenticationUserReader(connection);
   const hasher = new NodeArgon2PinHasher(pepper, {
-    maxActive: 2,
+    maxActive: 1,
     maxQueued: 16,
   });
   return Object.freeze({

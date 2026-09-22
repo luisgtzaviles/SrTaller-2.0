@@ -156,6 +156,39 @@ for (const definition of suiteDefinitions) {
     );
   }
   suiteResults.set(definition.name, result);
+  if (definition.name === 'owner-scoped-adapters') {
+    const diagnostics = result.diagnostics;
+    const diagnosticRun = diagnostics?.runs?.[0];
+    if (
+      !Number.isFinite(diagnostics?.imagePullMs) ||
+      !Number.isFinite(diagnostics?.containerStartMs) ||
+      diagnostics?.containerCount !== 1 ||
+      diagnostics?.executionMode !== 'serial-fresh-database' ||
+      !Number.isFinite(diagnosticRun?.totalMs) ||
+      diagnosticRun?.executionMode !== 'serial-fresh-database' ||
+      !Array.isArray(diagnosticRun?.executionOrder) ||
+      diagnosticRun.executionOrder.length !== 8 ||
+      !Array.isArray(diagnosticRun?.fileTimings) ||
+      diagnosticRun.fileTimings.length !== 8
+    ) {
+      throw new Error(
+        'PostgreSQL owner-scoped timing diagnostics are incomplete',
+      );
+    }
+    process.stdout.write(
+      `PostgreSQL owner-scoped timing: pull=${diagnostics.imagePullMs}ms ` +
+        `container-start=${diagnostics.containerStartMs}ms ` +
+        `campaign=${diagnosticRun.totalMs}ms mode=serial-fresh-database\n`,
+    );
+    for (const timing of diagnosticRun.fileTimings) {
+      process.stdout.write(
+        `PostgreSQL owner-scoped file timing: ${timing.file} ` +
+          `total=${timing.totalMs}ms test=${timing.testProcessMs}ms ` +
+          `database-create=${timing.databaseCreateMs}ms ` +
+          `database-drop=${timing.databaseDropMs}ms\n`,
+      );
+    }
+  }
   suites.push(
     Object.freeze({
       name: definition.name,
