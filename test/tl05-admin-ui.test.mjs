@@ -26,6 +26,9 @@ test('TL-05 Admin UI exposes Branch lifecycle through reauthentication only', as
   const [source, api] = await Promise.all([readFile('apps/dev-preview-web/src/admin/AdminApp.tsx', 'utf8'), readFile('apps/dev-preview-web/src/admin-api.ts', 'utf8')]);
   assert.match(source, /Acción sensible · Nivel 2/u);
   assert.match(source, /adminApi\.reauthenticate[\s\S]*adminApi\.deactivateBranch/u);
+  assert.match(source, /import \{ Dialog \} from '\.\.\/components\/ui\/overlays\.js'/u);
+  assert.match(source, /return <Dialog open title=/u);
+  assert.doesNotMatch(source, /role="dialog"|aria-modal="true"|dialogBackdrop/u);
   assert.match(api, /\/api\/admin\/session\/reauthentication/u);
   assert.match(api, /\/deactivation/u); assert.match(api, /\/reactivation/u);
 });

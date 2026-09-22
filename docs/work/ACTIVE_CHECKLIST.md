@@ -8,7 +8,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-05-branch-management-readiness
 base_sha: 34029bd4c0a892aba1a202444603bfd9c3c05f96
-status: READY_FOR_PROMOTION
+status: PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -20,10 +20,10 @@ Current PBI: NONE
 - **Milestone:** Tenant Lifecycle MVP.
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
-- **Overall status:** `READY_FOR_PROMOTION`.
+- **Overall status:** `PROMOTION`.
 - **Progress:** `9 / 9` implementation blocks complete.
-- **Current work:** local candidate frozen; awaiting explicit remote promotion authorization.
-- **Next block:** push one coherent candidate and open one Draft PR only after Owner authorization.
+- **Current work:** remote candidate under authoritative CI and deliberate architectural/security review.
+- **Next block:** complete exact-HEAD CI and review, then stop for Owner merge authorization.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -91,13 +91,14 @@ To execute one authorized objective with a transferable repository-native handof
 ## Current
 
 The separate Admin Session gate, responsive shell, first-Branch onboarding,
-list/create/edit and Level-2 lifecycle UX passed material local QA. The frozen
-candidate passed the authoritative local full gate.
+list/create/edit and Level-2 lifecycle UX passed material local QA. Remote
+promotion is active; the deliberate review replaced the bespoke Level-2 modal
+with the focus-managed Design System dialog before freezing the final PR HEAD.
 
 ## Next
 
-Await explicit Owner authorization to promote this exact Work Unit candidate
-to remote review. Do not start TL-06.
+Complete authoritative CI and deliberate review on the remediated exact PR
+HEAD, then stop for explicit Owner merge authorization. Do not start TL-06.
 
 ## Blockers
 
@@ -117,6 +118,9 @@ to remote review. Do not start TL-06.
 - Material Chrome QA found and corrected two integration defects before freeze:
   the Admin CSRF header name was inconsistent across session/Branch surfaces,
   and the first-Branch editor could flash for a Tenant with existing Branches.
+- Deliberate promotion review found that the Level-2 prompt duplicated modal
+  infrastructure without the Design System focus lifecycle; the remediated
+  prompt now inherits focus trap, Escape, inert background and focus restore.
 
 ## Focused Verification
 
@@ -134,6 +138,7 @@ to remote review. Do not start TL-06.
 - [x] Admin UI contract tests `4 / 4`, typecheck and production build.
 - [x] Material Admin login, duplicate-name create, edit/reload, deactivate and reactivate proof.
 - [x] Desktop, 768 px, 640 px, light/dark and keyboard proof; no page-level horizontal overflow.
+- [x] Level-2 reauthentication uses the canonical focus-managed Design System dialog.
 - [x] Authoritative `verify:full`: stages 0–17 PASS, including TL-05 PostgreSQL `3 / 3`, 84 migrations and rerun `0 pending`.
 
 ## Promotion Gates
