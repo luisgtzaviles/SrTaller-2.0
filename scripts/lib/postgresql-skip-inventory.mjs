@@ -52,6 +52,9 @@ export const expectedPostgresqlSkipInventory = Object.freeze([
   materialTest('test/tl06-admin-users-roles-postgresql.test.mjs', 'TL-06 PostgreSQL executes invitation replay, supersession, acceptance and secret-safe audit', 'tl06-postgresql'),
   materialTest('test/tl06-admin-users-roles-postgresql.test.mjs', 'TL-06 PostgreSQL fails closed across tenants, branches and stale issuer authority', 'tl06-postgresql'),
   materialTest('test/tl06-admin-users-roles-postgresql.test.mjs', 'TL-06 serializes simultaneous Tenant Admin revocation and preserves one effective Admin', 'tl06-postgresql'),
+  materialTest('test/tl07-station-postgresql.test.mjs', 'TL-07 inventory is tenant-scoped, preserves safe state and never exposes trust secrets', 'tl07-postgresql'),
+  materialTest('test/tl07-station-postgresql.test.mjs', 'TL-07 enrollment is strong, digest-only, immutable, expiring, cancelable and replay-safe', 'tl07-postgresql'),
+  materialTest('test/tl07-station-postgresql.test.mjs', 'TL-07 unlink/relink/revoke atomically cuts binding, credential and session trust', 'tl07-postgresql'),
 ]);
 
 function inspectGuardedTests(source, file) {
@@ -130,6 +133,7 @@ export async function inspectPostgresqlSkipInventory(root = process.cwd()) {
       tl04Postgresql: materialCount('tl04-postgresql'),
       tl05Postgresql: materialCount('tl05-postgresql'),
       tl06Postgresql: materialCount('tl06-postgresql'),
+      tl07Postgresql: materialCount('tl07-postgresql'),
     }),
   });
 }

@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 88);
+  assert.equal(first.manifest.migrations.length, 89);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -569,6 +569,12 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260922090000_access_bound_admin_invitation_challenge_expiry',
         order: 87,
         owner: 'access',
+      },
+      {
+        fileName: '20260922130000_stations_create_inventory_enrollment_authority.js',
+        migrationName: '20260922130000_stations_create_inventory_enrollment_authority',
+        order: 88,
+        owner: 'stations',
       },
     ],
   );
