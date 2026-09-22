@@ -1028,7 +1028,8 @@
       "src/infrastructure/database/migrations/20260921162000_stations_extend_branch_command_snapshots.ts",
       "src/infrastructure/database/migrations/20260921200000_access_create_admin_invitations.ts",
       "src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts",
-      "src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts"
+      "src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts",
+      "src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1766,6 +1767,13 @@
         "src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts": {
           "owner": "access",
           "tables": ["access_admin_invitations"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts": {
+          "owner": "access",
+          "tables": ["access_admin_invitation_challenges"],
           "references": [],
           "functions": [],
           "triggers": []

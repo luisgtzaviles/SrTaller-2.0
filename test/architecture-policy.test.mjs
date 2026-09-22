@@ -513,10 +513,11 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260921200000_access_create_admin_invitations.ts',
     'src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts',
     'src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts',
+    'src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy', 'registration', 'registration', 'stations', 'tenancy', 'stations', 'access', 'access', 'access'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy', 'registration', 'registration', 'stations', 'tenancy', 'stations', 'access', 'access', 'access', 'access'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -567,6 +568,7 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260921162000_stations_extend_branch_command_snapshots.ts',
       'src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts',
       'src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts',
+      'src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts',
     ].includes(migration)) {
       assert.deepEqual(registration.functions, []);
       assert.deepEqual(registration.triggers, []);

@@ -42,7 +42,7 @@ export interface AdminInvitationMutationGuard {
 }
 
 export interface AdminInvitationRepositoryPort {
-  list(tenantId: string): Promise<readonly AdminInvitationRecord[]>;
+  list(tenantId: string, occurredAt: string): Promise<readonly AdminInvitationRecord[]>;
   issue(input: Readonly<{
     tenantId: string; invitationId: string; challengeId: string; deliveryId: string;
     normalizedEmail: string; emailDisplay: string; targetUserId: string | null;
@@ -62,7 +62,7 @@ export interface AdminInvitationRepositoryPort {
     correlationId: string; actorUserId: string; actorAdminIdentityId: string;
     actorAdminSessionId: string; occurredAt: string;
   }>, guard: AdminInvitationMutationGuard): Promise<AdminInvitationRecord>;
-  findByChallengeDigest(tokenDigest: Uint8Array): Promise<AdminInvitationChallengeRecord | null>;
+  findByChallengeDigest(tokenDigest: Uint8Array, occurredAt: string): Promise<AdminInvitationChallengeRecord | null>;
   accept(input: Readonly<{
     challenge: AdminInvitationChallengeRecord; userId: string; adminIdentityId: string;
     assignmentIds: readonly string[]; password: AdminPasswordStoredVerifier;

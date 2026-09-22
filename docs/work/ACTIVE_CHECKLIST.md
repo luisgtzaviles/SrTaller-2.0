@@ -112,10 +112,11 @@ None.
 - [x] Architecture and dependency contracts.
 - [x] Secret-pattern scan.
 - [x] `git diff --check`.
-- [x] PostgreSQL 18.4 migration upgrade and rerun; 87 migrations, 0 pending.
+- [x] PostgreSQL 18.4 migration upgrade and rerun; 88 migrations, 0 pending.
 - [x] TL-02 through TL-06 material PostgreSQL regressions.
 - [x] Desktop, 768, 640, light/dark and keyboard accessibility proof.
 - [x] Canonical `verify` and `verify:full` on the frozen candidate.
+- [x] Promotion review remediation: expired invitations and their active challenges transition durably to `EXPIRED`, resend keeps the original deadline and the normalized email can be invited again.
 
 ## Promotion Gates
 

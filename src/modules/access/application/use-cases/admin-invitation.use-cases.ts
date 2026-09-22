@@ -42,7 +42,7 @@ export class AdminInvitationService {
     private readonly createToken: () => TokenMaterial = secureToken,
   ) {}
 
-  list(tenantId: string) { return this.repository.list(tenantId); }
+  list(tenantId: string) { return this.repository.list(tenantId, this.now().toISOString()); }
 
   async issue(input: Readonly<{
     tenantId: string; inviterUserId: string; inviterAdminIdentityId: string; inviterAdminSessionId: string;
@@ -86,12 +86,13 @@ export class AdminInvitationService {
   }
 
   async accept(input: Readonly<{ token: unknown; password: unknown; clientRequestId: string; correlationId: string }>): Promise<AdminInvitationRecord> {
-    const challenge = await this.repository.findByChallengeDigest(digestToken(input.token));
-    if (!challenge) throw new AdminInvitationError('ADMIN_INVITATION_UNAVAILABLE');
+    const occurredAt = this.now().toISOString();
+    const challenge = await this.repository.findByChallengeDigest(digestToken(input.token), occurredAt);
+    if (!challenge || (challenge.status !== 'ACTIVE' && challenge.status !== 'CONSUMED') || (challenge.status === 'ACTIVE' && occurredAt >= challenge.expiresAt)) throw new AdminInvitationError('ADMIN_INVITATION_UNAVAILABLE');
     const userId = challenge.targetUserId ?? this.createId();
     const adminIdentityId = this.createId();
     const password = await this.passwords.hash({ tenantId: challenge.tenantId, adminIdentityId, password: parseAdminPassword(input.password) });
-    return this.repository.accept({ challenge, userId, adminIdentityId, assignmentIds: [], password, clientRequestId: input.clientRequestId, correlationId: input.correlationId, occurredAt: this.now().toISOString() });
+    return this.repository.accept({ challenge, userId, adminIdentityId, assignmentIds: [], password, clientRequestId: input.clientRequestId, correlationId: input.correlationId, occurredAt });
   }
 
   private async deliver(invitation: AdminInvitationRecord, challengeId: string, deliveryId: string, token: string, occurredAt: string): Promise<void> {

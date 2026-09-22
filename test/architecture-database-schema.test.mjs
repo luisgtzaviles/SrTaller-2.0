@@ -264,6 +264,7 @@ test('productive migration root remains exact and governed', async () => {
       '20260921200000_access_create_admin_invitations.ts',
       '20260921201000_access_enable_admin_role_lifecycle.ts',
       '20260921202000_access_enforce_global_pending_invitation_email.ts',
+      '20260922090000_access_bound_admin_invitation_challenge_expiry.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

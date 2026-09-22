@@ -22,11 +22,12 @@ administrativo obligatorio para Users operativos.
 
 ## Persistencia y ownership
 
-Tres migraciones aditivas elevan el manifest a 87:
+Cuatro migraciones aditivas elevan el manifest a 88:
 
 - `20260921200000_access_create_admin_invitations`;
 - `20260921201000_access_enable_admin_role_lifecycle`;
 - `20260921202000_access_enforce_global_pending_invitation_email`.
+- `20260922090000_access_bound_admin_invitation_challenge_expiry`.
 
 Access conserva la transacción de aceptación, pero las comprobaciones o writes
 de Tenant, User y Branch pasan por puertos owner-scoped de Tenancy, Users y
@@ -76,7 +77,7 @@ productivas.
 - regresión focalizada TL-02–TL-06: `48/48` PASS, skips únicamente para suites
   PostgreSQL ejecutadas por sus runners materiales;
 - TL-06 PostgreSQL 18.4: `3/3` PASS;
-- migraciones: 87; segunda ejecución: `0 pending`;
+- migraciones: 88; segunda ejecución: `0 pending`;
 - `/livez`, `/readyz` y frontend local: `200`;
 - `git diff --check`: PASS;
 - `verify`: PASS, 1086 tests descubiertos, 0 fallos;

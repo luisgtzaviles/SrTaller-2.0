@@ -29,7 +29,7 @@ const execute = promisify(execFile);
 
 test('migration manifest covers the governed source and rejects duplicate content', async () => {
   const current = await inspectSourceMigrationManifest();
-  assert.equal(current.migrations.length, 87);
+  assert.equal(current.migrations.length, 88);
   assert.match(current.aggregateSha256, /^[0-9a-f]{64}$/u);
   const integratedBaseline = await inspectMigrationManifestAtRevision({
     revision: 'a0604941a5707c87f2601c467e89743fc2883e90',
