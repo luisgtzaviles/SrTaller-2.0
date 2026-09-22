@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-06` is implementing its authorized scope.
 - **Overall status:** `ACTIVE` implementation.
-- **Progress:** readiness `8 / 8`; implementation `1 / 8`.
-- **Current work:** Block 2 — shared email delivery and invitation dispatch.
-- **Next block:** Block 3 — atomic invitation acceptance and password establishment.
+- **Progress:** readiness `8 / 8`; implementation `2 / 8`.
+- **Current work:** Block 3 — atomic invitation acceptance and password establishment.
+- **Next block:** Block 4 — Admin Users/Roles authorization and HTTP surface.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -77,8 +77,8 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Complete focused documentary validation and Owner handoff.
 - [x] Receive explicit Owner implementation authorization.
 - [x] Block 1 — invitation persistence, domain and audit foundation.
-- [~] Block 2 — TL-04 email transport reuse and durable dispatch.
-- [ ] Block 3 — atomic invitation acceptance and password establishment.
+- [x] Block 2 — TL-04 email transport reuse and durable dispatch.
+- [~] Block 3 — atomic invitation acceptance and password establishment.
 - [ ] Block 4 — Admin Users/Roles authorization and HTTP surface.
 - [ ] Block 5 — last-effective-admin coordinator and Level-2 actions.
 - [ ] Block 6 — Admin UI Users/Roles/invitation acceptance.
@@ -87,13 +87,13 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Current
 
-Invitation storage, grant intent, digest-only challenges, durable dispatch,
-idempotency journal and append-only allowlisted audit are materialized.
+The TL-04 local/Resend transport is now shared with an invitation-specific
+template while retaining redacted inspection and provider failure semantics.
 
 ## Next
 
-Evolve the TL-04 email delivery contract for invitation-specific messages
-without introducing a second provider abstraction.
+Implement transactional issue/resend/revoke/accept orchestration and invited
+person password establishment without context crossover.
 
 ## Blockers
 
