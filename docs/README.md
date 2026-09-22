@@ -99,7 +99,7 @@ autoriza un cambio de producto.
 - [TL-03 — Atomic Tenant Bootstrap + Starter Authority Evidence](quality/evidence/tl-03/README.md)
 - [TL-04 — Public Registration + Email Verification Readiness](architecture-readiness/tenant-lifecycle/TL-04_PUBLIC_REGISTRATION_EMAIL_VERIFICATION_READINESS.md)
 - [TL-04 — Public Registration + Email Verification Evidence](quality/evidence/tl-04/README.md)
-- [TL-04 — Public Registration + Email Verification Readiness](architecture-readiness/tenant-lifecycle/TL-04_PUBLIC_REGISTRATION_EMAIL_VERIFICATION_READINESS.md)
+- [TL-05 — Branch Management V1 + Tenant Activation Readiness](architecture-readiness/tenant-lifecycle/TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md)
 - [Cierre y priorización de bloqueantes arquitectónicos](architecture-readiness/blocker-closure/README.md)
 - [Baseline técnica de DEC-004](architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md)
 - [Contexto del sistema](architecture/SYSTEM_CONTEXT.md)

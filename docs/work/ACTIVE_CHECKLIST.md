@@ -1,155 +1,138 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: TL-04 — Public Registration + Email Verification
-iteration: 2 - End-to-End Implementation
-type: IMPLEMENTATION
+work_unit: TL-05 — Branch Management V1 + Tenant Activation
+iteration: 1 - Readiness
+type: DISCOVERY
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
-branch: feature/tl-04-public-registration
-base_sha: 07a954ea7c07304ea490f9d79edecaffa69576c5
-status: PROMOTION
+branch: feature/tl-05-branch-management-readiness
+base_sha: 34029bd4c0a892aba1a202444603bfd9c3c05f96
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
 
-Milestone: Tenant Lifecycle MVP
-
-Sprint: NONE
+## Status Snapshot
 
 Current PBI: NONE
 
-Overall state: Remote promotion / Authoritative CI coverage remediation
-
-Progress: 16 / 16
-
-Current work: Ensure TL-04 PostgreSQL material runs in authoritative CI
-
-Next block: Revalidate the remediated exact HEAD and authoritative remote gates
-
-Blockers: authoritative CI initially omitted the TL-04 PostgreSQL material suite
-
-Last updated: 2026-09-21
+- **Milestone:** Tenant Lifecycle MVP.
+- **Sprint:** none selected.
+- **Current PBI:** none; Work Unit `TL-05` is in readiness only.
+- **Overall status:** `OWNER DECISIONS REQUIRED`.
+- **Progress:** `8 / 10` readiness steps complete.
+- **Current work:** readiness audit and implementation contract complete.
+- **Next block:** Owner resolves `TL5D-001–004` and explicitly authorizes or
+  rejects implementation.
+- **Blockers:** four scoped Owner decisions; no technical/runtime blocker.
+- **Last updated:** 2026-09-21.
 
 ## Objective
 
-Implement the public self-service registration and email-verification authority
-that safely feeds TL-03 and hands off to normal TL-02 administrative login.
+Audit and define an implementation-ready Branch Management V1 and authoritative ONBOARDING-to-ACTIVE Tenant transition without implementing product functionality.
 
 ## Why
 
-An anonymous visitor must become a verified, immutable server-owned bootstrap
-grant without gaining a path to choose Tenant, identity, Role or capabilities.
+To execute one authorized objective with a transferable repository-native handoff.
 
 ## In Scope
 
-- Registration Attempt, challenge, legal evidence and bounded abuse controls.
-- Provider-independent delivery with local/test and Resend adapters.
-- Public HTTP and minimal accessible public UI outside Operational Session.
-- Authoritative handoff to TL-03 and subsequent TL-02 login.
+- Audit the existing Branch aggregate, schema, repositories and operational relationships.
+- Define Branch V1 commands in Tenant Admin Context.
+- Define atomic Tenant activation and last-active-Branch concurrency protection.
+- Define authorization, Level-2 reauth, timezone, migration, audit and minimal Admin UI boundaries.
+- Produce implementation blocks, material test plan and explicit Owner decisions.
 
 ## Out of Scope
 
-- TL-05, Branch, Tenant ACTIVE transition, Station, PIN, billing, plans,
-  Super Admin or Landing content.
-- Push, PR, merge or deploy.
+- Product code, schema migrations or data mutation.
+- TL-06, Station enrollment, billing, plans or Super Admin.
+- Push, PR, merge, deploy or infrastructure changes.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`Tenant Lifecycle MVP`](../architecture/TENANT_LIFECYCLE_MVP.md)
+- [`TENANT_LIFECYCLE_MVP.md`](../architecture/TENANT_LIFECYCLE_MVP.md)
 - [`ADR-015`](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md)
-- [`TL-04 readiness`](../architecture-readiness/tenant-lifecycle/TL-04_PUBLIC_REGISTRATION_EMAIL_VERIFICATION_READINESS.md)
+- [`MULTITENANCY_MODEL.md`](../architecture/MULTITENANCY_MODEL.md)
+- [`DATA_ARCHITECTURE.md`](../architecture/DATA_ARCHITECTURE.md)
+- [`TL-05 readiness`](../architecture-readiness/tenant-lifecycle/TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md)
 
 ## Risks
 
-- Public abuse, email enumeration, token replay and KDF resource exhaustion.
-- Credential material crossing the pre-tenant/bootstrap boundary.
-- Provider delivery failure and secret leakage.
-- Duplicate or concurrent verification creating authority twice.
-- Retaining pre-tenant PII longer than required.
+- Legacy Branch rows have no persisted name; no mapping may be invented.
+- Last-active-Branch enforcement must survive concurrent deactivation.
+- Operational Branch settings currently expose a conflicting mutation path.
+- Reactivation sensitivity is not yet explicitly approved.
 
 ## Plan
 
-- [x] Initialize the governed Work Unit from closed `main`.
-- [x] Audit current public HTTP, UI, email and module infrastructure.
-- [x] Audit TL-02 password/admin-session and TL-03 grant/bootstrap contracts.
-- [x] Design attempt lifecycle, password boundary and challenge semantics.
-- [x] Design email delivery, HTTP boundary and abuse controls.
-- [x] Design bootstrap handoff, schema, UI boundary and tests.
-- [x] Publish repository-native readiness plan.
-- [x] Record Owner decisions `TL4D-001–007` and implementation authority.
-- [x] Block 1: contract/module and narrow Access bootstrap executor.
-- [x] Block 2: additive persistence, lifecycle/CAS, cleanup and audit.
-- [x] Block 3: TL-02 password handoff and TL-03 grant source.
-- [x] Block 4: challenge lifecycle, resend and abuse controls.
-- [x] Block 5: delivery port, local/test and Resend adapters.
-- [x] Block 6: public HTTP boundary and sanitized errors.
-- [x] Block 7: public registration/verification UI and accessibility.
-- [x] Block 8: PostgreSQL/E2E/isolation, docs and promotion verification.
+- [x] Audit baseline Git, Work Unit and applicable contracts.
+- [x] Audit Branch schema, repository, data and Station relationships.
+- [x] Audit Tenant activation and starter capability bundle.
+- [x] Define Branch V1 commands and Admin Context authority.
+- [x] Define atomic activation and last-active-Branch locking.
+- [x] Define timezone, migration/backfill and audit contracts.
+- [x] Define minimal Admin UI/onboarding scope.
+- [x] Define implementation blocks and material test plan.
+- [~] Obtain Owner decisions `TL5D-001–004`.
+- [ ] Receive explicit implementation authorization.
 
 ## Current
 
-All eight product blocks are materialized. During the authorized remote
-promotion, PR #67 exposed that the authoritative workflow did not execute the
-TL-04 PostgreSQL material suite. The same candidate branch is being remediated
-so the required material suite runs in both authoritative legs.
+Readiness complete; waiting for the four scoped Owner decisions before implementation can be authorized.
 
 ## Next
 
-Revalidate the amended exact HEAD, push normally and require all authoritative
-PR gates plus the TL-04 PostgreSQL suite to pass. TL-05 remains unstarted.
+Owner resolves `TL5D-001–004`; then authorize or reject the proposed implementation scope.
 
 ## Blockers
 
-- Remote promotion cannot complete until authoritative CI executes and passes
-  the TL-04 PostgreSQL material suite. Production remains fail-closed until
-  approved legal content, Resend secret and verified sender/domain are
-  configured operationally.
+- `TL5D-001`: duplicate Branch-name policy.
+- `TL5D-002`: explicit first-Branch timezone versus product default.
+- `TL5D-003`: reactivation sensitivity level.
+- `TL5D-004`: authoritative names for legacy Branch rows.
 
 ## Important Discoveries
 
-- Resend is approved only as an infrastructure adapter behind Registration's
-  replaceable delivery port; secrets remain external.
-- Current React routes are all behind the Station/PIN operational gate.
-- TL-03 is implemented/tested internally but intentionally has no runtime
-  composition or HTTP endpoint; TL-04 needs a narrow Access-owned factory.
-- Registration is a new pre-tenant owner and should become a governed module
-  with dependency `registration -> access`, not a generic global helper.
-- The existing 20 MB JSON parser exists for Catalog; registration needs a much
-  smaller route-specific bound.
+- Branch already exists under `stations`; it must be extended, not duplicated.
+- `active` and `admission_revision` already protect Station/Session admission.
+- Starter Tenant Admin policy v1 already contains all three Branch capabilities.
+- Local PostgreSQL has 81 migrations, two active unnamed Branches and no effective Tenant Admin; it remains correctly `ONBOARDING`.
+- Current operational timezone mutation must not remain an alternate authority after TL-05.
 
 ## Focused Verification
 
-- [x] Markdown links.
-- [x] Documentation consistency.
-- [x] Secret-pattern scan.
+- [x] Read-only PostgreSQL schema/data/relationship audit.
+- [x] Documentation links, policy consistency and secret scan.
+- [x] Architecture and repository structure checks.
 - [x] `git diff --check`.
 - [x] `work-unit:check --mode ACTIVE`.
-- [x] PostgreSQL 18.4 TL-04 material suite `3/3`; 81 migrations and rerun `0 pending`.
-- [x] Chrome desktop/768/640, light/dark and keyboard proof.
-- [x] Exact-candidate `verify:full` stages 0–16.
 
 ## Promotion Gates
 
-- The implementation candidate is `ARCHITECTURAL` and requires the full
-  governed verification and deliberate review applicable at promotion time.
+- Existing authoritative promotion policy remains unchanged.
+- The current classifier requires `FULL` before promotion because the readiness
+  contract lives under `docs/architecture-readiness/`; that gate has not been
+  claimed or bypassed in this decision-blocked iteration.
 
 ## Remote Actions / Authorization
 
-- Local implementation, focused tests and logical commits are authorized.
-- Push and one Draft PR are authorized for this promotion cycle. Merge and
-  deploy remain unauthorized.
+- No remote action is implied by checklist initialization.
 
 ## Handoff Notes
 
-- Preserve `apps/dev-preview-web/src/.DS_Store` as unrelated untracked Owner
-  artifact.
-- No remote runtime, data or external system may be changed in this Work Unit.
+- Permanent readiness artifact:
+  [`TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md`](../architecture-readiness/tenant-lifecycle/TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md).
+- No product implementation or database write occurred in this iteration.
+- Preserve `apps/dev-preview-web/src/.DS_Store` untracked.
+- TL-06 remains unstarted.
 
 ## Closure Predicate
 
-TL-04 reaches `READY_FOR_PROMOTION` only after all eight blocks, material
-PostgreSQL/concurrency/provider/E2E/UI evidence and exact-candidate
-`verify:full` pass with a clean tracked tree.
+For this discovery Work Unit: Owner decisions recorded, implementation contract
+authorized or explicitly rejected, required local documentation gates PASS, and
+the resulting repository-native handoff promoted under the normal Work Unit
+lifecycle. This iteration does not satisfy that predicate by itself.
