@@ -8,9 +8,9 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-06-admin-users-roles-readiness
 base_sha: 81b57994c69ed3584776ff080253f9a772e6425b
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
-last_updated: 2026-09-21
+last_updated: 2026-09-22
 -->
 
 ## Status Snapshot
@@ -19,13 +19,13 @@ Current PBI: NONE
 
 - **Milestone:** Tenant Lifecycle MVP.
 - **Sprint:** none selected.
-- **Current PBI:** none; Work Unit `TL-06` is implementing its authorized scope.
-- **Overall status:** `ACTIVE` implementation.
-- **Progress:** readiness `8 / 8`; implementation `7 / 8`.
-- **Current work:** Block 8 — browser/accessibility proof, docs and full candidate freeze.
-- **Next block:** reconcile evidence and run the exact-candidate full verification.
+- **Current PBI:** none; Work Unit `TL-06` completed its authorized local scope.
+- **Overall status:** `READY_FOR_PROMOTION`.
+- **Progress:** readiness `8 / 8`; implementation `8 / 8`.
+- **Current work:** local implementation, material proof and candidate freeze complete.
+- **Next block:** remote promotion only after separate Owner authorization.
 - **Blockers:** none.
-- **Last updated:** 2026-09-21.
+- **Last updated:** 2026-09-22.
 
 ## Objective
 
@@ -83,18 +83,16 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 5 — last-effective-admin coordinator and Level-2 actions.
 - [x] Block 6 — Admin UI Users/Roles/invitation acceptance.
 - [x] Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
-- [~] Block 8 — browser/accessibility proof, docs and full candidate freeze.
+- [x] Block 8 — browser/accessibility proof, docs and full candidate freeze.
 
 ## Current
 
-PostgreSQL materially proves invitation replay/supersession/acceptance,
-cross-Tenant and cross-Branch isolation, stale authority rejection and the
-concurrent last-effective-admin invariant across 87 migrations.
+All eight authorized implementation blocks, responsive browser proof,
+PostgreSQL material verification and the canonical full gate are complete.
 
 ## Next
 
-Complete material browser/accessibility proof, reconcile canonical evidence and
-freeze one exact candidate for `verify:full`.
+Await separate Owner authorization to promote the frozen local candidate.
 
 ## Blockers
 
@@ -116,6 +114,8 @@ None.
 - [x] `git diff --check`.
 - [x] PostgreSQL 18.4 migration upgrade and rerun; 87 migrations, 0 pending.
 - [x] TL-02 through TL-06 material PostgreSQL regressions.
+- [x] Desktop, 768, 640, light/dark and keyboard accessibility proof.
+- [x] Canonical `verify` and `verify:full` on the frozen candidate.
 
 ## Promotion Gates
 

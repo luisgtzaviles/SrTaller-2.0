@@ -79,7 +79,13 @@ productivas.
 - migraciones: 87; segunda ejecución: `0 pending`;
 - `/livez`, `/readyz` y frontend local: `200`;
 - `git diff --check`: PASS;
-- `verify:full`: pendiente del candidato exacto.
+- `verify`: PASS, 1086 tests descubiertos, 0 fallos;
+- `verify:full`: PASS, stages 0–18 completos, cleanup PASS;
+- composite PostgreSQL material: 17/17 PASS;
+- PBI-041 10k publish: 21.2 s, dentro del hard gate de 30 s; diagnóstico
+  histórico de capacidad transaccional conservado;
+- TL-02, TL-03, TL-04, TL-05 y TL-06 PostgreSQL: PASS;
+- Preview-like runtime y compiled backend/UI smoke: PASS.
 
 Estos resultados no sustituyen CI remota, review deliberado, merge,
 exact-main CI ni deploy.

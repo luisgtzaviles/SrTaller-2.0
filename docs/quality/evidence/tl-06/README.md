@@ -3,8 +3,8 @@
 ## Estado
 
 - **Work Unit:** TL-06 — Tenant Administration Users/Roles Integration.
-- **Estado:** los ocho bloques autorizados y el proof local están completos;
-  el gate completo del candidato exacto está pendiente en este snapshot.
+- **Estado:** los ocho bloques autorizados, el proof local y el gate completo
+  del candidato están completos; Work Unit `READY_FOR_PROMOTION`.
 - **Riesgo:** `ARCHITECTURAL`; la promoción exige `verify:full` y revisión
   deliberada de arquitectura, seguridad, autorización y tenancy.
 - **Base:** cierre gobernado de TL-05 sobre `main`.
