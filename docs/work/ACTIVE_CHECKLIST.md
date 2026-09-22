@@ -106,7 +106,7 @@ Run material PostgreSQL, regression and Chrome proofs at desktop, 768 and 640.
 - Branch already exists under `stations`; it must be extended, not duplicated.
 - `active` and `admission_revision` already protect Station/Session admission.
 - Starter Tenant Admin policy v1 already contains all three Branch capabilities.
-- Local PostgreSQL has 81 migrations, two active unnamed Branches and no effective Tenant Admin; it remains correctly `ONBOARDING`.
+- Local PostgreSQL has 84 migrations, two active fixture Branches and no effective Tenant Admin; it remains correctly `ONBOARDING`.
 - Current operational timezone mutation must not remain an alternate authority after TL-05.
 - Both legacy rows belong to Tenant `SR Taller`; Branch `...0101` has one
   active linked Station and Branch `...0102` has none.
@@ -122,6 +122,7 @@ Run material PostgreSQL, regression and Chrome proofs at desktop, 768 and 640.
 - [x] `work-unit:check --mode ACTIVE`.
 - [x] Branch V1 schema tests and typecheck.
 - [x] Local PostgreSQL migration apply plus second run `0 pending`.
+- [x] Upgrade-safe Branch command snapshot migration on the already-migrated local database.
 - [x] TL-05 PostgreSQL Branch command suite `3 / 3`.
 - [x] Concurrent two-Branch deactivation leaves exactly one active Branch.
 - [x] Focused Admin capability and Level-2 route contract tests `3 / 3`.
