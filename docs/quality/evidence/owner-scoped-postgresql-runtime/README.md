@@ -156,11 +156,12 @@ promotion authority for the final exact commit.
 
 ## Promotion verification
 
-The governed local `verify:full` campaign passed Stages 0–17 with cleanup and
-final fingerprint checks passing. Its material PostgreSQL Stage 4 completed in
-143,909 ms: the owner-scoped campaign passed 8/8 in 113,318 ms and the complete
-five-suite composite passed 17/17 with zero critical skips. PBI-039, PBI-040,
-PBI-041, TL-02, TL-03, TL-04, TL-05, Preview-like runtime and compiled backend
-and UI smokes all passed against 84 migrations with zero pending on rerun where
+The governed local `verify:full` campaign on remediated commit `9f57197` passed
+Stages 0–17 with cleanup and final fingerprint checks passing. Its material
+PostgreSQL Stage 4 completed in 142,184 ms: the owner-scoped campaign passed
+8/8 in 115,134 ms and the complete five-suite composite passed 17/17 with zero
+critical skips. The PIN file passed in 35,115 ms. PBI-039, PBI-040, PBI-041,
+TL-02, TL-03, TL-04, TL-05, Preview-like runtime and compiled backend and UI
+smokes all passed against 84 migrations with zero pending on rerun where
 applicable. The only emitted warning was the already accepted Vite main-chunk
 size warning.

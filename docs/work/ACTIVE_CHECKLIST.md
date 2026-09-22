@@ -8,7 +8,7 @@ risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: fix/owner-scoped-postgresql-runtime
 base_sha: 81b57994c69ed3584776ff080253f9a772e6425b
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
@@ -73,28 +73,25 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Progress
 
-9 / 10 blocks complete.
+10 / 10 blocks complete.
 
 ## Current
 
-The first exact-HEAD remote run proved the shared-container isolation design
-but exposed insufficient Linux x64 margin: run-1 passed the owner-scoped stage
-in 220,138 ms and run-2 exhausted the fixed 240-second timeout. Remediation is
-active on the same Quality branch; TL-06 remains frozen at its reviewed
-candidate.
+The remote finding has been remediated on the same Quality branch. The focused
+8/8 campaign and governed `verify:full` pass locally with one active real
+Argon2 derivation in the material PIN test; TL-06 remains frozen at its
+reviewed candidate.
 
 ## Next
 
-Revalidate the single-active-Argon2 test profile locally, freeze a new exact
-candidate, push normally to the existing Draft PR and require fresh
-authoritative CI in both legs.
+Push the new exact candidate normally to Draft PR #70 and require fresh
+authoritative run-1, run-2, comparison and promotion-gate evidence.
 
 ## Blockers
 
-Remote promotion remains blocked until the remediated exact HEAD completes
-run-1, run-2, comparison and the Authoritative promotion gate. TL-06 promotion
-remains externally blocked until this Work Unit is integrated and TL-06 is
-reconciled from the resulting main.
+None for the local Quality candidate. TL-06 promotion remains externally
+blocked until this Work Unit is integrated and TL-06 is reconciled from the
+resulting main.
 
 ## Important Discoveries
 
@@ -130,13 +127,14 @@ reconciled from the resulting main.
 - [x] Failure propagation and deterministic cleanup regressions.
 - [x] Migration/schema authority and 240-second budget static checks.
 - [x] Relevant architecture/persistence tests, typecheck and `git diff --check`.
-- [~] Canonical `verify:full` must be rerun on the remediated exact HEAD.
+- [x] Canonical `verify:full` on the remediated exact HEAD: Stages 0–17 PASS;
+  owner-scoped 8/8; cleanup PASS.
 
 ## Promotion Gates
 
 - [x] Local focused verification PASS.
 - [x] Local governed `verify` PASS.
-- [~] Local governed `verify:full` rerun on remediation HEAD.
+- [x] Local governed `verify:full` rerun on remediation HEAD PASS.
 - [~] Remote PR/CI/review — PR #70 open; first authoritative run failed closed.
 - [ ] Merge/exact-main closure — not authorized.
 
