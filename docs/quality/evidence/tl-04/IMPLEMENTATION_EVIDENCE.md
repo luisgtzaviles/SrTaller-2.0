@@ -2,9 +2,9 @@
 
 ## Resultado
 
-Los ocho bloques autorizados están materializados. El único gate pendiente al
-registrar esta evidencia es `verify:full` sobre el candidato documental final.
-No existe autorización remota y TL-05 permanece sin iniciar.
+Los ocho bloques autorizados están materializados y el candidato local está en
+`READY_FOR_PROMOTION`. No existe autorización remota y TL-05 permanece sin
+iniciar.
 
 ## Implementación
 
@@ -63,7 +63,8 @@ primitivos/tokens existentes y no duplica el Design System.
 - migraciones: 81; segunda ejecución: `0 pending`;
 - `/livez`, `/readyz` y frontend local: `200`;
 - `git diff --check`: PASS;
-- `verify:full`: pendiente sobre el candidato final.
+- `verify:full`: PASS, etapas 0–16, incluido runtime Preview-like y smoke
+  compilado backend/UI.
 
 Estos resultados no sustituyen CI remota, review independiente, merge,
 exact-main CI ni deploy.

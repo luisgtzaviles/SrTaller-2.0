@@ -8,7 +8,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-04-public-registration
 base_sha: 07a954ea7c07304ea490f9d79edecaffa69576c5
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -19,13 +19,13 @@ Sprint: NONE
 
 Current PBI: NONE
 
-Overall state: Implementation complete / Final verification in progress
+Overall state: Local candidate verified / Ready for authorized remote promotion
 
-Progress: 15 / 16
+Progress: 16 / 16
 
-Current work: Block 8 — exact-candidate authoritative `verify:full`
+Current work: Stopped at the local promotion checkpoint
 
-Next block: Reconcile `READY_FOR_PROMOTION` only after the exact candidate is GREEN
+Next block: Remote promotion only after explicit Owner authorization
 
 Blockers: none; `TL4D-001–007` approved by Owner
 
@@ -87,19 +87,19 @@ grant without gaining a path to choose Tenant, identity, Role or capabilities.
 - [x] Block 5: delivery port, local/test and Resend adapters.
 - [x] Block 6: public HTTP boundary and sanitized errors.
 - [x] Block 7: public registration/verification UI and accessibility.
-- [~] Block 8: PostgreSQL/E2E/isolation, docs and promotion verification.
+- [x] Block 8: PostgreSQL/E2E/isolation, docs and promotion verification.
 
 ## Current
 
-All product blocks are materialized. PostgreSQL 18.4, concurrency/replay,
-retention, provider contracts and Chrome responsive/accessibility proof are
-GREEN. The exact-candidate full gate is running before promotion readiness can
-be credited.
+All eight blocks are materialized. PostgreSQL 18.4, concurrency/replay,
+retention, provider contracts, Chrome responsive/accessibility proof and the
+exact-candidate full gate are GREEN. TL-04 is ready for an explicitly
+authorized remote promotion; no remote action has occurred.
 
 ## Next
 
-Run `verify:full`, reconcile the final candidate and stop before remote writes.
-TL-05 remains unstarted.
+Await explicit Owner authorization for remote promotion. TL-05 remains
+unstarted.
 
 ## Blockers
 
@@ -127,7 +127,7 @@ TL-05 remains unstarted.
 - [x] `work-unit:check --mode ACTIVE`.
 - [x] PostgreSQL 18.4 TL-04 material suite `3/3`; 81 migrations and rerun `0 pending`.
 - [x] Chrome desktop/768/640, light/dark and keyboard proof.
-- [ ] Exact-candidate `verify:full`.
+- [x] Exact-candidate `verify:full` stages 0–16.
 
 ## Promotion Gates
 

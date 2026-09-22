@@ -6,7 +6,7 @@
   gates de producto; Git/GitHub/CI/runtime gobiernan la materialización.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
-- **Fase:** Tenant Lifecycle MVP — Public Registration implementation.
+- **Fase:** Tenant Lifecycle MVP — Public Registration local candidate ready.
 - **Checkpoint alcanzado:** Pricing Catalog cerrado conforme a los PBI y
   autoridades técnicas enlazadas; TL-01, TL-02 y TL-03 están cerrados por
   integración gobernada, exact-main CI y closure refs. `Released` permanece
@@ -16,8 +16,8 @@
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** completar el `verify:full` autoritativo sobre el candidato
-  final TL-04 antes de cualquier promoción remota. Production no está autorizada.
+- **Blocking gate:** la promoción remota de TL-04 requiere autorización Owner;
+  el candidato local y su `verify:full` están GREEN. Production no está autorizada.
 - **WIP operacional:** `1/1 Work Unit`; `0/1 PBI`.
 - **Autoridad:** decisiones Owner TL-001–016/TLD-001–009 y TL-01/TL-02/TL-03
   cerrados; `TL4D-001–007` e implementación TL-04 autorizados localmente.
@@ -85,14 +85,14 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 |---|---|
 | Program | MVP Operating Roadmap |
 | Stage | MVP |
-| Phase | Tenant Lifecycle MVP — Public Registration implementation |
+| Phase | Tenant Lifecycle MVP — Public Registration local candidate ready |
 | Sprint | NONE; SPRINT-03 remains Closed |
 | Sprint status | No active Sprint |
 | Current PBI | NONE |
-| Active Work Unit | TL-04 — Public Registration + Email Verification (`ACTIVE`, final local verification) |
+| Active Work Unit | TL-04 — Public Registration + Email Verification (`READY_FOR_PROMOTION`) |
 | Work Unit WIP | 1/1 |
 | Next PBI candidate | NONE; future TL Work Units are not PBIs and are not started |
-| Blocking gate | Focused/material verification is GREEN; exact-candidate `verify:full` remains; remote promotion unauthorized |
+| Blocking gate | Local gates are GREEN; remote promotion requires explicit Owner authorization |
 
 ## Fases aprobadas
 

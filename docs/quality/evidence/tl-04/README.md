@@ -3,7 +3,7 @@
 ## Estado
 
 - **Work Unit:** TL-04 — Public Registration + Email Verification.
-- **Estado:** implementación material completa; verificación final local en curso.
+- **Estado:** `READY_FOR_PROMOTION`; implementación y verificación local completas.
 - **Riesgo:** `ARCHITECTURAL`; promoción requiere `verify:full` y review de
   arquitectura/seguridad sobre el candidato exacto.
 - **Base:** cierre gobernado de TL-03 sobre `main`.
