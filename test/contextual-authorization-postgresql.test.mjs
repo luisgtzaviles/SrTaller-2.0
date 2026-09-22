@@ -227,11 +227,13 @@ async function seedMaterialContext(admin) {
     [tenantA, tenantB],
   );
   await admin.query(
-    `insert into branches (tenant_id, branch_id, active, created_at)
+    `insert into branches (
+       tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at
+     )
      values
-       ($1, $2, true, now()),
-       ($1, $3, true, now()),
-       ($4, $5, true, now())`,
+       ($1, $2, 'Authorization Branch', 'America/Hermosillo', true, now(), now()),
+       ($1, $3, 'Authorization Branch', 'America/Hermosillo', true, now(), now()),
+       ($4, $5, 'Authorization Branch', 'America/Hermosillo', true, now(), now())`,
     [tenantA, branchA, branchA2, tenantB, branchB],
   );
   await admin.query(

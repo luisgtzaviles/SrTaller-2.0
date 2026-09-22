@@ -234,12 +234,17 @@ async function seed(admin) {
     [tenantA, tenantB, createdAt],
   );
   await admin.query(
-    `insert into branches (tenant_id, branch_id, created_at)
-     values ($1, $2, $5), ($3, $4, $5)`,
+    `insert into branches (
+       tenant_id, branch_id, display_name, time_zone, created_at, updated_at
+     ) values
+       ($1, $2, 'Repair Branch', 'America/Hermosillo', $5, $5),
+       ($3, $4, 'Repair Branch', 'America/Hermosillo', $5, $5)`,
     [tenantA, branchA, tenantB, branchB, createdAt],
   );
   await admin.query(
-    `insert into branches (tenant_id, branch_id, created_at) values ($1, $2, $3)`,
+    `insert into branches (
+       tenant_id, branch_id, display_name, time_zone, created_at, updated_at
+     ) values ($1, $2, 'Repair Branch 2', 'America/Hermosillo', $3, $3)`,
     [tenantA, branchA2, createdAt],
   );
   await admin.query(

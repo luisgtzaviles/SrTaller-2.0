@@ -191,8 +191,11 @@ test(
         [tenantA, tenantB],
       );
       await admin.query(
-        `insert into branches (tenant_id, branch_id, active, created_at)
-         values ($1, $2, true, now()), ($3, $4, true, now())`,
+        `insert into branches (
+           tenant_id, branch_id, display_name, time_zone, active, created_at, updated_at
+         ) values
+           ($1, $2, 'Station Branch', 'America/Hermosillo', true, now(), now()),
+           ($3, $4, 'Station Branch', 'America/Hermosillo', true, now(), now())`,
         [tenantA, branchA, tenantB, branchB],
       );
       await admin.query(

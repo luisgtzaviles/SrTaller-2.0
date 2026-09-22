@@ -223,8 +223,20 @@ test(
           "    .addColumn('version', 'integer', (column) => column.notNull().defaultTo(0))",
           "    .addColumn('updated_at', 'timestamptz', (column) => column.notNull())",
           '    .execute();',
+          "  await database.schema.alterTable('branches')",
+          "    .addColumn('display_name', 'varchar(160)', (column) => column.notNull())",
+          "    .addColumn('version', 'integer', (column) => column.notNull().defaultTo(0))",
+          "    .addColumn('admission_revision', 'integer', (column) => column.notNull().defaultTo(0))",
+          "    .addColumn('updated_at', 'timestamptz', (column) => column.notNull())",
+          '    .execute();',
           '}',
           'export async function down(database) {',
+          "  await database.schema.alterTable('branches')",
+          "    .dropColumn('updated_at')",
+          "    .dropColumn('admission_revision')",
+          "    .dropColumn('version')",
+          "    .dropColumn('display_name')",
+          '    .execute();',
           "  await database.schema.alterTable('tenants')",
           "    .dropColumn('updated_at')",
           "    .dropColumn('version')",
@@ -356,7 +368,13 @@ test(
       ]) {
         await branchRepository.createBranch(
           { tenantId, branchId },
-          { tenantId, branchId, timeZone, createdAt },
+          {
+            tenantId,
+            branchId,
+            displayName: `Branch ${branchId}`,
+            timeZone,
+            createdAt,
+          },
         );
       }
 
@@ -401,14 +419,26 @@ test(
       await assert.rejects(
         branchRepository.createBranch(
           { tenantId: tenantA, branchId: branchA },
-          { tenantId: tenantA, branchId: branchA, timeZone, createdAt },
+          {
+            tenantId: tenantA,
+            branchId: branchA,
+            displayName: 'Duplicate Branch A',
+            timeZone,
+            createdAt,
+          },
         ),
         expectsBranchCode('BRANCH_PERSISTENCE_CONFLICT'),
       );
       await assert.rejects(
         branchRepository.createBranch(
           { tenantId: missingTenant, branchId: branchA },
-          { tenantId: missingTenant, branchId: branchA, timeZone, createdAt },
+          {
+            tenantId: missingTenant,
+            branchId: branchA,
+            displayName: 'Missing Tenant Branch',
+            timeZone,
+            createdAt,
+          },
         ),
         expectsBranchCode('BRANCH_PERSISTENCE_TENANT_NOT_FOUND'),
       );
@@ -416,11 +446,23 @@ test(
       const duplicateResults = await Promise.allSettled([
         branchRepository.createBranch(
           { tenantId: tenantA, branchId: concurrentBranch },
-          { tenantId: tenantA, branchId: concurrentBranch, timeZone, createdAt },
+          {
+            tenantId: tenantA,
+            branchId: concurrentBranch,
+            displayName: 'Concurrent Branch',
+            timeZone,
+            createdAt,
+          },
         ),
         branchRepository.createBranch(
           { tenantId: tenantA, branchId: concurrentBranch },
-          { tenantId: tenantA, branchId: concurrentBranch, timeZone, createdAt },
+          {
+            tenantId: tenantA,
+            branchId: concurrentBranch,
+            displayName: 'Concurrent Branch',
+            timeZone,
+            createdAt,
+          },
         ),
       ]);
       assert.equal(
@@ -479,7 +521,13 @@ test(
             createTransactionalKyselyBranchRepository(context);
           await repository.createBranch(
             { tenantId: tenantA, branchId: rolledBackBranch },
-            { tenantId: tenantA, branchId: rolledBackBranch, timeZone, createdAt },
+            {
+              tenantId: tenantA,
+              branchId: rolledBackBranch,
+              displayName: 'Rolled Back Branch',
+              timeZone,
+              createdAt,
+            },
           );
           throw new Error('synthetic branch rollback');
         }),
