@@ -161,6 +161,9 @@ test('public migration API remains narrow with governed productive migrations', 
       '20260921160000_stations_materialize_branch_management.ts',
       '20260921161000_tenancy_create_lifecycle_events.ts',
       '20260921162000_stations_extend_branch_command_snapshots.ts',
+      '20260921200000_access_create_admin_invitations.ts',
+      '20260921201000_access_enable_admin_role_lifecycle.ts',
+      '20260921202000_access_enforce_global_pending_invitation_email.ts',
     ],
   );
 

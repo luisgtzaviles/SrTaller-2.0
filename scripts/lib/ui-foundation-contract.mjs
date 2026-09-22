@@ -77,7 +77,7 @@ function inspectCss(path, source, problems) {
     if (!ALLOWED_BREAKPOINTS.has(match[1])) problems.push(`${path}: non-canonical breakpoint ${match[1]}px`);
   }
   if (path.endsWith('.module.css')) {
-    for (const match of source.matchAll(/border-radius:\s*([^;]+);/gu)) {
+    for (const match of source.matchAll(/border-radius:\s*([^;}]+)(?:;|\})/gu)) {
       const value = match[1]?.trim() ?? '';
       if (!ALLOWED_RADIUS_VALUES.has(value)) problems.push(`${path}: component radius must use 0 or a canonical radius token; received ${value}`);
     }

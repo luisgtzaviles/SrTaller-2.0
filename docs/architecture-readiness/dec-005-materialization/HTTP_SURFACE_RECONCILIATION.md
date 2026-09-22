@@ -9,12 +9,16 @@ modulares:
 
 - `AccessSessionController`, compuesto por `AccessModule` desde
   `./presentation/access-session.controller.js`;
-- `AccessAdministrationController` y `BranchSettingsAdministrationController`,
-  compuestos por `AccessModule` desde sus adapters de administración exactos;
+- `AccessAdministrationController`, `BranchSettingsAdministrationController`,
+  `AdminBranchesController`, `AdminSessionController`,
+  `AdminUsersRolesController` y `UserPreferencesController`, compuestos por
+  `AccessModule` desde sus adapters de administración exactos;
 - `RepairsController`, compuesto por `RepairsModule` desde
   `./presentation/repairs.controller.js`;
 - `LocalStationBootstrapController`, compuesto por `StationsModule` desde
   `./presentation/local-station-bootstrap.controller.js`.
+- `PublicRegistrationController`, compuesto por `RegistrationModule` desde
+  `./presentation/public-registration.controller.js`.
 
 La última superficie es exclusivamente un bootstrap local/de prueba autorizado
 por PBI-034; su presencia en el registry no crea enrollment productivo. Health

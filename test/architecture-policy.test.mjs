@@ -133,6 +133,12 @@ test('policy v10 registers exact directed public module composition', async () =
         },
         publicBindings: [
           {
+            token: 'ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR',
+            contract: 'AdminInvitationBranchCommitValidator',
+            consumerImportSpecifier: '../stations/index.js',
+            producerImportSpecifier: './index.js',
+          },
+          {
             token: 'BRANCH_ADMINISTRATION_RUNTIME',
             contract: 'BranchAdministrationRuntime',
             consumerImportSpecifier: '../stations/index.js',
@@ -172,6 +178,12 @@ test('policy v10 registers exact directed public module composition', async () =
         },
         publicBindings: [
           {
+            token: 'TENANT_LIFECYCLE_COMMIT_RUNTIME',
+            contract: 'TenantLifecycleCommitRuntime',
+            consumerImportSpecifier: '../tenancy/index.js',
+            producerImportSpecifier: './index.js',
+          },
+          {
             token: 'TENANT_BOOTSTRAP_PERSISTENCE',
             contract: 'TenantBootstrapPersistence',
             consumerImportSpecifier: '../tenancy/index.js',
@@ -192,6 +204,12 @@ test('policy v10 registers exact directed public module composition', async () =
           importSpecifier: '../users/users.module.js',
         },
         publicBindings: [
+          {
+            token: 'ADMIN_INVITATION_USER_COMMIT_RUNTIME',
+            contract: 'AdminInvitationUserCommitRuntime',
+            consumerImportSpecifier: '../users/index.js',
+            producerImportSpecifier: './index.js',
+          },
           {
             token: 'AUTHENTICATION_USER_ADMISSION_VALIDATOR',
             contract: 'AuthenticationUserAdmissionValidator',
@@ -492,10 +510,13 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260921160000_stations_materialize_branch_management.ts',
     'src/infrastructure/database/migrations/20260921161000_tenancy_create_lifecycle_events.ts',
     'src/infrastructure/database/migrations/20260921162000_stations_extend_branch_command_snapshots.ts',
+    'src/infrastructure/database/migrations/20260921200000_access_create_admin_invitations.ts',
+    'src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts',
+    'src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy', 'registration', 'registration', 'stations', 'tenancy', 'stations'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy', 'registration', 'registration', 'stations', 'tenancy', 'stations', 'access', 'access', 'access'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -544,6 +565,8 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
       'src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts',
       'src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts',
       'src/infrastructure/database/migrations/20260921162000_stations_extend_branch_command_snapshots.ts',
+      'src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts',
+      'src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts',
     ].includes(migration)) {
       assert.deepEqual(registration.functions, []);
       assert.deepEqual(registration.triggers, []);
@@ -605,6 +628,15 @@ test('registered module presentation and Health are the explicitly governed HTTP
           file: 'src/modules/access/access.module.ts',
           className: 'AccessModule',
           importSpecifier: './presentation/admin-session.controller.js',
+        },
+      },
+      'src/modules/access/presentation/admin-users-roles.controller.ts': {
+        owner: 'access',
+        className: 'AdminUsersRolesController',
+        composition: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: './presentation/admin-users-roles.controller.js',
         },
       },
       'src/modules/access/presentation/user-preferences.controller.ts': {

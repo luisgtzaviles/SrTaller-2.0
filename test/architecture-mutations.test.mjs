@@ -27,6 +27,8 @@ const withAccessPersistenceComposition = (content) => [
   "import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';",
   "import type { KyselyAdminAuthRepository } from './infrastructure/persistence/kysely-admin-auth.repository.js';",
   "import type { KyselyTenantBootstrapAccessWriter } from './infrastructure/persistence/kysely-tenant-bootstrap-access.writer.js';",
+  "import type { KyselyAdminInvitationRepository } from './infrastructure/persistence/kysely-admin-invitation.repository.js';",
+  "import type { KyselyAdminLifecycleRepository } from './infrastructure/persistence/kysely-admin-lifecycle.repository.js';",
   content,
 ].join('\n');
 
@@ -220,6 +222,8 @@ const mutations = [
       'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts',
+      'src/modules/access/infrastructure/persistence/kysely-admin-invitation.repository.ts',
+      'src/modules/access/infrastructure/persistence/kysely-admin-lifecycle.repository.ts',
     ],
     rule: 'D5-R041',
     expectedRules: ['D5-R024', 'D5-R041'],
@@ -317,6 +321,8 @@ const mutations = [
       'src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts',
+      'src/modules/access/infrastructure/persistence/kysely-admin-invitation.repository.ts',
+      'src/modules/access/infrastructure/persistence/kysely-admin-lifecycle.repository.ts',
     ],
     content: '',
   },

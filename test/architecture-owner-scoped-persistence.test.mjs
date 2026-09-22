@@ -191,7 +191,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
   );
   assert.match(
     source,
-    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_commands' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands' \| 'access_pin_credentials' \| 'access_pin_credential_commands' \| 'access_pin_eligibility_tenant_guards' \| 'access_pin_attempt_station_guards' \| 'access_pin_attempt_limits' \| 'access_operational_session_station_guards' \| 'access_operational_sessions' \| 'access_admin_identities' \| 'access_admin_password_credentials' \| 'access_admin_sessions' \| 'access_admin_auth_attempt_limits' \| 'access_admin_recovery_challenges' \| 'access_admin_security_events'>/u,
+    /Pick<DatabaseSchema, 'access_capabilities' \| 'access_roles' \| 'access_role_commands' \| 'access_role_capabilities' \| 'access_role_assignments' \| 'access_role_assignment_commands' \| 'access_pin_credentials' \| 'access_pin_credential_commands' \| 'access_pin_eligibility_tenant_guards' \| 'access_pin_attempt_station_guards' \| 'access_pin_attempt_limits' \| 'access_operational_session_station_guards' \| 'access_operational_sessions' \| 'access_admin_identities' \| 'access_admin_password_credentials' \| 'access_admin_sessions' \| 'access_admin_auth_attempt_limits' \| 'access_admin_recovery_challenges' \| 'access_admin_security_events' \| 'access_admin_invitations' \| 'access_admin_invitation_grants' \| 'access_admin_invitation_challenges' \| 'access_admin_invitation_dispatches' \| 'access_admin_invitation_commands' \| 'access_admin_lifecycle_events'>/u,
   );
   assert.doesNotMatch(
     await readFile('src/app.module.ts', 'utf8'),
