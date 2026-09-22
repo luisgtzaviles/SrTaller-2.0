@@ -20,9 +20,9 @@ try {
   if (!/^\d{1,5}$/u.test(port)) throw new Error('TL-02 PostgreSQL loopback port is unavailable');
   await waitForPostgresqlEndpoint({ host:'127.0.0.1', port:Number(port), database, user, password });
   const env = { ...process.env, SR_DB_ENVIRONMENT:'development',SR_DB_HOST:'127.0.0.1',SR_DB_PORT:port,SR_DB_NAME:database,SR_DB_USER:user,SR_DB_PASSWORD:password,SR_DB_SSL_MODE:'disable',SR_DB_POOL_MIN:'0',SR_DB_POOL_MAX:'4',SR_DB_IDLE_TIMEOUT_MS:'1000',SR_DB_CONNECTION_TIMEOUT_MS:'2000',SR_DB_STATEMENT_TIMEOUT_MS:'30000',SR_DB_QUERY_TIMEOUT_MS:'30000',SR_DB_APPLICATION_NAME:'srtaller-tl02-migrator',SR_DB_ROLE:'migration',SR_DB_ACCESS_MODE:'read-write',SR_DB_MIGRATIONS_ENABLED:'true' };
-  const first = JSON.parse((await execute(process.execPath,['--enable-source-maps','dist/db-migrate.js'],{encoding:'utf8',env,timeout:90_000})).stdout.trim()); assert.equal(first.applied, 79); assert.equal(first.pending, 0);
+  const first = JSON.parse((await execute(process.execPath,['--enable-source-maps','dist/db-migrate.js'],{encoding:'utf8',env,timeout:90_000})).stdout.trim()); assert.equal(first.applied, 81); assert.equal(first.pending, 0);
   const second = JSON.parse((await execute(process.execPath,['--enable-source-maps','dist/db-migrate.js'],{encoding:'utf8',env,timeout:90_000})).stdout.trim()); assert.equal(second.applied, 0); assert.equal(second.pending, 0);
   const testResult = await execute(process.execPath,['--test','test/tl02-admin-auth-postgresql.test.mjs'],{encoding:'utf8',env:{...process.env,SR_TL02_PG_TEST:'1',SR_TL02_PG_HOST:'127.0.0.1',SR_TL02_PG_PORT:port,SR_TL02_PG_NAME:database,SR_TL02_PG_USER:user,SR_TL02_PG_PASSWORD:password},timeout:90_000});
-  const summary = assertPostgresqlTestSummary(testResult.stdout); assert.equal(summary.pass, 2); output = `${testResult.stdout}TL-02 PostgreSQL PASS: 79 migrations, second run 0 pending\n`;
+  const summary = assertPostgresqlTestSummary(testResult.stdout); assert.equal(summary.pass, 2); output = `${testResult.stdout}TL-02 PostgreSQL PASS: 81 migrations, second run 0 pending\n`;
 } finally { await cleanup(); }
 process.stdout.write(output);

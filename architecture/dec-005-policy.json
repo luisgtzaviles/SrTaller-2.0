@@ -1,11 +1,12 @@
 {
   "policyVersion": 9,
-  "allowedModules": ["access", "catalog", "customers", "repairs", "stations", "tenancy", "users"],
+  "allowedModules": ["access", "catalog", "customers", "registration", "repairs", "stations", "tenancy", "users"],
   "fixtureRequiredModules": ["access", "stations", "tenancy"],
   "dependencies": {
     "access": ["stations", "tenancy", "users"],
     "catalog": ["access", "tenancy"],
     "customers": ["tenancy"],
+    "registration": ["access"],
     "repairs": ["access", "customers", "stations", "tenancy"],
     "stations": ["tenancy"],
     "tenancy": [],
@@ -18,6 +19,7 @@
       "AdminAuthorizationCommitGuard",
       "AdminAuthorizationExecutor",
       "AdminAuthorizationRequirement",
+      "AdminPasswordVerifier",
       "AuthorizedAdminContext",
       "AuthorizedOperationCommitGuard",
       "AuthorizedOperationalContext",
@@ -25,6 +27,8 @@
       "ContextualAuthorizationError",
       "ContextualAuthorizationErrorCode",
       "ContextualAuthorizationExecutor",
+      "REGISTRATION_PASSWORD_PROTECTOR",
+      "RegistrationPasswordProtector",
       "ProtectedOperationKind",
       "ProtectedOperationRequirement",
       "ProtectedRequestEvidence",
@@ -34,6 +38,8 @@
       "SensitiveActionLevel2Executor",
       "SensitiveActionReauthenticationError",
       "TENANT_WIDE_AUTHORIZATION_EXECUTOR",
+      "TENANT_BOOTSTRAP_EXECUTOR",
+      "TenantBootstrapExecutor",
       "TenantWideAuthorizationExecutor"
     ],
     "catalog": [
@@ -53,6 +59,7 @@
       "CustomersModuleContract"
     ],
     "repairs": ["RepairsModuleContract"],
+    "registration": ["RegistrationModuleContract"],
     "stations": [
       "BRANCH_SETTINGS_RUNTIME",
       "BranchSettingsRuntime",
@@ -76,8 +83,11 @@
     ],
     "tenancy": [
       "OperatingCurrency",
+      "TENANT_BOOTSTRAP_PERSISTENCE",
       "TENANT_SETTINGS_RUNTIME",
       "TenantId",
+      "TenantBootstrapPersistence",
+      "TenantBootstrapWriter",
       "TenantSettingsRuntime",
       "TenancyModuleContract",
       "parseOperatingCurrency",
@@ -86,11 +96,13 @@
     "users": [
       "AUTHENTICATION_USER_ADMISSION_VALIDATOR",
       "AUTHENTICATION_USER_READER",
+      "TENANT_BOOTSTRAP_USER_WRITER",
       "AuthenticationUserAdmissionSnapshot",
       "AuthenticationUserAdmissionValidator",
       "AuthenticationUserReader",
       "AuthenticationUserRecord",
       "AuthenticationUserScope",
+      "TenantBootstrapUserWriter",
       "USER_PRODUCT_RUNTIME",
       "USER_PREFERENCES_RUNTIME",
       "NewRepairFormMode",
@@ -100,10 +112,11 @@
     ]
   },
   "consumers": {
-    "access": ["AppModule", "catalog", "repairs"],
+    "access": ["AppModule", "catalog", "registration", "repairs"],
     "catalog": ["AppModule"],
     "customers": ["AppModule", "repairs"],
     "repairs": ["AppModule"],
+    "registration": ["AppModule"],
     "stations": ["access", "repairs"],
     "tenancy": ["access", "catalog", "customers", "stations", "users"],
     "users": ["access", "AppModule"]
@@ -158,6 +171,17 @@
       "decorator": "Module",
       "rule": "D5-R003"
     },
+    "src/modules/registration/index.ts": {
+      "declarationKind": "interface",
+      "declarationName": "RegistrationModuleContract",
+      "rule": "D5-R004"
+    },
+    "src/modules/registration/registration.module.ts": {
+      "declarationKind": "class",
+      "declarationName": "RegistrationModule",
+      "decorator": "Module",
+      "rule": "D5-R003"
+    },
     "src/modules/access/index.ts": {
       "declarationKind": "interface",
       "declarationName": "AccessModuleContract",
@@ -206,6 +230,7 @@
       "CatalogModule": "./modules/catalog/catalog.module.js",
       "CustomersModule": "./modules/customers/customers.module.js",
       "RepairsModule": "./modules/repairs/repairs.module.js",
+      "RegistrationModule": "./modules/registration/registration.module.js",
       "StationsModule": "./modules/stations/stations.module.js",
       "TenancyModule": "./modules/tenancy/tenancy.module.js",
       "UsersModule": "./modules/users/users.module.js"
@@ -303,6 +328,27 @@
       },
       {
         "consumer": "access",
+        "producer": "tenancy",
+        "consumerModule": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule"
+        },
+        "producerModule": {
+          "file": "src/modules/tenancy/tenancy.module.ts",
+          "className": "TenancyModule",
+          "importSpecifier": "../tenancy/tenancy.module.js"
+        },
+        "publicBindings": [
+          {
+            "token": "TENANT_BOOTSTRAP_PERSISTENCE",
+            "contract": "TenantBootstrapPersistence",
+            "consumerImportSpecifier": "../tenancy/index.js",
+            "producerImportSpecifier": "./index.js"
+          }
+        ]
+      },
+      {
+        "consumer": "access",
         "producer": "users",
         "consumerModule": {
           "file": "src/modules/access/access.module.ts",
@@ -335,6 +381,12 @@
           {
             "token": "USER_PREFERENCES_RUNTIME",
             "contract": "UserPreferencesRuntime",
+            "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "TENANT_BOOTSTRAP_USER_WRITER",
+            "contract": "TenantBootstrapUserWriter",
             "consumerImportSpecifier": "../users/index.js",
             "producerImportSpecifier": "./index.js"
           }
@@ -402,6 +454,33 @@
             "producerImportSpecifier": "./index.js"
           }
         ]
+      },
+      {
+        "consumer": "registration",
+        "producer": "access",
+        "consumerModule": {
+          "file": "src/modules/registration/registration.module.ts",
+          "className": "RegistrationModule"
+        },
+        "producerModule": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "../access/access.module.js"
+        },
+        "publicBindings": [
+          {
+            "token": "REGISTRATION_PASSWORD_PROTECTOR",
+            "contract": "RegistrationPasswordProtector",
+            "consumerImportSpecifier": "../access/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "TENANT_BOOTSTRAP_EXECUTOR",
+            "contract": "TenantBootstrapExecutor",
+            "consumerImportSpecifier": "../access/index.js",
+            "producerImportSpecifier": "./index.js"
+          }
+        ]
       }
     ]
   },
@@ -417,10 +496,12 @@
         "ACCESS_PIN_HASHER_FACTORY",
         "APPLICATION_DATABASE_CONNECTION",
         "LOCAL_RUNTIME_CONFIGURATION",
+        "REGISTRATION_RUNTIME_CONFIGURATION",
         "SESSION_TRANSPORT_POLICY",
         "AccessPinHasherFactory",
         "ApplicationDatabaseConnection",
         "LocalRuntimeConfiguration",
+        "RegistrationRuntimeConfiguration",
         "SessionTransportPolicy"
       ]
     },
@@ -450,6 +531,7 @@
           "src/modules/stations/stations.module.ts",
           "src/modules/users/users.module.ts",
           "src/modules/tenancy/tenancy.module.ts"
+          ,"src/modules/registration/registration.module.ts"
         ]
       },
       {
@@ -466,6 +548,16 @@
         "implementation": "RuntimeEnvironmentReader",
         "consumers": [
           "src/modules/stations/stations.module.ts"
+        ]
+      },
+      {
+        "token": "REGISTRATION_RUNTIME_CONFIGURATION",
+        "contract": "RegistrationRuntimeConfiguration",
+        "strategy": "useFactory",
+        "implementation": "RuntimeEnvironmentReader",
+        "consumers": [
+          "src/modules/registration/application/use-cases/public-registration.use-cases.ts",
+          "src/modules/registration/registration.module.ts"
         ]
       },
       {
@@ -496,6 +588,12 @@
         "owner": "access",
         "file": "src/modules/access/access.module.ts",
         "className": "AccessModule",
+        "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
+      },
+      {
+        "owner": "registration",
+        "file": "src/modules/registration/registration.module.ts",
+        "className": "RegistrationModule",
         "importSpecifier": "../../infrastructure/runtime/runtime-infrastructure.module.js"
       },
       {
@@ -579,6 +677,27 @@
         "contract": "SessionTransportPolicy",
         "importSpecifier": "../../../infrastructure/runtime/index.js",
         "kind": "constructor-inject"
+      },
+      {
+        "file": "src/modules/registration/registration.module.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
+        "file": "src/modules/registration/registration.module.ts",
+        "token": "REGISTRATION_RUNTIME_CONFIGURATION",
+        "contract": "RegistrationRuntimeConfiguration",
+        "importSpecifier": "../../infrastructure/runtime/index.js",
+        "kind": "module-provider-inject"
+      },
+      {
+        "file": "src/modules/registration/application/use-cases/public-registration.use-cases.ts",
+        "token": "REGISTRATION_RUNTIME_CONFIGURATION",
+        "contract": "RegistrationRuntimeConfiguration",
+        "importSpecifier": "../../../../infrastructure/runtime/index.js",
+        "kind": "contract-only"
       },
       {
         "file": "src/modules/customers/customers.module.ts",
@@ -698,6 +817,15 @@
           "className": "StationsModule",
           "importSpecifier": "./presentation/local-station-bootstrap.controller.js"
         }
+      },
+      "src/modules/registration/presentation/public-registration.controller.ts": {
+        "owner": "registration",
+        "className": "PublicRegistrationController",
+        "composition": {
+          "file": "src/modules/registration/registration.module.ts",
+          "className": "RegistrationModule",
+          "importSpecifier": "./presentation/public-registration.controller.js"
+        }
       }
     }
   },
@@ -717,13 +845,14 @@
       "src/modules/catalog/infrastructure/persistence/",
       "src/modules/customers/infrastructure/persistence/",
       "src/modules/repairs/infrastructure/persistence/",
+      "src/modules/registration/infrastructure/persistence/",
       "src/modules/stations/infrastructure/persistence/",
       "src/modules/tenancy/infrastructure/persistence/",
       "src/modules/users/infrastructure/persistence/"
     ],
     "databaseRoot": "src/infrastructure/database/",
     "migrationRoot": "src/infrastructure/database/migrations/",
-    "migrationFilePattern": "^\\d{14}_(access|catalog|customers|database|repairs|stations|tenancy|users)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
+    "migrationFilePattern": "^\\d{14}_(access|catalog|customers|database|repairs|registration|stations|tenancy|users)_[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\.ts$",
     "allowedMigrations": [
       "src/infrastructure/database/migrations/20260819120000_database_create_repairs_worklist.ts",
       "src/infrastructure/database/migrations/20260819130000_repairs_create_intakes.ts",
@@ -802,7 +931,9 @@
       "src/infrastructure/database/migrations/20260920180000_access_create_admin_identity_sessions.ts",
       "src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts",
       "src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts",
-      "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts"
+      "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts",
+      "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts",
+      "src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1461,6 +1592,34 @@
           "references": [],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts": {
+          "owner": "registration",
+          "tables": [
+            "registration_acceptance_documents",
+            "registration_attempts",
+            "registration_email_dispatches",
+            "registration_public_action_limits",
+            "registration_security_events",
+            "registration_verification_challenges"
+          ],
+          "references": [],
+          "functions": [
+            "registration_guard_acceptance_evidence_mutation",
+            "registration_reject_security_event_mutation"
+          ],
+          "triggers": [
+            "registration_acceptance_documents_guard_update",
+            "registration_acceptance_documents_reject_delete",
+            "registration_security_events_reject_delete",
+            "registration_security_events_reject_update"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts": {
+          "owner": "registration",
+          "tables": ["registration_acceptance_documents", "registration_attempts"],
+          "functions": ["registration_guard_acceptance_evidence_mutation"],
+          "triggers": ["registration_acceptance_documents_guard_update"]
         }
       }
     },
@@ -1486,6 +1645,12 @@
           "TenantTable",
           "TenantBootstrapCommandTable",
           "TenantBootstrapGuardTable",
+          "RegistrationAttemptTable",
+          "RegistrationVerificationChallengeTable",
+          "RegistrationAcceptanceDocumentTable",
+          "RegistrationEmailDispatchTable",
+          "RegistrationPublicActionLimitTable",
+          "RegistrationSecurityEventTable",
           "BranchTable",
           "StationTable",
           "StationBindingTable",
@@ -1700,6 +1865,12 @@
           ,"RepairFolioSequenceTable"
           ,"RepairFolioSequenceRow"
           ,"NewRepairFolioSequence"
+          ,"RegistrationAttemptRow"
+          ,"RegistrationVerificationChallengeRow"
+          ,"RegistrationAcceptanceDocumentRow"
+          ,"RegistrationEmailDispatchRow"
+          ,"RegistrationPublicActionLimitRow"
+          ,"RegistrationSecurityEventRow"
         ],
         "consumers": [
           "src/infrastructure/database/migrations/20260725183832_database_create_tenants_and_branches.ts",
@@ -1778,6 +1949,8 @@
           "src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts",
           "src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts",
           "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts",
+          "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts",
+          "src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -1796,6 +1969,7 @@
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
           ,"src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts"
           ,"src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts"
+          ,"src/modules/registration/infrastructure/persistence/kysely-registration.repository.ts"
           ,"src/modules/catalog/infrastructure/persistence/kysely-catalog.repository.ts"
           ,"src/modules/customers/infrastructure/persistence/kysely-customer-intake.repository.ts"
         ],
@@ -2406,6 +2580,30 @@
         "owner": "tenancy",
         "kind": "table"
       },
+      "registration_attempts": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_verification_challenges": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_acceptance_documents": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_email_dispatches": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_public_action_limits": {
+        "owner": "registration",
+        "kind": "table"
+      },
+      "registration_security_events": {
+        "owner": "registration",
+        "kind": "table"
+      },
       "users": {
         "owner": "users",
         "kind": "table"
@@ -2733,6 +2931,16 @@
     "D5-R034"
   ],
   "productModuleFiles": [
+    "src/modules/registration/index.ts",
+    "src/modules/registration/registration.module.ts",
+    "src/modules/registration/domain/registration-attempt.ts",
+    "src/modules/registration/application/ports/registration-repository.port.ts",
+    "src/modules/registration/application/ports/registration-email-delivery.port.ts",
+    "src/modules/registration/application/use-cases/public-registration.use-cases.ts",
+    "src/modules/registration/infrastructure/delivery/local-registration-email.delivery.ts",
+    "src/modules/registration/infrastructure/delivery/resend-registration-email.delivery.ts",
+    "src/modules/registration/infrastructure/persistence/kysely-registration.repository.ts",
+    "src/modules/registration/presentation/public-registration.controller.ts",
     "src/modules/customers/index.ts",
     "src/modules/customers/customers.module.ts",
     "src/modules/customers/application/ports/customer-intake-runtime.port.ts",

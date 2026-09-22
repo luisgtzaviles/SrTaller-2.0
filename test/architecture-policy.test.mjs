@@ -47,6 +47,7 @@ test('product tree satisfies the executable DEC-005 policy', async () => {
     'catalog->access',
     'catalog->tenancy',
     'customers->tenancy',
+    'registration->access',
     'repairs->access',
     'repairs->customers',
     'repairs->stations',
@@ -153,6 +154,27 @@ test('policy v9 registers exact directed public module composition', async () =>
       },
       {
         consumer: 'access',
+        producer: 'tenancy',
+        consumerModule: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+        },
+        producerModule: {
+          file: 'src/modules/tenancy/tenancy.module.ts',
+          className: 'TenancyModule',
+          importSpecifier: '../tenancy/tenancy.module.js',
+        },
+        publicBindings: [
+          {
+            token: 'TENANT_BOOTSTRAP_PERSISTENCE',
+            contract: 'TenantBootstrapPersistence',
+            consumerImportSpecifier: '../tenancy/index.js',
+            producerImportSpecifier: './index.js',
+          },
+        ],
+      },
+      {
+        consumer: 'access',
         producer: 'users',
         consumerModule: {
           file: 'src/modules/access/access.module.ts',
@@ -185,6 +207,12 @@ test('policy v9 registers exact directed public module composition', async () =>
           {
             token: 'USER_PREFERENCES_RUNTIME',
             contract: 'UserPreferencesRuntime',
+            consumerImportSpecifier: '../users/index.js',
+            producerImportSpecifier: './index.js',
+          },
+          {
+            token: 'TENANT_BOOTSTRAP_USER_WRITER',
+            contract: 'TenantBootstrapUserWriter',
             consumerImportSpecifier: '../users/index.js',
             producerImportSpecifier: './index.js',
           },
@@ -248,6 +276,33 @@ test('policy v9 registers exact directed public module composition', async () =>
           {
             token: 'CONTEXTUAL_AUTHORIZATION_EXECUTOR',
             contract: 'ContextualAuthorizationExecutor',
+            consumerImportSpecifier: '../access/index.js',
+            producerImportSpecifier: './index.js',
+          },
+        ],
+      },
+      {
+        consumer: 'registration',
+        producer: 'access',
+        consumerModule: {
+          file: 'src/modules/registration/registration.module.ts',
+          className: 'RegistrationModule',
+        },
+        producerModule: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: '../access/access.module.js',
+        },
+        publicBindings: [
+          {
+            token: 'REGISTRATION_PASSWORD_PROTECTOR',
+            contract: 'RegistrationPasswordProtector',
+            consumerImportSpecifier: '../access/index.js',
+            producerImportSpecifier: './index.js',
+          },
+          {
+            token: 'TENANT_BOOTSTRAP_EXECUTOR',
+            contract: 'TenantBootstrapExecutor',
             consumerImportSpecifier: '../access/index.js',
             producerImportSpecifier: './index.js',
           },
@@ -405,10 +460,12 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts',
     'src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts',
     'src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts',
+    'src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts',
+    'src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy', 'registration', 'registration'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -544,6 +601,15 @@ test('registered module presentation and Health are the explicitly governed HTTP
           file: 'src/modules/stations/stations.module.ts',
           className: 'StationsModule',
           importSpecifier: './presentation/local-station-bootstrap.controller.js',
+        },
+      },
+      'src/modules/registration/presentation/public-registration.controller.ts': {
+        owner: 'registration',
+        className: 'PublicRegistrationController',
+        composition: {
+          file: 'src/modules/registration/registration.module.ts',
+          className: 'RegistrationModule',
+          importSpecifier: './presentation/public-registration.controller.js',
         },
       },
     },

@@ -55,6 +55,7 @@ const requiredLocalKeys = Object.freeze([
   'SR_USER_BOOTSTRAP_SECRET',
   'SR_PIN_PEPPER',
   'SR_ADMIN_PASSWORD_PEPPER',
+  'SR_REGISTRATION_ABUSE_PEPPER',
 ]);
 
 const ephemeralLocalPinKeys = Object.freeze([
@@ -107,6 +108,7 @@ function defaultLocalValues() {
     SR_USER_BOOTSTRAP_SECRET: randomSecret(),
     SR_PIN_PEPPER: randomPinPepper(),
     SR_ADMIN_PASSWORD_PEPPER: randomPinPepper(),
+    SR_REGISTRATION_ABUSE_PEPPER: randomPinPepper(),
   });
 }
 
@@ -220,6 +222,17 @@ export async function ensureLocalEnvironment({ create = true } = {}) {
     values = {
       ...values,
       SR_ADMIN_PASSWORD_PEPPER: randomPinPepper(),
+    };
+    const contents = `${Object.entries(values)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n')}\n`;
+    await writeFile(LOCAL_ENV_FILE, contents, { encoding: 'utf8', mode: 0o600 });
+    await chmod(LOCAL_ENV_FILE, 0o600);
+  }
+  if (values.SR_REGISTRATION_ABUSE_PEPPER === undefined && create) {
+    values = {
+      ...values,
+      SR_REGISTRATION_ABUSE_PEPPER: randomPinPepper(),
     };
     const contents = `${Object.entries(values)
       .map(([key, value]) => `${key}=${value}`)

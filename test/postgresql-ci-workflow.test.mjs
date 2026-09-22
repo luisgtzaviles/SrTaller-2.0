@@ -74,6 +74,10 @@ test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', (
   );
   assert.match(
     workflow,
+    /name: Run TL-04 PostgreSQL 18\.4 contracts[\s\S]*--stage tl04-postgresql[\s\S]*node scripts\/test-tl04-postgresql\.mjs/u,
+  );
+  assert.match(
+    workflow,
     /cp[\s\S]*PBI039_POSTGRESQL_MANIFEST\.json[\s\S]*evidence_dir/u,
   );
   assert.match(workflow, /- r0\/\*\*/u);
@@ -91,11 +95,11 @@ test('compiled smoke uses an isolated migrated PostgreSQL service without relaxi
   );
   assert.match(
     workflow,
-    /name: Run compiled artifact smoke[\s\S]*-- pnpm run smoke:start[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
+    /name: Run compiled artifact smoke[\s\S]*-- pnpm run smoke:start[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"[\s\S]*SR_REGISTRATION_ABUSE_PEPPER: [A-Za-z0-9_-]{43}[\s\S]*SR_RESEND_API_KEY: re_[A-Za-z0-9_-]+/u,
   );
   assert.match(
     workflow,
-    /name: Run compiled UI route smoke[\s\S]*-- pnpm run smoke:ui[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"/u,
+    /name: Run compiled UI route smoke[\s\S]*-- pnpm run smoke:ui[\s\S]*SR_DB_ROLE: application[\s\S]*SR_DB_MIGRATIONS_ENABLED: "false"[\s\S]*SR_REGISTRATION_ABUSE_PEPPER: [A-Za-z0-9_-]{43}[\s\S]*SR_RESEND_API_KEY: re_[A-Za-z0-9_-]+/u,
   );
   assert.ok(
     workflow.indexOf('name: Prepare compiled smoke PostgreSQL schema') <

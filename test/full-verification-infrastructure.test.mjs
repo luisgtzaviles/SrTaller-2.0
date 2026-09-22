@@ -96,6 +96,8 @@ test('Preview runtime helper returns a relinquished ephemeral loopback port', as
   const previewSource = await readFile('scripts/test-preview-database-runtime-postgresql.mjs', 'utf8');
   assert.doesNotMatch(previewSource, /31991/u);
   assert.match(previewSource, /reserveLoopbackPort/u);
+  assert.match(previewSource, /SR_REGISTRATION_ABUSE_PEPPER/u);
+  assert.match(previewSource, /SR_RESEND_API_KEY/u);
 });
 
 test('smoke harness shares one migrated PostgreSQL context and emits no credential', async () => {
@@ -158,6 +160,7 @@ test('smoke harness shares one migrated PostgreSQL context and emits no credenti
   assert.doesNotMatch(JSON.stringify({ provision, start, ui, cleanup }), new RegExp(password, 'u'));
   assert.equal(environments[1].DATABASE_URL, undefined);
   assert.equal(environments[1].SR_STATION_BOOTSTRAP_SECRET, undefined);
+  assert.equal(environments[1].SR_RESEND_API_KEY, 're_synthetic_full_verification_key');
 });
 
 test('Full Verification evidence path is fail-closed inside the candidate repository', () => {

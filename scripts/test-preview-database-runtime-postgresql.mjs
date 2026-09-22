@@ -182,6 +182,8 @@ try {
     PORT: String(applicationPort),
     SR_PIN_PEPPER: Buffer.alloc(32, 0x39).toString('base64url'),
     SR_ADMIN_PASSWORD_PEPPER: Buffer.alloc(32, 0x3a).toString('base64url'),
+    SR_REGISTRATION_ABUSE_PEPPER: Buffer.alloc(32, 0x3b).toString('base64url'),
+    SR_RESEND_API_KEY: 're_synthetic_preview_runtime_key',
   };
   const applicationEnvironment = {
     ...technicalEnvironment,

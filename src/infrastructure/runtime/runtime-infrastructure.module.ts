@@ -6,11 +6,13 @@ import {
   APPLICATION_DATABASE_CONNECTION,
   LOCAL_RUNTIME_CONFIGURATION,
   SESSION_TRANSPORT_POLICY,
+  REGISTRATION_RUNTIME_CONFIGURATION,
 } from './index.js';
 import type {
   AccessPinHasherFactory,
   LocalRuntimeConfiguration,
   SessionTransportPolicy,
+  RegistrationRuntimeConfiguration,
 } from './index.js';
 import { RuntimeEnvironmentReader } from './runtime-environment.reader.js';
 
@@ -18,6 +20,12 @@ import { RuntimeEnvironmentReader } from './runtime-environment.reader.js';
   providers: [
     RuntimeEnvironmentReader,
     ApplicationDatabaseRuntimeProvider,
+    {
+      provide: REGISTRATION_RUNTIME_CONFIGURATION,
+      inject: [RuntimeEnvironmentReader],
+      useFactory: (environment: RuntimeEnvironmentReader): RegistrationRuntimeConfiguration =>
+        environment.registrationConfiguration(),
+    },
     {
       provide: APPLICATION_DATABASE_CONNECTION,
       useExisting: ApplicationDatabaseRuntimeProvider,
@@ -90,6 +98,7 @@ import { RuntimeEnvironmentReader } from './runtime-environment.reader.js';
     ACCESS_PIN_HASHER_FACTORY,
     LOCAL_RUNTIME_CONFIGURATION,
     SESSION_TRANSPORT_POLICY,
+    REGISTRATION_RUNTIME_CONFIGURATION,
   ],
 })
 export class RuntimeInfrastructureModule {}

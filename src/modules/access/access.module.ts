@@ -11,6 +11,11 @@ import type {
 } from '../../infrastructure/runtime/index.js';
 import { StationsModule } from '../stations/stations.module.js';
 import { UsersModule } from '../users/users.module.js';
+import { TenancyModule } from '../tenancy/tenancy.module.js';
+import { TENANT_BOOTSTRAP_PERSISTENCE } from '../tenancy/index.js';
+import type { TenantBootstrapPersistence } from '../tenancy/index.js';
+import { TENANT_BOOTSTRAP_USER_WRITER } from '../users/index.js';
+import type { TenantBootstrapUserWriter } from '../users/index.js';
 import {
   BRANCH_SETTINGS_RUNTIME,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
@@ -34,11 +39,12 @@ import type {
   UserProductRuntime,
 } from '../users/index.js';
 
-import { ADMIN_AUTHORIZATION_EXECUTOR, CONTEXTUAL_AUTHORIZATION_EXECUTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
+import { ADMIN_AUTHORIZATION_EXECUTOR, CONTEXTUAL_AUTHORIZATION_EXECUTOR, REGISTRATION_PASSWORD_PROTECTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_BOOTSTRAP_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
 import type { AdminAuthorizationExecutor } from './index.js';
 import type { ContextualAuthorizationExecutor } from './index.js';
 import type { TenantWideAuthorizationExecutor } from './index.js';
 import type { SensitiveActionLevel2Executor } from './index.js';
+import type { RegistrationPasswordProtector, TenantBootstrapExecutor } from './index.js';
 import {
   AUTHENTICATED_SELF_EXECUTOR,
 } from './application/authenticated-self-executor.js';
@@ -55,7 +61,6 @@ import { RevokeRoleAssignmentUseCase } from './application/use-cases/revoke-role
 import type { KyselyAccessRepositoryFactory } from './infrastructure/persistence/kysely-access.repository.js';
 import type { KyselyPinCredentialRepositoryFactory } from './infrastructure/persistence/kysely-pin-credential.repository.js';
 import { KyselyAdminAuthRepository } from './infrastructure/persistence/kysely-admin-auth.repository.js';
-import type { KyselyTenantBootstrapAccessWriter } from './infrastructure/persistence/kysely-tenant-bootstrap-access.writer.js';
 import { ProvisionPinCredentialUseCase } from './application/use-cases/provision-pin-credential.use-case.js';
 import { ReplacePinCredentialUseCase } from './application/use-cases/replace-pin-credential.use-case.js';
 import { AuthenticatePinUseCase } from './application/use-cases/authenticate-pin.use-case.js';
@@ -102,6 +107,8 @@ import { AdminAuthorizationExecutorService } from './presentation/admin-authoriz
 import { AccessAdministrationOperations } from './application/access-administration-operations.js';
 import { AccessSelfPreferencesOperations } from './application/access-self-preferences.operations.js';
 import { UserPreferencesController } from './presentation/user-preferences.controller.js';
+import { BootstrapTenantUseCase } from './application/use-cases/bootstrap-tenant.use-case.js';
+import { KyselyTenantBootstrapAccessWriter, KyselyTenantBootstrapTransaction } from './infrastructure/persistence/kysely-tenant-bootstrap-access.writer.js';
 
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
@@ -121,7 +128,7 @@ type RegisteredAccessUseCases =
   | ProvisionPinCredentialUseCase;
 
 @Module({
-  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],
+  imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule],
   controllers: [
     AccessSessionController,
     AdminSessionController,
@@ -226,6 +233,8 @@ type RegisteredAccessUseCases =
           replacePin: new ReplacePinCredentialUseCase(pinRepository, pinHasher),
           listConfiguredPinUserIds: (scope: unknown) => pinRepository.listConfiguredUserIds(scope as never),
           tokens,
+          registrationPasswordHasher: adminPasswordHasher,
+          tenantBootstrapTransaction: new KyselyTenantBootstrapTransaction(database as never),
           admin: Object.freeze({
             provision: new ProvisionAdminIdentityUseCase(adminRepository, users, adminPasswordHasher),
             login: new LoginAdminUseCase(adminRepository, users, adminPasswordHasher, adminTokens),
@@ -244,6 +253,42 @@ type RegisteredAccessUseCases =
           }),
         });
       },
+    },
+    {
+      provide: REGISTRATION_PASSWORD_PROTECTOR,
+      inject: [ACCESS_SESSION_RUNTIME],
+      useFactory: (runtime: AccessSessionRuntime): RegistrationPasswordProtector => Object.freeze({
+        protect: (input: Parameters<RegistrationPasswordProtector['protect']>[0]) =>
+          runtime.registrationPasswordHasher.hash({
+            tenantId: input.tenantId,
+            adminIdentityId: input.adminIdentityId,
+            password: input.password as never,
+          }),
+      }),
+    },
+    {
+      provide: TENANT_BOOTSTRAP_EXECUTOR,
+      inject: [ACCESS_SESSION_RUNTIME, TENANT_BOOTSTRAP_PERSISTENCE, TENANT_BOOTSTRAP_USER_WRITER],
+      useFactory: (
+        runtime: AccessSessionRuntime,
+        tenancy: TenantBootstrapPersistence,
+        users: TenantBootstrapUserWriter,
+      ): TenantBootstrapExecutor => ({
+        execute: async (input) => {
+          const useCase = new BootstrapTenantUseCase(
+            { loadVerifiedGrant: (registrationId) => input.loadVerifiedGrant(registrationId) as never },
+            runtime.tenantBootstrapTransaction,
+            tenancy.writer,
+            users,
+            new KyselyTenantBootstrapAccessWriter(),
+          );
+          const result = await useCase.execute({
+            verifiedRegistrationId: input.verifiedRegistrationId,
+            correlationId: input.correlationId,
+          });
+          return Object.freeze({ tenantStatus: result.tenantStatus, completedAt: result.completedAt });
+        },
+      }),
     },
     {
       provide: CONTEXTUAL_AUTHORIZATION_EXECUTOR,
@@ -317,7 +362,7 @@ type RegisteredAccessUseCases =
       ),
     },
   ],
-  exports: [CONTEXTUAL_AUTHORIZATION_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR],
+  exports: [CONTEXTUAL_AUTHORIZATION_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, REGISTRATION_PASSWORD_PROTECTOR, TENANT_BOOTSTRAP_EXECUTOR],
 })
 export class AccessModule {
   declare private readonly persistenceAdapter: RegisteredAccessPersistenceAdapter;

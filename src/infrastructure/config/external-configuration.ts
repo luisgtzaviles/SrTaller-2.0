@@ -5,6 +5,8 @@ export type SecretConfigurationName =
   | 'SR_TEST_DB_PASSWORD'
   | 'SR_PIN_PEPPER'
   | 'SR_ADMIN_PASSWORD_PEPPER'
+  | 'SR_REGISTRATION_ABUSE_PEPPER'
+  | 'SR_RESEND_API_KEY'
   | 'SR_SESSION_SIGNING_KEY'
   | 'SR_STATION_BOOTSTRAP_SECRET'
   | 'SR_USER_BOOTSTRAP_SECRET';
@@ -17,7 +19,13 @@ export type ExternalConfigurationName =
   | 'SR_DB_ENVIRONMENT'
   | 'SR_LOCAL_RUNTIME'
   | 'SR_RUNTIME_GIT_SHA'
-  | 'SR_RUNTIME_SOURCE_STATE';
+  | 'SR_RUNTIME_SOURCE_STATE'
+  | 'SR_REGISTRATION_PUBLIC_BASE_URL'
+  | 'SR_REGISTRATION_TERMS_VERSION'
+  | 'SR_REGISTRATION_TERMS_URL'
+  | 'SR_REGISTRATION_PRIVACY_VERSION'
+  | 'SR_REGISTRATION_PRIVACY_URL'
+  | 'SR_REGISTRATION_LEGAL_APPROVED';
 
 type ConfigurationStatus = 'active' | 'reserved';
 
@@ -32,7 +40,8 @@ export interface ExternalConfigurationDefinition {
     | 'database'
     | 'future-access'
     | 'stations-bootstrap'
-    | 'users-bootstrap';
+    | 'users-bootstrap'
+    | 'registration';
   readonly status: ConfigurationStatus;
   readonly source: 'process-environment';
   readonly clientExposure: 'forbidden' | 'bounded-public';
@@ -151,6 +160,37 @@ export const externalConfigurationCatalog = Object.freeze([
     source: 'process-environment' as const,
     clientExposure: 'forbidden' as const,
   }),
+  Object.freeze({
+    name: 'SR_REGISTRATION_ABUSE_PEPPER',
+    classification: 'secret' as const,
+    consumer: 'registration' as const,
+    status: 'active' as const,
+    source: 'process-environment' as const,
+    clientExposure: 'forbidden' as const,
+  }),
+  Object.freeze({
+    name: 'SR_RESEND_API_KEY',
+    classification: 'secret' as const,
+    consumer: 'registration' as const,
+    status: 'active' as const,
+    source: 'process-environment' as const,
+    clientExposure: 'forbidden' as const,
+  }),
+  ...([
+    'SR_REGISTRATION_PUBLIC_BASE_URL',
+    'SR_REGISTRATION_TERMS_VERSION',
+    'SR_REGISTRATION_TERMS_URL',
+    'SR_REGISTRATION_PRIVACY_VERSION',
+    'SR_REGISTRATION_PRIVACY_URL',
+    'SR_REGISTRATION_LEGAL_APPROVED',
+  ] as const).map((name) => Object.freeze({
+    name,
+    classification: 'non-secret' as const,
+    consumer: 'registration' as const,
+    status: 'active' as const,
+    source: 'process-environment' as const,
+    clientExposure: name === 'SR_REGISTRATION_LEGAL_APPROVED' ? 'forbidden' as const : 'bounded-public' as const,
+  })),
 ] satisfies readonly ExternalConfigurationDefinition[]);
 
 type ExternalConfigurationErrorCode =

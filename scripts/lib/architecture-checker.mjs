@@ -2901,6 +2901,7 @@ export async function checkArchitecture({
     if (baselineFixture) {
       omittedFixtureOwners.add('repairs');
       omittedFixtureOwners.add('catalog');
+      omittedFixtureOwners.add('registration');
     }
     const belongsToOmittedFixtureOwner = (value) =>
       [...omittedFixtureOwners].some(
@@ -2911,6 +2912,7 @@ export async function checkArchitecture({
           value.startsWith(`${owner}_`) ||
           (owner === 'access' && value.includes('Access')) ||
           (owner === 'catalog' && value.includes('Catalog')) ||
+          (owner === 'registration' && value.includes('Registration')) ||
           (owner === 'repairs' && value.includes('Repair')) ||
           (owner === 'users' && value.includes('User')) ||
           (baselineFixture && (

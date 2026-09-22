@@ -156,6 +156,8 @@ test('public migration API remains narrow with governed productive migrations', 
       '20260921120000_tenancy_create_bootstrap_foundation.ts',
       '20260921121000_access_create_starter_tenant_admin_policy.ts',
       '20260921122000_tenancy_create_bootstrap_guards.ts',
+      '20260921150000_registration_create_public_verification.ts',
+      '20260921151000_registration_enable_retention_cleanup.ts',
     ],
   );
 

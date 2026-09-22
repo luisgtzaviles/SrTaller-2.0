@@ -11,7 +11,7 @@ const values = Object.freeze({
   SR_LOCAL_APPLICATION_USER: 'srtaller_local_application', SR_LOCAL_APPLICATION_PASSWORD: 'synthetic-application-secret',
   SR_LOCAL_BACKEND_HOST: '127.0.0.1', SR_LOCAL_BACKEND_PORT: '3000', SR_LOCAL_VITE_HOST: '127.0.0.1', SR_LOCAL_VITE_PORT: '4173',
   SR_STATION_BOOTSTRAP_SECRET: 'synthetic-station-secret', SR_USER_BOOTSTRAP_SECRET: 'synthetic-user-secret',
-  SR_PIN_PEPPER: 'synthetic-pin-pepper', SR_ADMIN_PASSWORD_PEPPER: 'synthetic-admin-password-pepper',
+  SR_PIN_PEPPER: 'synthetic-pin-pepper', SR_ADMIN_PASSWORD_PEPPER: 'synthetic-admin-password-pepper', SR_REGISTRATION_ABUSE_PEPPER: 'synthetic-registration-abuse-pepper',
 });
 
 test('local admin provisioner fails closed outside explicit development localhost context', () => {

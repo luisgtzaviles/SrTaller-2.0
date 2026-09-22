@@ -39,3 +39,13 @@ export interface TenantSettingsRuntime {
 export const TENANT_SETTINGS_RUNTIME: unique symbol = Symbol(
   'srtaller.tenancy.settings-runtime',
 );
+
+export type TenantBootstrapWriter =
+  import('./application/ports/tenant-bootstrap-writer.port.js').TenantBootstrapWriterPort;
+export interface TenantBootstrapPersistence {
+  readonly writer: TenantBootstrapWriter;
+}
+
+export const TENANT_BOOTSTRAP_PERSISTENCE: unique symbol = Symbol(
+  'srtaller.tenancy.bootstrap-persistence',
+);

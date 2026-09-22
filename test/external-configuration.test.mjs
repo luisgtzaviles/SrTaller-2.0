@@ -50,6 +50,8 @@ test('catalog distinguishes active non-secret configuration from server-only sec
       { name: 'SR_SESSION_SIGNING_KEY', classification: 'secret', clientExposure: 'forbidden' },
       { name: 'SR_STATION_BOOTSTRAP_SECRET', classification: 'secret', clientExposure: 'forbidden' },
       { name: 'SR_USER_BOOTSTRAP_SECRET', classification: 'secret', clientExposure: 'forbidden' },
+      { name: 'SR_REGISTRATION_ABUSE_PEPPER', classification: 'secret', clientExposure: 'forbidden' },
+      { name: 'SR_RESEND_API_KEY', classification: 'secret', clientExposure: 'forbidden' },
     ],
   );
   assert.deepEqual(
@@ -64,13 +66,27 @@ test('catalog distinguishes active non-secret configuration from server-only sec
       { name: 'SR_LOCAL_RUNTIME', classification: 'non-secret' },
       { name: 'SR_RUNTIME_GIT_SHA', classification: 'non-secret' },
       { name: 'SR_RUNTIME_SOURCE_STATE', classification: 'non-secret' },
+      { name: 'SR_REGISTRATION_PUBLIC_BASE_URL', classification: 'non-secret' },
+      { name: 'SR_REGISTRATION_TERMS_VERSION', classification: 'non-secret' },
+      { name: 'SR_REGISTRATION_TERMS_URL', classification: 'non-secret' },
+      { name: 'SR_REGISTRATION_PRIVACY_VERSION', classification: 'non-secret' },
+      { name: 'SR_REGISTRATION_PRIVACY_URL', classification: 'non-secret' },
+      { name: 'SR_REGISTRATION_LEGAL_APPROVED', classification: 'non-secret' },
     ],
   );
   assert.deepEqual(
     externalConfigurationCatalog
       .filter(({ clientExposure }) => clientExposure === 'bounded-public')
       .map(({ name }) => name),
-    ['SR_RUNTIME_GIT_SHA', 'SR_RUNTIME_SOURCE_STATE'],
+    [
+      'SR_RUNTIME_GIT_SHA',
+      'SR_RUNTIME_SOURCE_STATE',
+      'SR_REGISTRATION_PUBLIC_BASE_URL',
+      'SR_REGISTRATION_TERMS_VERSION',
+      'SR_REGISTRATION_TERMS_URL',
+      'SR_REGISTRATION_PRIVACY_VERSION',
+      'SR_REGISTRATION_PRIVACY_URL',
+    ],
   );
   assert.ok(externalConfigurationCatalog.every(Object.isFrozen));
 });

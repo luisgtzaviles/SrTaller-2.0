@@ -62,15 +62,19 @@ const directedAccessModule = [
   "import { Module } from '@nestjs/common';",
   "import { RuntimeInfrastructureModule } from '../../infrastructure/runtime/runtime-infrastructure.module.js';",
   "import { StationsModule } from '../stations/stations.module.js';",
+  "import { TenancyModule } from '../tenancy/tenancy.module.js';",
   "import { UsersModule } from '../users/users.module.js';",
   "import { BRANCH_SETTINGS_RUNTIME } from '../stations/index.js';",
   "import type { BranchSettingsRuntime } from '../stations/index.js';",
   "import { TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER } from '../stations/index.js';",
   "import type { TrustedStationAdmissionValidator, TrustedStationContextResolver } from '../stations/index.js';",
   "import { AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER, USER_PREFERENCES_RUNTIME, USER_PRODUCT_RUNTIME } from '../users/index.js';",
-  "import type { AuthenticationUserAdmissionValidator, AuthenticationUserReader, UserPreferencesRuntime, UserProductRuntime } from '../users/index.js';",
+  "import { TENANT_BOOTSTRAP_USER_WRITER } from '../users/index.js';",
+  "import type { AuthenticationUserAdmissionValidator, AuthenticationUserReader, TenantBootstrapUserWriter, UserPreferencesRuntime, UserProductRuntime } from '../users/index.js';",
+  "import { TENANT_BOOTSTRAP_PERSISTENCE } from '../tenancy/index.js';",
+  "import type { TenantBootstrapPersistence } from '../tenancy/index.js';",
   '@Module({',
-  '  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],',
+  '  imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule],',
   '  providers: [{',
   "    provide: 'DIRECTED_COMPOSITION_PROBE',",
   '    inject: [TRUSTED_STATION_ADMISSION_VALIDATOR, TRUSTED_STATION_CONTEXT_RESOLVER, AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER, USER_PREFERENCES_RUNTIME, USER_PRODUCT_RUNTIME],',
@@ -79,6 +83,10 @@ const directedAccessModule = [
   "    provide: 'BRANCH_RUNTIME_PROBE',",
   '    inject: [BRANCH_SETTINGS_RUNTIME],',
   '    useFactory: (branchSettings: BranchSettingsRuntime) => ({ branchSettings }),',
+  '  }, {',
+  "    provide: 'TENANT_BOOTSTRAP_PROBE',",
+  '    inject: [TENANT_BOOTSTRAP_PERSISTENCE, TENANT_BOOTSTRAP_USER_WRITER],',
+  '    useFactory: (persistence: TenantBootstrapPersistence, users: TenantBootstrapUserWriter) => ({ persistence, users }),',
   '  }],',
   '})',
   'export class AccessModule {}',
@@ -143,6 +151,7 @@ const directedUsersIndex = [
   "export const AUTHENTICATION_USER_READER: unique symbol = Symbol('fixture.user-reader');",
   "export const USER_PREFERENCES_RUNTIME: unique symbol = Symbol('fixture.user-preferences');",
   "export const USER_PRODUCT_RUNTIME: unique symbol = Symbol('fixture.user-product');",
+  "export const TENANT_BOOTSTRAP_USER_WRITER: unique symbol = Symbol('fixture.tenant-bootstrap-user-writer');",
   'export interface AuthenticationUserScope { readonly tenantId: TenantId; }',
   'export interface AuthenticationUserRecord { readonly userId: string; }',
   'export interface AuthenticationUserReader {',
@@ -153,14 +162,15 @@ const directedUsersIndex = [
   '}',
   'export interface UserPreferencesRuntime { readonly read: unknown; readonly save: unknown; }',
   'export interface UserProductRuntime { readonly list: unknown; }',
+  'export interface TenantBootstrapUserWriter { readonly create: unknown; }',
   "export interface UsersModuleContract { readonly module: 'users'; }",
   '',
 ].join('\n');
 
 const directedUsersModule = [
   "import { Module } from '@nestjs/common';",
-  "import { AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER, USER_PREFERENCES_RUNTIME, USER_PRODUCT_RUNTIME } from './index.js';",
-  "import type { AuthenticationUserAdmissionValidator, AuthenticationUserReader, UserPreferencesRuntime, UserProductRuntime } from './index.js';",
+  "import { AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER, TENANT_BOOTSTRAP_USER_WRITER, USER_PREFERENCES_RUNTIME, USER_PRODUCT_RUNTIME } from './index.js';",
+  "import type { AuthenticationUserAdmissionValidator, AuthenticationUserReader, TenantBootstrapUserWriter, UserPreferencesRuntime, UserProductRuntime } from './index.js';",
   '@Module({',
   '  providers: [{',
   '    provide: AUTHENTICATION_USER_ADMISSION_VALIDATOR,',
@@ -174,10 +184,42 @@ const directedUsersModule = [
   '  }, {',
   '    provide: USER_PRODUCT_RUNTIME,',
   '    useFactory: (): UserProductRuntime => ({ list: async () => [] }),',
+  '  }, {',
+  '    provide: TENANT_BOOTSTRAP_USER_WRITER,',
+  '    useFactory: (): TenantBootstrapUserWriter => ({ create: async () => ({}) }),',
   '  }],',
-  '  exports: [AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER, USER_PREFERENCES_RUNTIME, USER_PRODUCT_RUNTIME],',
+  '  exports: [AUTHENTICATION_USER_ADMISSION_VALIDATOR, AUTHENTICATION_USER_READER, USER_PREFERENCES_RUNTIME, USER_PRODUCT_RUNTIME, TENANT_BOOTSTRAP_USER_WRITER],',
   '})',
   'export class UsersModule {}',
+  '',
+].join('\n');
+
+const directedTenancyIndex = [
+  "export const TENANT_BOOTSTRAP_PERSISTENCE: unique symbol = Symbol('fixture.tenant-bootstrap-persistence');",
+  "export const TENANT_SETTINGS_RUNTIME: unique symbol = Symbol('fixture.tenant-settings-runtime');",
+  'export interface TenantBootstrapPersistence { readonly execute: unknown; }',
+  'export interface TenantSettingsRuntime { readonly read: unknown; }',
+  'export interface TenancyModuleContract {',
+  "  readonly module: 'tenancy';",
+  '}',
+  '',
+].join('\n');
+
+const directedTenancyModule = [
+  "import { Module } from '@nestjs/common';",
+  "import { TENANT_BOOTSTRAP_PERSISTENCE, TENANT_SETTINGS_RUNTIME } from './index.js';",
+  "import type { TenantBootstrapPersistence, TenantSettingsRuntime } from './index.js';",
+  '@Module({',
+  '  providers: [{',
+  '    provide: TENANT_BOOTSTRAP_PERSISTENCE,',
+  '    useFactory: (): TenantBootstrapPersistence => ({ execute: async () => ({}) }),',
+  '  }, {',
+  '    provide: TENANT_SETTINGS_RUNTIME,',
+  '    useFactory: (): TenantSettingsRuntime => ({ read: async () => null }),',
+  '  }],',
+  '  exports: [TENANT_BOOTSTRAP_PERSISTENCE, TENANT_SETTINGS_RUNTIME],',
+  '})',
+  'export class TenancyModule {}',
   '',
 ].join('\n');
 
@@ -187,6 +229,8 @@ const validDirectedCompositionFiles = {
   'src/modules/stations/stations.module.ts': directedStationsModule,
   'src/modules/users/index.ts': directedUsersIndex,
   'src/modules/users/users.module.ts': directedUsersModule,
+  'src/modules/tenancy/index.ts': directedTenancyIndex,
+  'src/modules/tenancy/tenancy.module.ts': directedTenancyModule,
 };
 
 const expectedPathByFixtureName = {
@@ -280,16 +324,16 @@ export const fixtureCases = [
   },
   {
     name: 'directed composition graph edge without registry',
-    expectedPath: 'src/modules/access/access.module.ts',
+    expectedPath: 'src/modules/stations/stations.module.ts',
     expectedRules: ['D5-R024'],
     expectedText: 'not explicitly registered|unregistered modules',
     files: {
       ...validDirectedCompositionFiles,
-      'src/modules/access/access.module.ts': [
+      'src/modules/stations/stations.module.ts': [
         "import { TenancyModule } from '../tenancy/tenancy.module.js';",
-        directedAccessModule.replace(
-          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
-          'imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule]',
+        directedStationsModule.replace(
+          '@Module({',
+          '@Module({\n  imports: [TenancyModule],',
         ),
       ].join('\n'),
     },
@@ -307,8 +351,8 @@ export const fixtureCases = [
           'import { StationsModule as StationComposition }',
         )
         .replace(
-          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
-          'imports: [RuntimeInfrastructureModule, StationComposition, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, StationComposition, TenancyModule, UsersModule]',
         ),
     },
   },
@@ -325,8 +369,8 @@ export const fixtureCases = [
           "import * as StationsComposition from '../stations/stations.module.js';",
         )
         .replace(
-          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
-          'imports: [RuntimeInfrastructureModule, StationsComposition.StationsModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, StationsComposition.StationsModule, TenancyModule, UsersModule]',
         ),
     },
   },
@@ -343,8 +387,8 @@ export const fixtureCases = [
           "void import('../stations/stations.module.js');",
         )
         .replace(
-          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
-          'imports: [RuntimeInfrastructureModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, TenancyModule, UsersModule]',
         ),
     },
   },
@@ -361,8 +405,8 @@ export const fixtureCases = [
           "import { forwardRef, Module } from '@nestjs/common';",
         )
         .replace(
-          'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
-          'imports: [RuntimeInfrastructureModule, forwardRef(() => StationsModule), UsersModule]',
+          'imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule]',
+          'imports: [RuntimeInfrastructureModule, forwardRef(() => StationsModule), TenancyModule, UsersModule]',
         ),
     },
   },
@@ -374,7 +418,7 @@ export const fixtureCases = [
     files: {
       ...validDirectedCompositionFiles,
       'src/modules/access/access.module.ts': directedAccessModule.replace(
-        '  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],\n',
+        '  imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule],\n',
         '',
       ),
     },
@@ -387,8 +431,8 @@ export const fixtureCases = [
     files: {
       ...validDirectedCompositionFiles,
       'src/modules/access/access.module.ts': directedAccessModule.replace(
-        '  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],',
-        '  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],\n  imports: [RuntimeInfrastructureModule, StationsModule, UsersModule],',
+        '  imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule],',
+        '  imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule],\n  imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule],',
       ),
     },
   },
@@ -400,8 +444,8 @@ export const fixtureCases = [
     files: {
       ...validDirectedCompositionFiles,
       'src/modules/access/access.module.ts': directedAccessModule.replace(
-        'imports: [RuntimeInfrastructureModule, StationsModule, UsersModule]',
-        'imports: [RuntimeInfrastructureModule, StationsModule, StationsModule, UsersModule]',
+        'imports: [RuntimeInfrastructureModule, StationsModule, TenancyModule, UsersModule]',
+        'imports: [RuntimeInfrastructureModule, StationsModule, StationsModule, TenancyModule, UsersModule]',
       ),
     },
   },

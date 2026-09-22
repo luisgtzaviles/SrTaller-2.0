@@ -12,12 +12,14 @@ import {
   AUTHENTICATION_USER_READER,
   USER_PREFERENCES_RUNTIME,
   USER_PRODUCT_RUNTIME,
+  TENANT_BOOTSTRAP_USER_WRITER,
 } from './index.js';
 import type {
   AuthenticationUserAdmissionValidator,
   AuthenticationUserReader,
   UserPreferencesRuntime,
   UserProductRuntime,
+  TenantBootstrapUserWriter,
 } from './index.js';
 import type { GetUserUseCase } from './application/use-cases/get-user.use-case.js';
 import type { ProvisionFirstUserUseCase } from './application/use-cases/provision-first-user.use-case.js';
@@ -30,7 +32,7 @@ import type { KyselyUserRepositoryFactory } from './infrastructure/persistence/k
 import type { UserMutationCommitGuard } from './application/ports/user-repository.port.js';
 import { KyselyAuthenticationUserReader } from './infrastructure/persistence/kysely-authentication-user.reader.js';
 import { KyselyUserPreferencesRepository } from './infrastructure/persistence/kysely-user-preferences.repository.js';
-import type { KyselyTenantBootstrapUserWriter } from './infrastructure/persistence/kysely-tenant-bootstrap-user.writer.js';
+import { KyselyTenantBootstrapUserWriter } from './infrastructure/persistence/kysely-tenant-bootstrap-user.writer.js';
 import {
   GetUserPreferencesUseCase,
   UpdateUserPreferencesUseCase,
@@ -61,6 +63,10 @@ type UsersRuntimeComposition = Readonly<{
 @Module({
   imports: [RuntimeInfrastructureModule],
   providers: [
+    {
+      provide: TENANT_BOOTSTRAP_USER_WRITER,
+      useFactory: (): TenantBootstrapUserWriter => new KyselyTenantBootstrapUserWriter(),
+    },
     {
       provide: USERS_RUNTIME_COMPOSITION,
       inject: [APPLICATION_DATABASE_CONNECTION],
@@ -128,6 +134,7 @@ type UsersRuntimeComposition = Readonly<{
     USER_PREFERENCES_RUNTIME,
     USER_PRODUCT_RUNTIME,
     AUTHENTICATION_USER_READER,
+    TENANT_BOOTSTRAP_USER_WRITER,
   ],
 })
 export class UsersModule {

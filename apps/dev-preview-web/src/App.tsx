@@ -17,6 +17,7 @@ import { NewRepairConfigurationPage } from './pages/NewRepairConfigurationPage.j
 import { RepairCatalogsPage } from './pages/RepairCatalogsPage.js';
 import { CatalogFieldPolicyConfigurationPage } from './pages/CatalogFieldPolicyConfigurationPage.js';
 import { PriceListPage } from './pages/PriceListPage.js';
+import { PublicRegistrationPage } from './pages/PublicRegistrationPage.js';
 import { BulkCatalogComposerPage } from './pages/BulkCatalogComposerPage.js';
 import { SessionProvider } from './session/SessionProvider.js';
 import { hasOperationalCapability } from './session/session-capabilities.mjs';
@@ -89,6 +90,9 @@ function CatalogItemDetailRoute({ capabilities, administrationCapabilities, csrf
 
 export function App(): React.JSX.Element {
   const location = useLocation();
+  if (location.pathname === '/registro' || location.pathname === '/verificar') {
+    return <PublicRegistrationPage />;
+  }
   const routeState = location.state as Readonly<{
     backgroundLocation?: Location;
   }> | null;
