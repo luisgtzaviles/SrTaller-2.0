@@ -112,6 +112,31 @@ container cleanup 228 ms. Per-file database create/drop/schema inspection is
 included in each total. The worst corrected campaign is 126,212 ms, leaving
 113,788 ms of the unchanged 240,000 ms budget.
 
+## First authoritative remote finding
+
+The first remote candidate run on Linux x64 preserved the red result instead
+of treating one successful leg as sufficient evidence. Run 1 executed all
+eight files and passed in 220,138 ms, leaving only 19,862 ms of the fixed
+budget. Run 2 exhausted the unchanged 240,000 ms child-process timeout before
+producing a campaign summary. Comparison was therefore unavailable and the
+authoritative promotion gate failed.
+
+The successful leg showed bounded database create/drop overhead while
+CPU-heavy child work expanded on the smaller host. The PIN material test alone
+took 72,869 ms and permitted two real Argon2 operations to contend even though
+the governed KDF profile itself uses parallelism 4. The PostgreSQL contract
+needs concurrent commands, credential semantics and real Argon2 material; it
+does not require two KDF derivations to compete for the same limited runner CPU
+at once. The focused test now admits one real Argon2 operation at a time while
+retaining the same KDF profile, queue, commands, assertions, material
+PostgreSQL behavior and failure propagation. No KDF result is cached or
+substituted.
+
+The focused material campaign with this scheduler setting passed all 8 files
+locally in 118,554 ms; the PIN file passed in 36,027 ms. This local result
+validates behavior but does not substitute for a fresh two-leg authoritative
+run on the constrained remote host.
+
 ## Regression protection
 
 The focused contract fixes the exact eight-file inventory and asserts:

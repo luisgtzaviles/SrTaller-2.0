@@ -38,6 +38,10 @@ const ownerScopedRunner = await readFile(
   'scripts/test-owner-scoped-persistence-postgresql.mjs',
   'utf8',
 );
+const accessPinPostgresqlTest = await readFile(
+  'test/access-pin-postgresql.test.mjs',
+  'utf8',
+);
 const pbi039Runner = await readFile(
   'scripts/test-pbi039-postgresql.mjs',
   'utf8',
@@ -285,6 +289,10 @@ test('owner-scoped PostgreSQL runner retains the exact material adapter inventor
   );
   assert.match(ownerScopedRunner, /process\.once\('SIGINT'/u);
   assert.match(ownerScopedRunner, /process\.once\('SIGTERM'/u);
+  assert.match(
+    accessPinPostgresqlTest,
+    /new NodeArgon2PinHasher\(pepper, \{\s*maxActive: 1,\s*maxQueued: 16,/u,
+  );
 });
 
 test('PBI-039 PostgreSQL runner isolates each focused test file from local and shared databases', () => {

@@ -8,7 +8,7 @@ risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: fix/owner-scoped-postgresql-runtime
 base_sha: 81b57994c69ed3584776ff080253f9a772e6425b
-status: READY_FOR_PROMOTION
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
@@ -73,23 +73,28 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Progress
 
-10 / 10 blocks complete.
+9 / 10 blocks complete.
 
 ## Current
 
-The Quality candidate is complete locally. The serial fresh-database design,
-focused checks, normal composite and governed `verify:full` all pass; TL-06
-remains frozen at its reviewed candidate.
+The first exact-HEAD remote run proved the shared-container isolation design
+but exposed insufficient Linux x64 margin: run-1 passed the owner-scoped stage
+in 220,138 ms and run-2 exhausted the fixed 240-second timeout. Remediation is
+active on the same Quality branch; TL-06 remains frozen at its reviewed
+candidate.
 
 ## Next
 
-Await separate Owner authorization for remote promotion. No push, PR, merge or
-deploy has occurred.
+Revalidate the single-active-Argon2 test profile locally, freeze a new exact
+candidate, push normally to the existing Draft PR and require fresh
+authoritative CI in both legs.
 
 ## Blockers
 
-None for local Quality work. TL-06 promotion remains externally blocked until
-this Work Unit is integrated and TL-06 is reconciled from the resulting main.
+Remote promotion remains blocked until the remediated exact HEAD completes
+run-1, run-2, comparison and the Authoritative promotion gate. TL-06 promotion
+remains externally blocked until this Work Unit is integrated and TL-06 is
+reconciled from the resulting main.
 
 ## Important Discoveries
 
@@ -109,6 +114,13 @@ this Work Unit is integrated and TL-06 is reconciled from the resulting main.
   and 120,300 ms; material comparison and cleanup passed.
 - The normal PostgreSQL composite passed 17/17; owner-scoped execution was
   119,883 ms and remained inside the unchanged 240-second budget.
+- First authoritative remote CI preserved a material red result: run-1 passed
+  all eight files in 220,138 ms; run-2 exhausted the unchanged 240-second
+  timeout, so comparison was unavailable and the promotion gate failed.
+- Successful-leg timings localize the remaining variance to CPU-heavy child
+  work rather than database lifecycle. The PIN material test now serializes
+  real Argon2 work at one active operation without changing its production KDF
+  profile, assertions, command concurrency or PostgreSQL semantics.
 
 ## Focused Verification
 
@@ -118,19 +130,20 @@ this Work Unit is integrated and TL-06 is reconciled from the resulting main.
 - [x] Failure propagation and deterministic cleanup regressions.
 - [x] Migration/schema authority and 240-second budget static checks.
 - [x] Relevant architecture/persistence tests, typecheck and `git diff --check`.
-- [x] Canonical `verify:full` campaign: Stages 0–17 PASS; cleanup PASS.
+- [~] Canonical `verify:full` must be rerun on the remediated exact HEAD.
 
 ## Promotion Gates
 
 - [x] Local focused verification PASS.
 - [x] Local governed `verify` PASS.
-- [x] Local governed `verify:full` PASS.
-- [ ] Remote PR/CI/review — not authorized in this Work Unit turn.
+- [~] Local governed `verify:full` rerun on remediation HEAD.
+- [~] Remote PR/CI/review — PR #70 open; first authoritative run failed closed.
 - [ ] Merge/exact-main closure — not authorized.
 
 ## Remote Actions / Authorization
 
-- No push, PR, merge or deploy is authorized for this Quality Work Unit.
+- Push and one Draft PR are authorized for this Quality Work Unit. PR #70 is
+  open; merge and deploy remain unauthorized.
 
 ## Handoff Notes
 
