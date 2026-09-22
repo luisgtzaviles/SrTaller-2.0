@@ -138,6 +138,7 @@ export interface AuthorizedAdminContext {
   readonly tenantId: TenantId;
   readonly sessionId: string;
   readonly userId: string;
+  readonly adminIdentityId: string;
   readonly userDisplayName: string;
   readonly capability: CapabilityCode;
   readonly reauthenticatedAt: string | null;
@@ -154,6 +155,10 @@ export interface AdminAuthorizationExecutor {
 
 export const ADMIN_AUTHORIZATION_EXECUTOR: unique symbol = Symbol(
   'srtaller.access.admin-authorization-executor',
+);
+
+export const ADMIN_INVITATION_SERVICE: unique symbol = Symbol(
+  'srtaller.access.admin-invitation-service',
 );
 
 /** Registration receives only this narrow server-owned bootstrap boundary. */

@@ -4,11 +4,14 @@ import { RuntimeInfrastructureModule } from '../../infrastructure/runtime/runtim
 import {
   ACCESS_PIN_HASHER_FACTORY,
   APPLICATION_DATABASE_CONNECTION,
+  REGISTRATION_RUNTIME_CONFIGURATION,
 } from '../../infrastructure/runtime/index.js';
 import type {
   AccessPinHasherFactory,
   ApplicationDatabaseConnection,
+  RegistrationRuntimeConfiguration,
 } from '../../infrastructure/runtime/index.js';
+import { LocalEmailDelivery, ResendEmailDelivery } from '../../infrastructure/email/email-delivery.js';
 import { StationsModule } from '../stations/stations.module.js';
 import { UsersModule } from '../users/users.module.js';
 import { TenancyModule } from '../tenancy/tenancy.module.js';
@@ -41,7 +44,7 @@ import type {
   UserProductRuntime,
 } from '../users/index.js';
 
-import { ADMIN_AUTHORIZATION_EXECUTOR, CONTEXTUAL_AUTHORIZATION_EXECUTOR, REGISTRATION_PASSWORD_PROTECTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_BOOTSTRAP_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
+import { ADMIN_AUTHORIZATION_EXECUTOR, ADMIN_INVITATION_SERVICE, CONTEXTUAL_AUTHORIZATION_EXECUTOR, REGISTRATION_PASSWORD_PROTECTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_BOOTSTRAP_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
 import type { AdminAuthorizationExecutor } from './index.js';
 import type { ContextualAuthorizationExecutor } from './index.js';
 import type { TenantWideAuthorizationExecutor } from './index.js';
@@ -115,6 +118,10 @@ import { AccessSelfPreferencesOperations } from './application/access-self-prefe
 import { UserPreferencesController } from './presentation/user-preferences.controller.js';
 import { BootstrapTenantUseCase } from './application/use-cases/bootstrap-tenant.use-case.js';
 import { KyselyTenantBootstrapAccessWriter, KyselyTenantBootstrapTransaction } from './infrastructure/persistence/kysely-tenant-bootstrap-access.writer.js';
+import { KyselyAdminInvitationRepository } from './infrastructure/persistence/kysely-admin-invitation.repository.js';
+import { AdminInvitationService } from './application/use-cases/admin-invitation.use-cases.js';
+import { AdminUsersRolesOperations } from './application/admin-users-roles.operations.js';
+import { AdminUsersRolesController, PublicAdminInvitationController } from './presentation/admin-users-roles.controller.js';
 
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
@@ -139,6 +146,8 @@ type RegisteredAccessUseCases =
     AccessSessionController,
     AdminSessionController,
     AdminBranchesController,
+    AdminUsersRolesController,
+    PublicAdminInvitationController,
     AccessAdministrationController,
     BranchSettingsAdministrationController,
     UserPreferencesController,
@@ -334,6 +343,32 @@ type RegisteredAccessUseCases =
       inject: [TENANT_WIDE_AUTHORIZATION_EXECUTOR, ACCESS_SESSION_RUNTIME],
       useFactory: (tenantWide: TenantWideAuthorizationExecutor, runtime: AccessSessionRuntime): SensitiveActionLevel2Executor =>
         new SensitiveActionLevel2ExecutorService(tenantWide, runtime),
+    },
+    {
+      provide: ADMIN_INVITATION_SERVICE,
+      inject: [APPLICATION_DATABASE_CONNECTION, ACCESS_SESSION_RUNTIME, REGISTRATION_RUNTIME_CONFIGURATION],
+      useFactory: (
+        database: ApplicationDatabaseConnection,
+        runtime: AccessSessionRuntime,
+        configuration: RegistrationRuntimeConfiguration,
+      ): AdminInvitationService => new AdminInvitationService(
+        new KyselyAdminInvitationRepository(database),
+        runtime.registrationPasswordHasher,
+        configuration.mode === 'local'
+          ? new LocalEmailDelivery()
+          : configuration.createResendAdapter(ResendEmailDelivery),
+        configuration.publicBaseUrl,
+      ),
+    },
+    {
+      provide: AdminUsersRolesOperations,
+      inject: [ADMIN_AUTHORIZATION_EXECUTOR, USER_PRODUCT_RUNTIME, ACCESS_SESSION_RUNTIME, ADMIN_INVITATION_SERVICE],
+      useFactory: (
+        authorization: AdminAuthorizationExecutor,
+        users: UserProductRuntime,
+        runtime: AccessSessionRuntime,
+        invitations: AdminInvitationService,
+      ): AdminUsersRolesOperations => new AdminUsersRolesOperations(authorization, users, runtime, invitations),
     },
     {
       provide: AccessSelfPreferencesOperations,

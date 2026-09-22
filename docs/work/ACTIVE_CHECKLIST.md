@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-06` is implementing its authorized scope.
 - **Overall status:** `ACTIVE` implementation.
-- **Progress:** readiness `8 / 8`; implementation `3 / 8`.
-- **Current work:** Block 4 — Admin Users/Roles authorization and HTTP surface.
-- **Next block:** Block 5 — last-effective-admin coordinator and Level-2 actions.
+- **Progress:** readiness `8 / 8`; implementation `4 / 8`.
+- **Current work:** Block 5 — last-effective-admin coordinator and Level-2 actions.
+- **Next block:** Block 6 — Admin UI Users/Roles/invitation acceptance.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -79,21 +79,21 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 1 — invitation persistence, domain and audit foundation.
 - [x] Block 2 — TL-04 email transport reuse and durable dispatch.
 - [x] Block 3 — atomic invitation acceptance and password establishment.
-- [~] Block 4 — Admin Users/Roles authorization and HTTP surface.
-- [ ] Block 5 — last-effective-admin coordinator and Level-2 actions.
+- [x] Block 4 — Admin Users/Roles authorization and HTTP surface.
+- [~] Block 5 — last-effective-admin coordinator and Level-2 actions.
 - [ ] Block 6 — Admin UI Users/Roles/invitation acceptance.
 - [ ] Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
 - [ ] Block 8 — browser/accessibility proof, docs and full candidate freeze.
 
 ## Current
 
-Issue/resend/revoke/accept use server IDs, digest-only challenges, immutable
-grant intent and TL-02 Argon2id password protection in SERIALIZABLE storage.
+Admin Users/Roles/invitations are exposed through Admin Session authority;
+public acceptance is isolated and never accepts Tenant or grant authority.
 
 ## Next
 
-Expose tenant-derived Admin Users/Roles/invitation commands through the Admin
-Session authority boundary and a safe public acceptance endpoint.
+Complete custom Role lifecycle and serialize every mutation that can remove
+the last effective Tenant Admin, including concurrent removal attempts.
 
 ## Blockers
 
