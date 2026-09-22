@@ -73,3 +73,27 @@ test('TL-04 PostgreSQL rejects malformed durable lifecycle and preserves append-
     assert.deepEqual(metadata.rows.map((row) => row.table_name), ['registration_acceptance_documents', 'registration_attempts', 'registration_email_dispatches', 'registration_public_action_limits', 'registration_security_events', 'registration_verification_challenges']);
   } finally { await pool.end(); }
 });
+
+test('TL-04 PostgreSQL purges retained attempt material while preserving independent legal evidence', { skip: !enabled }, async () => {
+  const [{ createDatabaseConnection }, { KyselyRegistrationRepository }] = modules;
+  const connection = createDatabaseConnection(config());
+  const pool = new Pool({ host: process.env.SR_TL04_PG_HOST, port: Number(process.env.SR_TL04_PG_PORT), database: process.env.SR_TL04_PG_NAME, user: process.env.SR_TL04_PG_USER, password: process.env.SR_TL04_PG_PASSWORD, ssl: false });
+  try {
+    await connection.verify();
+    await pool.query("update registration_attempts set consumed_at = now() - interval '31 days'");
+    await pool.query("update registration_public_action_limits set expires_at = now() - interval '1 second'");
+    const before = await pool.query('select count(*)::integer as count from registration_attempts');
+    const actionLimitsBefore = await pool.query('select count(*)::integer as count from registration_public_action_limits');
+    assert.equal(before.rows[0].count, 2);
+    const result = await new KyselyRegistrationRepository(connection).maintainRetention({
+      occurredAt: new Date().toISOString(), retentionDays: 30, maximumAttempts: 100,
+    });
+    assert.deepEqual(result, { expiredAttempts: 0, purgedAttempts: 2, purgedActionLimits: actionLimitsBefore.rows[0].count });
+    assert.equal((await pool.query('select count(*)::integer as count from registration_attempts')).rows[0].count, 0);
+    assert.equal((await pool.query('select count(*)::integer as count from registration_verification_challenges')).rows[0].count, 0);
+    assert.equal((await pool.query('select count(*)::integer as count from registration_email_dispatches')).rows[0].count, 0);
+    const evidence = await pool.query('select registration_attempt_id, tenant_id, user_id from registration_acceptance_documents');
+    assert.equal(evidence.rows.length, 4);
+    assert.equal(evidence.rows.every((row) => row.registration_attempt_id === null && row.tenant_id && row.user_id), true);
+  } finally { await connection.close(); await pool.end(); }
+});

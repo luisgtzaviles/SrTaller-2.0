@@ -932,7 +932,8 @@
       "src/infrastructure/database/migrations/20260921120000_tenancy_create_bootstrap_foundation.ts",
       "src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts",
       "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts",
-      "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts"
+      "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts",
+      "src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1603,8 +1604,22 @@
             "registration_verification_challenges"
           ],
           "references": [],
-          "functions": [],
-          "triggers": []
+          "functions": [
+            "registration_guard_acceptance_evidence_mutation",
+            "registration_reject_security_event_mutation"
+          ],
+          "triggers": [
+            "registration_acceptance_documents_guard_update",
+            "registration_acceptance_documents_reject_delete",
+            "registration_security_events_reject_delete",
+            "registration_security_events_reject_update"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts": {
+          "owner": "registration",
+          "tables": ["registration_acceptance_documents", "registration_attempts"],
+          "functions": ["registration_guard_acceptance_evidence_mutation"],
+          "triggers": ["registration_acceptance_documents_guard_update"]
         }
       }
     },
@@ -1935,6 +1950,7 @@
           "src/infrastructure/database/migrations/20260921121000_access_create_starter_tenant_admin_policy.ts",
           "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts",
           "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts",
+          "src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",

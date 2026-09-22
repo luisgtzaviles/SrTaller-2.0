@@ -31,6 +31,15 @@ export type RegistrationChallengeRecord = Readonly<{
 }>;
 
 export interface RegistrationRepositoryPort {
+  maintainRetention(input: Readonly<{
+    occurredAt: string;
+    retentionDays: 30;
+    maximumAttempts: number;
+  }>): Promise<Readonly<{
+    expiredAttempts: number;
+    purgedAttempts: number;
+    purgedActionLimits: number;
+  }>>;
   findActiveByEmail(normalizedEmail: string, now: string): Promise<RegistrationAttemptRecord | null>;
   findAttempt(registrationAttemptId: string): Promise<RegistrationAttemptRecord | null>;
   create(input: Readonly<{

@@ -71,6 +71,7 @@ export class PublicRegistrationService {
     }
     const now = this.now();
     const occurredAt = now.toISOString();
+    await this.repository.maintainRetention({ occurredAt, retentionDays: 30, maximumAttempts: 100 });
     const principal = this.configuration.principalDigest(`register:${email.normalized}:${networkSignal}`);
     const allowed = await this.repository.consumeActionLimit({
       principalDigest: principal, action: 'REGISTER', occurredAt,
@@ -113,15 +114,16 @@ export class PublicRegistrationService {
     return Object.freeze({ result: 'accepted' });
   }
 
-  async resend(value: unknown, correlationId: string, networkSignal = 'unavailable'): Promise<Readonly<{ result: 'accepted'; retryAfterSeconds: 60 }>> {
+  async resend(value: unknown, correlationId: string, _networkSignal = 'unavailable'): Promise<Readonly<{ result: 'accepted'; retryAfterSeconds: 60 }>> {
     if (!this.configuration.enabled) throw new PublicRegistrationError('REGISTRATION_DISABLED');
     const input = exactObject(value, ['email']);
     let email;
     try { email = normalizeRegistrationEmail(input.email); } catch { return Object.freeze({ result: 'accepted', retryAfterSeconds: 60 }); }
     const now = this.now();
     const occurredAt = now.toISOString();
+    await this.repository.maintainRetention({ occurredAt, retentionDays: 30, maximumAttempts: 100 });
     const allowed = await this.repository.consumeActionLimit({
-      principalDigest: this.configuration.principalDigest(`resend:${email.normalized}:${networkSignal}`), action: 'RESEND', occurredAt,
+      principalDigest: this.configuration.principalDigest(`resend:${email.normalized}`), action: 'RESEND', occurredAt,
       windowMs: 60 * 60 * 1_000, maximum: REGISTRATION_RESEND_LIMIT_PER_HOUR,
       cooldownMs: REGISTRATION_RESEND_COOLDOWN_MS,
     });
@@ -147,6 +149,7 @@ export class PublicRegistrationService {
     let digest;
     try { digest = digestVerificationToken(input.token); } catch { return Object.freeze({ result: 'invalid_or_expired' }); }
     const occurredAt = this.now().toISOString();
+    await this.repository.maintainRetention({ occurredAt, retentionDays: 30, maximumAttempts: 100 });
     const allowed = await this.repository.consumeActionLimit({
       principalDigest: this.configuration.principalDigest(`verify:${networkSignal}`),
       action: 'VERIFY', occurredAt, windowMs: 60 * 60 * 1_000, maximum: 10, cooldownMs: 0,

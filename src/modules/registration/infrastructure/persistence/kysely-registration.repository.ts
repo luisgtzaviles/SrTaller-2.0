@@ -52,6 +52,53 @@ async function retrySerializable<Result>(operation: () => Promise<Result>): Prom
 export class KyselyRegistrationRepository implements RegistrationRepositoryPort {
   constructor(private readonly connection: DatabaseConnection) {}
 
+  async maintainRetention(input: Parameters<RegistrationRepositoryPort['maintainRetention']>[0]) {
+    return retrySerializable(() => runInTransaction(this.connection, { isolationLevel: 'serializable' }, async (context) =>
+      useTransactionalDatabasePersistenceExecutor(context, 'registration', async (database) => {
+        const now = new Date(input.occurredAt);
+        const retentionCutoff = new Date(now.getTime() - input.retentionDays * 24 * 60 * 60 * 1_000);
+        const expired = await database.updateTable('registration_attempts').set({
+          status: 'EXPIRED', updated_at: now,
+          password_algorithm: null, password_profile_version: null,
+          password_pepper_version: null, password_memory_kib: null,
+          password_passes: null, password_parallelism: null,
+          password_salt: null, password_verifier: null,
+          version: (eb) => eb('version', '+', 1),
+        }).where('status', 'in', ['PENDING_VERIFICATION', 'VERIFIED'])
+          .where('expires_at', '<=', now).executeTakeFirst();
+        await database.updateTable('registration_verification_challenges').set({
+          status: 'EXPIRED', updated_at: now,
+          version: (eb) => eb('version', '+', 1),
+        }).where('status', '=', 'ACTIVE').where('expires_at', '<=', now).execute();
+        const staleAttempts = await database.selectFrom('registration_attempts')
+          .select('registration_attempt_id')
+          .where((eb) => eb.or([
+            eb.and([eb('status', '=', 'CONSUMED'), eb('consumed_at', '<=', retentionCutoff)]),
+            eb.and([eb('status', '=', 'EXPIRED'), eb('expires_at', '<=', retentionCutoff)]),
+          ]))
+          .orderBy('registration_attempt_id').limit(input.maximumAttempts).forUpdate().execute();
+        const staleAttemptIds = staleAttempts.map(({ registration_attempt_id }) => registration_attempt_id);
+        if (staleAttemptIds.length > 0) {
+          await database.deleteFrom('registration_email_dispatches')
+            .where('registration_attempt_id', 'in', staleAttemptIds).execute();
+          await database.deleteFrom('registration_verification_challenges')
+            .where('registration_attempt_id', 'in', staleAttemptIds).execute();
+          await database.updateTable('registration_acceptance_documents')
+            .set({ registration_attempt_id: null })
+            .where('registration_attempt_id', 'in', staleAttemptIds).execute();
+          await database.deleteFrom('registration_attempts')
+            .where('registration_attempt_id', 'in', staleAttemptIds).execute();
+        }
+        const actionLimits = await database.deleteFrom('registration_public_action_limits')
+          .where('expires_at', '<=', now).executeTakeFirst();
+        return Object.freeze({
+          expiredAttempts: Number(expired.numUpdatedRows),
+          purgedAttempts: staleAttemptIds.length,
+          purgedActionLimits: Number(actionLimits.numDeletedRows),
+        });
+      })));
+  }
+
   findActiveByEmail(normalizedEmail: string, now: string): Promise<RegistrationAttemptRecord | null> {
     return useDatabasePersistenceExecutor(this.connection, 'registration', async (database) => {
       const row = await database.selectFrom('registration_attempts').selectAll()

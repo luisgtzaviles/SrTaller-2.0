@@ -44,6 +44,7 @@ export const expectedPostgresqlSkipInventory = Object.freeze([
   materialTest('test/tl03-bootstrap-postgresql.test.mjs', 'TL-03 rolls back every material failure stage without partial authority', 'tl03-postgresql'),
   materialTest('test/tl03-bootstrap-postgresql.test.mjs', 'TL-03 serializes duplicate calls, replays ambiguous success and rejects conflicting reuse', 'tl03-postgresql'),
   materialTest('test/tl04-registration-postgresql.test.mjs', 'TL-04 PostgreSQL executes registration, challenge concurrency, TL-03 bootstrap and TL-02 login end to end', 'tl04-postgresql'),
+  materialTest('test/tl04-registration-postgresql.test.mjs', 'TL-04 PostgreSQL purges retained attempt material while preserving independent legal evidence', 'tl04-postgresql'),
   materialTest('test/tl04-registration-postgresql.test.mjs', 'TL-04 PostgreSQL rejects malformed durable lifecycle and preserves append-only legal/audit evidence', 'tl04-postgresql'),
 ]);
 

@@ -48,7 +48,7 @@ test('Access owns and exports explicit branch-context and tenant-wide authorizat
     moduleSource,
     /provide: CONTEXTUAL_AUTHORIZATION_EXECUTOR,[\s\S]*inject: \[ACCESS_SESSION_RUNTIME\]/u,
   );
-  assert.match(moduleSource, /exports: \[CONTEXTUAL_AUTHORIZATION_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR\]/u);
+  assert.match(moduleSource, /exports: \[CONTEXTUAL_AUTHORIZATION_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, REGISTRATION_PASSWORD_PROTECTOR, TENANT_BOOTSTRAP_EXECUTOR\]/u);
   assert.equal(
     (moduleSource.match(/provide: CONTEXTUAL_AUTHORIZATION_EXECUTOR/gu) ?? []).length,
     1,

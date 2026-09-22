@@ -21,6 +21,7 @@ const configuration = Object.freeze({
 
 class MemoryRegistrationRepository {
   attempts = new Map(); challenges = new Map(); dispatches = new Map(); events = []; limits = new Map(); documents = [];
+  async maintainRetention() { return { expiredAttempts: 0, purgedAttempts: 0, purgedActionLimits: 0 }; }
   async findActiveByEmail(email, now) { return [...this.attempts.values()].find((attempt) => attempt.normalizedEmail === email && ['PENDING_VERIFICATION', 'VERIFIED'].includes(attempt.status) && attempt.expiresAt > now) ?? null; }
   async findAttempt(id) { return this.attempts.get(id) ?? null; }
   async create(input) {
@@ -67,9 +68,8 @@ class MemoryRegistrationRepository {
   async recordSecurityEvent(input) { this.events.push(input); }
 }
 
-function createHarness({ bootstrapFailures = 0 } = {}) {
+function createHarness({ bootstrapFailures = 0, now = () => new Date('2026-09-21T12:00:00.000Z'), delivery = new LocalRegistrationEmailDelivery() } = {}) {
   const repository = new MemoryRegistrationRepository();
-  const delivery = new LocalRegistrationEmailDelivery();
   const protectedInputs = [];
   let bootstraps = 0; let failures = bootstrapFailures; let sequence = 0;
   const service = new PublicRegistrationService(
@@ -78,7 +78,7 @@ function createHarness({ bootstrapFailures = 0 } = {}) {
     { async execute(input) { bootstraps += 1; const grant = await input.loadVerifiedGrant(input.verifiedRegistrationId); assert.ok(grant); if (failures-- > 0) throw new Error('synthetic bootstrap failure'); return { tenantStatus: 'ONBOARDING', completedAt: '2026-09-21T12:01:00.000Z' }; } },
     delivery,
     configuration,
-    () => new Date('2026-09-21T12:00:00.000Z'),
+    now,
     () => `00000000-0000-4000-8000-${String(++sequence).padStart(12, '0')}`,
   );
   return { service, repository, delivery, protectedInputs, bootstraps: () => bootstraps };
@@ -127,4 +127,48 @@ test('TL-04 resend supersedes old token and verification/bootstrap replay conver
 test('TL-04 legal/input failures are sanitized', async () => {
   const harness = createHarness();
   await assert.rejects(() => harness.service.register({ ...input, acceptedDocuments: [] }, '00000000-0000-4000-8000-000000000099'), (error) => error instanceof PublicRegistrationError && error.code === 'REGISTRATION_INPUT_INVALID');
+});
+
+test('TL-04 resend enforces cooldown and five-per-hour on normalized email independent of network signal', async () => {
+  let clock = Date.parse('2026-09-21T12:00:00.000Z');
+  const harness = createHarness({ now: () => new Date(clock) });
+  await harness.service.register(input, '00000000-0000-4000-8000-000000000099', '198.51.100.1');
+  assert.equal(harness.delivery.toJSON().captured, 1);
+  await harness.service.resend({ email: 'OWNER@example.com' }, '00000000-0000-4000-8000-000000000098', '198.51.100.2');
+  assert.equal(harness.delivery.toJSON().captured, 2);
+  await harness.service.resend({ email: 'owner@example.com' }, '00000000-0000-4000-8000-000000000097', '198.51.100.3');
+  assert.equal(harness.delivery.toJSON().captured, 2);
+  for (let request = 2; request <= 6; request += 1) {
+    clock += 61_000;
+    await harness.service.resend({ email: 'owner@example.com' }, `00000000-0000-4000-8000-${String(90 - request).padStart(12, '0')}`, `198.51.100.${request + 3}`);
+  }
+  assert.equal(harness.delivery.toJSON().captured, 6);
+});
+
+test('TL-04 verification guessing is bounded per ephemeral network signal', async () => {
+  const harness = createHarness();
+  await harness.service.register(input, '00000000-0000-4000-8000-000000000099', '198.51.100.1');
+  const validToken = new URL(harness.delivery.takeLatestForTest().verificationUrl).hash.slice('#token='.length);
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const wrongToken = Buffer.alloc(32, attempt + 1).toString('base64url');
+    assert.deepEqual(await harness.service.verify({ token: wrongToken }, `00000000-0000-4000-8000-${String(attempt + 200).padStart(12, '0')}`, '198.51.100.9'), { result: 'invalid_or_expired' });
+  }
+  assert.deepEqual(await harness.service.verify({ token: validToken }, '00000000-0000-4000-8000-000000000250', '198.51.100.9'), { result: 'invalid_or_expired' });
+  assert.deepEqual(await harness.service.verify({ token: validToken }, '00000000-0000-4000-8000-000000000251', '198.51.100.10'), { result: 'completed', loginUrl: 'https://admin.srtaller.com/login' });
+});
+
+test('TL-04 provider failure preserves the pending attempt and records only a sanitized dispatch outcome', async () => {
+  const delivery = { async deliver() { return { status: 'FAILED', providerReference: null, reasonCode: 'PROVIDER_UNAVAILABLE' }; } };
+  const harness = createHarness({ delivery });
+  assert.deepEqual(await harness.service.register(input, '00000000-0000-4000-8000-000000000099', '198.51.100.1'), { result: 'accepted' });
+  assert.equal(harness.repository.attempts.size, 1);
+  assert.equal([...harness.repository.attempts.values()][0].status, 'PENDING_VERIFICATION');
+  assert.deepEqual([...harness.repository.dispatches.values()][0], {
+    challengeId: '00000000-0000-4000-8000-000000000006',
+    deliveryId: '00000000-0000-4000-8000-000000000007',
+    status: 'FAILED',
+    providerReference: null,
+    providerReasonCode: 'PROVIDER_UNAVAILABLE',
+    occurredAt: '2026-09-21T12:00:00.000Z',
+  });
 });

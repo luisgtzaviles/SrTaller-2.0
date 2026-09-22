@@ -125,6 +125,12 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     access_admin_recovery_challenges: { owner: 'access', kind: 'table' },
     access_admin_security_events: { owner: 'access', kind: 'table' },
     access_admin_sessions: { owner: 'access', kind: 'table' },
+    registration_acceptance_documents: { owner: 'registration', kind: 'table' },
+    registration_attempts: { owner: 'registration', kind: 'table' },
+    registration_email_dispatches: { owner: 'registration', kind: 'table' },
+    registration_public_action_limits: { owner: 'registration', kind: 'table' },
+    registration_security_events: { owner: 'registration', kind: 'table' },
+    registration_verification_challenges: { owner: 'registration', kind: 'table' },
   });
   assert.deepEqual(policy.persistence.initialSchema, {
     migration: migrationPath,
@@ -241,6 +247,8 @@ test('productive migration root remains exact and governed', async () => {
       '20260921120000_tenancy_create_bootstrap_foundation.ts',
       '20260921121000_access_create_starter_tenant_admin_policy.ts',
       '20260921122000_tenancy_create_bootstrap_guards.ts',
+      '20260921150000_registration_create_public_verification.ts',
+      '20260921151000_registration_enable_retention_cleanup.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

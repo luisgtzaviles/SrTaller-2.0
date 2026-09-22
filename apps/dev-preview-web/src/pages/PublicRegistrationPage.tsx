@@ -6,7 +6,7 @@ import styles from './public-registration-page.module.css';
 
 type LegalDocument = Readonly<{ key: 'terms' | 'privacy'; version: string; url: string }>;
 type Policy = Readonly<{ enabled: boolean; documents: readonly LegalDocument[] }>;
-type Screen = 'registration' | 'pending' | 'verifying' | 'success' | 'invalid';
+type Screen = 'registration' | 'pending' | 'verify' | 'verifying' | 'success' | 'invalid';
 
 async function publicRequest(path: string, body?: unknown): Promise<unknown> {
   const response = await fetch(`/api/public/${path}`, body === undefined
@@ -19,7 +19,7 @@ async function publicRequest(path: string, body?: unknown): Promise<unknown> {
 export function PublicRegistrationPage(): React.JSX.Element {
   const verificationToken = useMemo(() => new URLSearchParams(window.location.hash.slice(1)).get('token'), []);
   const [policy, setPolicy] = useState<Policy | null>(null);
-  const [screen, setScreen] = useState<Screen>(verificationToken ? 'verifying' : 'registration');
+  const [screen, setScreen] = useState<Screen>(verificationToken ? 'verify' : 'registration');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [email, setEmail] = useState('');
@@ -29,15 +29,19 @@ export function PublicRegistrationPage(): React.JSX.Element {
     void publicRequest('registration-policy').then((value) => setPolicy(value as Policy)).catch(() => setPolicy({ enabled: false, documents: [] }));
   }, []);
 
-  useEffect(() => {
-    if (!verificationToken) return;
-    void publicRequest('registrations/verify', { token: verificationToken }).then((value) => {
+  async function verify(): Promise<void> {
+    if (!verificationToken || busy) return;
+    setBusy(true); setMessage(null); setScreen('verifying');
+    try {
+      const value = await publicRequest('registrations/verify', { token: verificationToken });
       window.history.replaceState(null, '', '/verificar');
       const result = value as Readonly<{ result: string }>;
       setScreen(result.result === 'completed' ? 'success' : result.result === 'retryable' ? 'verifying' : 'invalid');
       if (result.result === 'retryable') setMessage('No pudimos terminar el alta. Vuelve a intentarlo desde el mismo enlace.');
-    }).catch(() => { window.history.replaceState(null, '', '/verificar'); setScreen('invalid'); });
-  }, [verificationToken]);
+    } catch {
+      window.history.replaceState(null, '', '/verificar'); setScreen('invalid');
+    } finally { setBusy(false); }
+  }
 
   useEffect(() => {
     if (resendSeconds < 1) return;
@@ -91,6 +95,7 @@ export function PublicRegistrationPage(): React.JSX.Element {
           </form>}
       </> : null}
       {screen === 'pending' ? <div className={styles.state}><Mail aria-hidden="true" /><h2>Revisa tu correo</h2><p>Si los datos pueden registrarse, recibirás un enlace válido por 60 minutos.</p>{message ? <p className={styles.notice}>{message}</p> : null}<Button onClick={() => { void resend(); }} disabled={busy || resendSeconds > 0}>{resendSeconds > 0 ? `Reenviar en ${resendSeconds} s` : 'Reenviar enlace'}</Button></div> : null}
+      {screen === 'verify' ? <div className={styles.state}><ShieldCheck aria-hidden="true" /><h2>Confirma tu correo</h2><p>Al continuar verificaremos el enlace y completaremos de forma segura el alta de tu organización.</p><Button tone="primary" onClick={() => { void verify(); }}>Confirmar correo</Button></div> : null}
       {screen === 'verifying' ? <div className={styles.state}><span className={styles.spinner} aria-hidden="true" /><h2>Verificando correo</h2><p>{message ?? 'Estamos completando el alta segura de tu organización.'}</p></div> : null}
       {screen === 'invalid' ? <div className={styles.state}><Mail aria-hidden="true" /><h2>El enlace no está disponible</h2><p>Puede haber vencido o haber sido reemplazado. Inicia de nuevo o solicita otro enlace desde la pantalla pendiente.</p><a className={styles.linkButton} href="/registro">Volver al registro</a></div> : null}
       {screen === 'success' ? <div className={styles.state}><CheckCircle2 aria-hidden="true" /><h2>Correo verificado</h2><p>Tu organización quedó creada en onboarding. Continúa en la administración para completar la primera sucursal.</p><a className={styles.linkButton} href="https://admin.srtaller.com/login">Ir al inicio de sesión administrativo</a></div> : null}

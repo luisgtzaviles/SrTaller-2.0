@@ -24,6 +24,7 @@ const baseEnvironment = cleanChildEnvironment();
 for (const key of [
   'SR_PIN_PEPPER',
   'SR_ADMIN_PASSWORD_PEPPER',
+  'SR_REGISTRATION_ABUSE_PEPPER',
   'SR_SESSION_SIGNING_KEY',
   'SR_STATION_BOOTSTRAP_SECRET',
   'SR_USER_BOOTSTRAP_SECRET',
@@ -35,6 +36,7 @@ const backend = spawn('pnpm', ['run', 'dev'], {
     ...databaseEnvironment(values, 'application'),
     SR_PIN_PEPPER: values.SR_PIN_PEPPER,
     SR_ADMIN_PASSWORD_PEPPER: values.SR_ADMIN_PASSWORD_PEPPER,
+    SR_REGISTRATION_ABUSE_PEPPER: values.SR_REGISTRATION_ABUSE_PEPPER,
     SR_STATION_BOOTSTRAP_SECRET: values.SR_STATION_BOOTSTRAP_SECRET,
   },
   stdio: 'inherit',
