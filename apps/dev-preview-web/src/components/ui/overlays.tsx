@@ -91,8 +91,6 @@ export function Dialog({
   const descriptionId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
-  useFocusTrap(open, dialogRef, onClose, restoreFocusSelector);
-
   useEffect(() => {
     if (!open || !layerRef.current) return undefined;
     const layer = layerRef.current;
@@ -114,6 +112,9 @@ export function Dialog({
       if (dialogLayers.length === 0 && !bodyHadDialogLock) document.body.classList.remove('srt-dialog-open');
     };
   }, [open]);
+
+  // Release the inert background before the focus-trap cleanup restores focus.
+  useFocusTrap(open, dialogRef, onClose, restoreFocusSelector);
 
   if (!open) return null;
   const sizeClass = size === 'workspace'

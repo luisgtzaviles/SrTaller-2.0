@@ -39,3 +39,15 @@ test('the focus trap leaves Escape consumed by a nested interaction alone', () =
 
   assert.match(focusTrap, /if \(event\.key === 'Escape'\) \{\n        if \(event\.defaultPrevented\) return;\n        event\.preventDefault\(\);\n        onEscapeRef\.current\(\);/u);
 });
+
+test('dialog removes background inertness before restoring trigger focus', () => {
+  const dialogStart = overlaySource.indexOf('export function Dialog(');
+  assert.notEqual(dialogStart, -1);
+  const dialog = overlaySource.slice(dialogStart);
+  const inertLifecycle = dialog.indexOf("document.body.classList.add('srt-dialog-open')");
+  const focusLifecycle = dialog.indexOf('useFocusTrap(open, dialogRef, onClose, restoreFocusSelector);');
+
+  assert.notEqual(inertLifecycle, -1);
+  assert.notEqual(focusLifecycle, -1);
+  assert.equal(inertLifecycle < focusLifecycle, true);
+});

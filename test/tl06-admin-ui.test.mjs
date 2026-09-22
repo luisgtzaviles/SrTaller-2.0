@@ -27,12 +27,18 @@ test('TL-06 Admin shell exposes responsive Users and Roles without mixing PIN/Ad
   assert.match(css, /@media\(max-width:768px\)/u);
   assert.match(css, /@media\(max-width:640px\)/u);
   assert.match(css, /grid-template-columns:1fr/u);
+  assert.match(css, /\.roleChips\{[^}]*align-items:flex-start[^}]*align-self:start/u);
+  assert.match(css, /\.adminList\{align-items:start\}/u);
   assert.doesNotMatch(app, /type="text"[^>]*value=\{password\}/u);
 });
 
 test('TL-06 UI uses canonical focus-managed Dialog and labels native controls', async () => {
   const app = await readFile('apps/dev-preview-web/src/admin/AdminApp.tsx', 'utf8');
   assert.match(app, /<Dialog open title="Invitar usuario"/u);
+  assert.match(app, /data-admin-invite-trigger="true"/u);
+  assert.match(app, /restoreFocusSelector='\[data-admin-invite-trigger="true"\]'/u);
+  assert.match(app, /data-admin-reauth-trigger="true"/u);
+  assert.match(app, /restoreFocusSelector='\[data-admin-reauth-trigger="true"\]'/u);
   assert.match(app, /<Field id="invite-email" label="Correo a verificar"/u);
   assert.equal(app.includes('aria-label={`Rol para ${user.displayName}`}'), true);
   assert.equal(app.includes('aria-label={`Quitar ${role?.displayName'), true);
