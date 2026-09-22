@@ -140,8 +140,13 @@ export interface BranchCommandTable {
   readonly client_request_id: ImmutableColumn<string>;
   readonly request_digest: ImmutableColumn<Uint8Array>;
   readonly branch_id: ImmutableColumn<string>;
+  readonly result_display_name: ImmutableColumn<string>;
+  readonly result_time_zone: ImmutableColumn<string>;
   readonly result_version: ImmutableColumn<number>;
   readonly result_status: ImmutableColumn<'ACTIVE' | 'INACTIVE'>;
+  readonly result_admission_revision: ImmutableColumn<number>;
+  readonly result_created_at: ImmutableColumn<Date>;
+  readonly result_updated_at: ImmutableColumn<Date>;
   readonly completed_at: ImmutableColumn<Date>;
 }
 

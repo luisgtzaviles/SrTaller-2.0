@@ -348,7 +348,20 @@ class KyselyBranchRepository implements BranchRepositoryPort {
       return await this.execute(async (executor: BranchExecutor) => {
         const row = await executor.selectFrom('branch_commands').selectAll().where('tenant_id', '=', validatedScope.tenantId)
           .where('command_kind', '=', kind).where('client_request_id', '=', clientRequestId).executeTakeFirst();
-        return row ? Object.freeze({ branchId: parseBranchId(row.branch_id), resultVersion: row.result_version, resultStatus: row.result_status, requestDigest: row.request_digest }) : null;
+        return row ? Object.freeze({
+          branch: Object.freeze({
+            tenantId: validatedScope.tenantId,
+            branchId: parseBranchId(row.branch_id),
+            displayName: parseBranchDisplayName(row.result_display_name),
+            timeZone: parseBranchTimeZone(row.result_time_zone),
+            status: row.result_status,
+            version: row.result_version,
+            admissionRevision: row.result_admission_revision,
+            createdAt: row.result_created_at.toISOString(),
+            updatedAt: row.result_updated_at.toISOString(),
+          }),
+          requestDigest: row.request_digest,
+        }) : null;
       });
     } catch (error: unknown) { throw mapBranchError(error); }
   }
@@ -357,7 +370,7 @@ class KyselyBranchRepository implements BranchRepositoryPort {
     const validatedScope = validateTenantScope(scope);
     try {
       await this.execute(async (executor: BranchExecutor) => {
-        await executor.insertInto('branch_commands').values({ tenant_id: validatedScope.tenantId, command_kind: kind, client_request_id: clientRequestId, request_digest: requestDigest, branch_id: branch.branchId, result_version: branch.version, result_status: branch.status, completed_at: new Date(completedAt) }).execute();
+        await executor.insertInto('branch_commands').values({ tenant_id: validatedScope.tenantId, command_kind: kind, client_request_id: clientRequestId, request_digest: requestDigest, branch_id: branch.branchId, result_display_name: branch.displayName, result_time_zone: branch.timeZone, result_version: branch.version, result_status: branch.status, result_admission_revision: branch.admissionRevision, result_created_at: new Date(branch.createdAt), result_updated_at: new Date(branch.updatedAt), completed_at: new Date(completedAt) }).execute();
       });
     } catch (error: unknown) { throw mapBranchError(error); }
   }

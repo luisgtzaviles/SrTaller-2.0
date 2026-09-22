@@ -63,9 +63,7 @@ export interface UpdateBranchRecord {
 
 export type BranchCommandKind = 'CREATE' | 'UPDATE' | 'DEACTIVATE' | 'REACTIVATE';
 export interface BranchCommandReceipt {
-  readonly branchId: BranchId;
-  readonly resultVersion: number;
-  readonly resultStatus: BranchStatus;
+  readonly branch: BranchRecord;
   readonly requestDigest: Uint8Array;
 }
 

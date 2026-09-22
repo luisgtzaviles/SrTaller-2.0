@@ -12,4 +12,8 @@ export interface AdministrationAuthorizationCommitGuardPort {
     scope: Readonly<{ tenantId: TenantId; userId: string }>,
     transactionContext: object,
   ): Promise<boolean>;
+  confirmEffectiveTenantAdmin(
+    tenantId: TenantId,
+    transactionContext: object,
+  ): Promise<boolean>;
 }

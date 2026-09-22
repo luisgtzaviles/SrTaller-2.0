@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
 - **Overall status:** `IMPLEMENTATION IN PROGRESS`.
-- **Progress:** `2 / 9` implementation blocks complete.
-- **Current work:** authoritative Branch commands and Tenant activation.
-- **Next block:** Admin authorization and cross-Tenant protection.
+- **Progress:** `3 / 9` implementation blocks complete.
+- **Current work:** Admin authorization and cross-Tenant protection.
+- **Next block:** Admin HTTP and operational-authority retirement.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -80,8 +80,8 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Define implementation blocks and material test plan.
 - [x] Record `TL5D-001–004` and explicit implementation authorization.
 - [x] Block 2 — Branch V1 schema, migration and persistence.
-- [~] Block 3 — transactional commands and Tenant activation.
-- [ ] Block 4 — Admin authorization and cross-Tenant protection.
+- [x] Block 3 — transactional commands and Tenant activation.
+- [~] Block 4 — Admin authorization and cross-Tenant protection.
 - [ ] Block 5 — Admin HTTP and operational-authority retirement.
 - [ ] Block 6 — Admin login/session shell.
 - [ ] Block 7 — Branch onboarding and management UI.
@@ -90,13 +90,14 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Current
 
-Branch V1 is materialized locally with the exact legacy mapping, append-only
-audit/journal schema and 83 migrations. Block 3 is active.
+Branch commands now run in serializable transactions with idempotent snapshots,
+monotonic Tenant activation and a proven last-active-Branch race guard. Block
+4 is active.
 
 ## Next
 
-Implement serializable Branch commands, Tenant activation and final-active
-Branch protection.
+Bind every operation to Admin Context capabilities and prove Level-2 and
+cross-Tenant denials.
 
 ## Blockers
 
@@ -123,6 +124,8 @@ Branch protection.
 - [x] `work-unit:check --mode ACTIVE`.
 - [x] Branch V1 schema tests and typecheck.
 - [x] Local PostgreSQL migration apply plus second run `0 pending`.
+- [x] TL-05 PostgreSQL Branch command suite `3 / 3`.
+- [x] Concurrent two-Branch deactivation leaves exactly one active Branch.
 
 ## Promotion Gates
 

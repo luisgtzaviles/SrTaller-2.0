@@ -140,4 +140,38 @@ implements AdministrationAuthorizationCommitGuardPort {
       },
     );
   }
+
+  async confirmEffectiveTenantAdmin(
+    tenantId: Parameters<AdministrationAuthorizationCommitGuardPort['confirmEffectiveTenantAdmin']>[0],
+    transactionContext: object,
+  ): Promise<boolean> {
+    const activeUsers = await useTransactionalDatabasePersistenceExecutor(
+      transactionContext,
+      'users',
+      async (database) => await database.selectFrom('users').select('user_id')
+        .where('tenant_id', '=', tenantId).where('status', '=', 'active').forShare().execute(),
+    );
+    if (activeUsers.length === 0) return false;
+    return useTransactionalDatabasePersistenceExecutor(
+      transactionContext,
+      'access',
+      async (database) => {
+        const record = await database.selectFrom('access_role_assignments as assignment')
+          .innerJoin('access_roles as role', (join) => join.onRef('role.tenant_id', '=', 'assignment.tenant_id').onRef('role.role_id', '=', 'assignment.role_id'))
+          .innerJoin('access_admin_identities as identity', (join) => join.onRef('identity.tenant_id', '=', 'assignment.tenant_id').onRef('identity.user_id', '=', 'assignment.user_id'))
+          .innerJoin('access_admin_password_credentials as credential', (join) => join.onRef('credential.tenant_id', '=', 'identity.tenant_id').onRef('credential.admin_identity_id', '=', 'identity.admin_identity_id').onRef('credential.user_id', '=', 'identity.user_id'))
+          .select('assignment.assignment_id')
+          .where('assignment.tenant_id', '=', tenantId)
+          .where('assignment.user_id', 'in', activeUsers.map(({ user_id }) => user_id))
+          .where('assignment.assignment_scope', '=', 'TENANT_WIDE').where('assignment.branch_id', 'is', null)
+          .where('assignment.status', '=', 'active').where('assignment.revoked_at', 'is', null)
+          .where('role.role_key', '=', 'tenant_admin').where('role.management_mode', '=', 'SYSTEM_MANAGED')
+          .where('role.policy_version', '=', 1).where('role.status', '=', 'active')
+          .where('identity.status', '=', 'active').where('identity.verified_at', 'is not', null)
+          .where('credential.status', '=', 'active').where('credential.revoked_at', 'is', null)
+          .forShare(['assignment', 'role', 'identity', 'credential']).executeTakeFirst();
+        return record !== undefined;
+      },
+    );
+  }
 }
