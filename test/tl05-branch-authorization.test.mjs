@@ -6,10 +6,11 @@ const [{ AdminBranchesController }, { ContextualAuthorizationError }] = await Pr
   import('../dist/modules/access/index.js'),
 ]);
 
-const headers = Object.freeze({ cookie: 'synthetic', host: 'admin.srtaller.com', origin: 'https://admin.srtaller.com', 'x-forwarded-proto': 'https', 'sec-fetch-site': 'same-origin', 'content-type': 'application/json', 'x-sr-csrf-token': 'synthetic' });
+const headers = Object.freeze({ cookie: 'synthetic', host: 'admin.srtaller.com', origin: 'https://admin.srtaller.com', 'x-forwarded-proto': 'https', 'sec-fetch-site': 'same-origin', 'content-type': 'application/json', 'x-sr-admin-csrf-token': 'synthetic' });
 const context = Object.freeze({ tenantId: '00000000-0000-4000-8000-000000000001', sessionId: '00000000-0000-4000-8000-000000000002', userId: '00000000-0000-4000-8000-000000000003', userDisplayName: 'Admin', capability: 'branches.read', reauthenticatedAt: null, commitGuard: Object.freeze({ confirmCurrent: async () => true, confirmEffectiveTenantAdmin: async () => true }) });
 
 test('TL-05 binds each route to the approved Admin capability and Level-2 boundary', async () => {
+  const source = await import('node:fs/promises').then(({ readFile }) => readFile('src/modules/access/presentation/admin-branches.controller.ts', 'utf8'));
   const requirements = [];
   const authorization = { async execute(_evidence, requirement, operation) { requirements.push(requirement); return operation({ ...context, capability: requirement.capability }); } };
   const runtime = { list: async () => [], read: async () => ({ branchId: 'read' }), create: async () => ({ branchId: 'create' }), update: async () => ({ branchId: 'update' }), deactivate: async () => ({ branchId: 'deactivate' }), reactivate: async () => ({ branchId: 'reactivate' }) };
@@ -23,6 +24,8 @@ test('TL-05 binds each route to the approved Admin capability and Level-2 bounda
     { capability: 'branches.deactivate', kind: 'state-change', requiresRecentReauthentication: true },
     { capability: 'branches.deactivate', kind: 'state-change', requiresRecentReauthentication: true },
   ]);
+  assert.match(source, /x-sr-admin-csrf-token/u);
+  assert.doesNotMatch(source, /x-sr-csrf-token/u);
 });
 
 test('TL-05 translates missing Admin Session and capability denial without invoking Branch runtime', async () => {

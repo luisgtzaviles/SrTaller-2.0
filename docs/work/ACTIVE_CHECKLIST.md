@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
 - **Overall status:** `IMPLEMENTATION IN PROGRESS`.
-- **Progress:** `7 / 9` implementation blocks complete.
-- **Current work:** PostgreSQL concurrency, regression and browser QA.
-- **Next block:** canonical docs, full verification and candidate freeze.
+- **Progress:** `8 / 9` implementation blocks complete.
+- **Current work:** canonical docs, verification topology and candidate freeze.
+- **Next block:** authoritative `verify:full` on the frozen candidate.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -85,17 +85,18 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 5 — Admin HTTP and operational-authority retirement.
 - [x] Block 6 — Admin login/session shell.
 - [x] Block 7 — Branch onboarding and management UI.
-- [~] Block 8 — PostgreSQL concurrency, regression and browser QA.
-- [ ] Block 9 — canonical docs, full verification and candidate freeze.
+- [x] Block 8 — PostgreSQL concurrency, regression and browser QA.
+- [~] Block 9 — canonical docs, full verification and candidate freeze.
 
 ## Current
 
 The separate Admin Session gate, responsive shell, first-Branch onboarding,
-list/create/edit and Level-2 lifecycle UX are materialized. Block 8 is active.
+list/create/edit and Level-2 lifecycle UX passed material local QA. Block 9 is active.
 
 ## Next
 
-Run material PostgreSQL, regression and Chrome proofs at desktop, 768 and 640.
+Reconcile canonical evidence and verification manifests, then freeze and run
+the single authoritative full gate.
 
 ## Blockers
 
@@ -112,6 +113,9 @@ Run material PostgreSQL, regression and Chrome proofs at desktop, 768 and 640.
   active linked Station and Branch `...0102` has none.
 - Approved mapping is exact-ID-only and identifies development fixtures, not
   Avicell business data or physical locations.
+- Material Chrome QA found and corrected two integration defects before freeze:
+  the Admin CSRF header name was inconsistent across session/Branch surfaces,
+  and the first-Branch editor could flash for a Tenant with existing Branches.
 
 ## Focused Verification
 
@@ -127,6 +131,8 @@ Run material PostgreSQL, regression and Chrome proofs at desktop, 768 and 640.
 - [x] Concurrent two-Branch deactivation leaves exactly one active Branch.
 - [x] Focused Admin capability and Level-2 route contract tests `3 / 3`.
 - [x] Admin UI contract tests `4 / 4`, typecheck and production build.
+- [x] Material Admin login, duplicate-name create, edit/reload, deactivate and reactivate proof.
+- [x] Desktop, 768 px, 640 px, light/dark and keyboard proof; no page-level horizontal overflow.
 
 ## Promotion Gates
 

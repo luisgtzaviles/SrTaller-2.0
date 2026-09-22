@@ -43,6 +43,13 @@ test('TL-05 creates duplicate-named Branches, activates Tenant and preserves ide
     const updated = await service.update(actor, first.branchId, { clientRequestId: randomUUID(), expectedVersion: 0, displayName: 'Sucursal Centro Norte', timeZone: 'America/Tijuana' }); assert.equal(updated.version, 1); assert.equal(updated.timeZone, 'America/Tijuana');
     await assert.rejects(service.update(actor, first.branchId, { clientRequestId: randomUUID(), expectedVersion: 0, displayName: 'Viejo', timeZone: 'America/Hermosillo' }), (error) => error?.code === 'BRANCH_VERSION_CONFLICT');
     await assert.rejects(service.create(actor, createInput('Zona inválida', '-07:00')), (error) => error?.code === 'BRANCH_INVALID_INPUT');
+    const lifecycle = context(guard, seeded.tenantId, seeded.userId, 'branches.deactivate');
+    const deactivated = await service.deactivate(lifecycle, second.branchId, { clientRequestId: randomUUID(), expectedVersion: second.version });
+    assert.equal(deactivated.status, 'INACTIVE');
+    assert.equal((await pool.query('select lifecycle_status from tenants where tenant_id=$1', [seeded.tenantId])).rows[0].lifecycle_status, 'ACTIVE');
+    const reactivated = await service.reactivate(lifecycle, second.branchId, { clientRequestId: randomUUID(), expectedVersion: deactivated.version });
+    assert.equal(reactivated.status, 'ACTIVE');
+    assert.equal(Number((await pool.query('select count(*) from branch_audit_events where tenant_id=$1', [seeded.tenantId])).rows[0].count), 5);
   } finally { await connection.close(); await pool.end(); }
 });
 
@@ -50,10 +57,17 @@ test('TL-05 does not activate without effective Tenant Admin and isolates Tenant
   const [{ createDatabaseConnection }, { BranchAdministrationService }] = modules; const connection = createDatabaseConnection(config('isolation')); const pool = new Pool({ host: process.env.SR_TL05_PG_HOST, port: Number(process.env.SR_TL05_PG_PORT), database: process.env.SR_TL05_PG_NAME, user: process.env.SR_TL05_PG_USER, password: process.env.SR_TL05_PG_PASSWORD });
   try {
     const alpha = await seedTenant(pool, { withAdmin: false }); const beta = await seedTenant(pool, { withAdmin: false }); await connection.verify(); const service = new BranchAdministrationService(connection); const allow = (tenantId) => ({ tenantId, userId: randomUUID(), userDisplayName: 'Synthetic', sessionId: randomUUID(), capability: 'branches.manage', commitGuard: { confirmCurrent: async () => true, confirmEffectiveTenantAdmin: async () => false } });
-    const created = await service.create(allow(alpha.tenantId), createInput('Misma sucursal'));
+    const alphaContext = allow(alpha.tenantId); const betaContext = allow(beta.tenantId);
+    const created = await service.create(alphaContext, createInput('Misma sucursal'));
     assert.equal((await pool.query('select lifecycle_status from tenants where tenant_id=$1', [alpha.tenantId])).rows[0].lifecycle_status, 'ONBOARDING');
-    await assert.rejects(service.read(allow(beta.tenantId), created.branchId), (error) => error?.code === 'BRANCH_NOT_FOUND');
-    assert.equal((await service.list(allow(beta.tenantId))).length, 0);
+    const inactive = await service.deactivate(alphaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: created.version });
+    assert.equal(inactive.status, 'INACTIVE');
+    assert.equal((await pool.query('select lifecycle_status from tenants where tenant_id=$1', [alpha.tenantId])).rows[0].lifecycle_status, 'ONBOARDING');
+    await assert.rejects(service.read(betaContext, created.branchId), (error) => error?.code === 'BRANCH_NOT_FOUND');
+    await assert.rejects(service.update(betaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version, displayName: 'Intrusión', timeZone: 'America/Cancun' }), (error) => error?.code === 'BRANCH_NOT_FOUND');
+    await assert.rejects(service.deactivate(betaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version }), (error) => error?.code === 'BRANCH_NOT_FOUND');
+    await assert.rejects(service.reactivate(betaContext, created.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version }), (error) => error?.code === 'BRANCH_NOT_FOUND');
+    assert.equal((await service.list(betaContext)).length, 0);
   } finally { await connection.close(); await pool.end(); }
 });
 
@@ -66,5 +80,9 @@ test('TL-05 serializes simultaneous deactivation and preserves one active Branch
     assert.equal(settled.filter(({ status }) => status === 'fulfilled').length, 1); assert.equal(settled.filter((result) => result.status === 'rejected' && result.reason?.code === 'LAST_ACTIVE_BRANCH_REQUIRED').length, 1);
     assert.equal(Number((await pool.query('select count(*) from branches where tenant_id=$1 and active=true', [seeded.tenantId])).rows[0].count), 1);
     const inactive = (await serviceA.list(lifecycleA)).find((branch) => branch.status === 'INACTIVE'); const reactivated = await serviceA.reactivate(lifecycleA, inactive.branchId, { clientRequestId: randomUUID(), expectedVersion: inactive.version }); assert.equal(reactivated.status, 'ACTIVE');
+    const active = (await serviceA.list(lifecycleA)).find((branch) => branch.branchId !== inactive.branchId); const returnedInactive = await serviceA.deactivate(lifecycleA, inactive.branchId, { clientRequestId: randomUUID(), expectedVersion: reactivated.version });
+    assert.equal(returnedInactive.status, 'INACTIVE');
+    await assert.rejects(serviceA.deactivate(lifecycleA, active.branchId, { clientRequestId: randomUUID(), expectedVersion: active.version }), (error) => error?.code === 'LAST_ACTIVE_BRANCH_REQUIRED');
+    assert.equal((await pool.query('select lifecycle_status from tenants where tenant_id=$1', [seeded.tenantId])).rows[0].lifecycle_status, 'ACTIVE');
   } finally { await Promise.all(connections.map((entry) => entry.close())); await pool.end(); }
 });

@@ -11,7 +11,7 @@ function scalar(headers: RequestHeaders, name: string): string | undefined {
   return typeof value === 'string' ? value : undefined;
 }
 function evidence(headers: RequestHeaders): ProtectedRequestEvidence {
-  return Object.freeze({ cookieHeader: scalar(headers, 'cookie'), origin: scalar(headers, 'origin'), host: scalar(headers, 'host'), forwardedProto: scalar(headers, 'x-forwarded-proto'), fetchSite: scalar(headers, 'sec-fetch-site'), contentType: scalar(headers, 'content-type'), csrfToken: scalar(headers, 'x-sr-csrf-token') });
+  return Object.freeze({ cookieHeader: scalar(headers, 'cookie'), origin: scalar(headers, 'origin'), host: scalar(headers, 'host'), forwardedProto: scalar(headers, 'x-forwarded-proto'), fetchSite: scalar(headers, 'sec-fetch-site'), contentType: scalar(headers, 'content-type'), csrfToken: scalar(headers, 'x-sr-admin-csrf-token') });
 }
 function translate(error: unknown): never {
   if (error instanceof ContextualAuthorizationError) {

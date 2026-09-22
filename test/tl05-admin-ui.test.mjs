@@ -3,11 +3,14 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 test('TL-05 Admin surface keeps administrative and operational sessions separate', async () => {
-  const [app, admin] = await Promise.all([readFile('apps/dev-preview-web/src/App.tsx', 'utf8'), readFile('apps/dev-preview-web/src/admin/AdminApp.tsx', 'utf8')]);
+  const [app, admin, api] = await Promise.all([readFile('apps/dev-preview-web/src/App.tsx', 'utf8'), readFile('apps/dev-preview-web/src/admin/AdminApp.tsx', 'utf8'), readFile('apps/dev-preview-web/src/admin-api.ts', 'utf8')]);
   assert.match(app, /location\.pathname === '\/login'/u);
   assert.match(app, /return <AdminApp/u);
   assert.doesNotMatch(admin, /from .*SessionProvider|<SessionProvider|OperationalSessionGate/iu);
   assert.match(admin, /correo verificado y contraseña administrativa/u);
+  assert.match(api, /x-sr-admin-csrf-token/u);
+  assert.doesNotMatch(api, /'x-sr-csrf-token'/u);
+  assert.match(admin, /branches === null.*Cargando sucursales/u);
 });
 
 test('TL-05 first-Branch onboarding requires explicit IANA selection', async () => {

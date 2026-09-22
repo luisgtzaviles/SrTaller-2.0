@@ -16,7 +16,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 function mutation(method: 'POST' | 'PATCH' | 'DELETE', csrfToken: string, body?: unknown): RequestInit {
-  const base = { method, headers: { 'content-type': 'application/json', 'x-sr-csrf-token': csrfToken } };
+  const base = { method, headers: { 'content-type': 'application/json', 'x-sr-admin-csrf-token': csrfToken } };
   return body === undefined ? base : { ...base, body: JSON.stringify(body) };
 }
 
