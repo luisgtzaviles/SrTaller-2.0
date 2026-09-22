@@ -332,11 +332,11 @@ async function seedAuthorities(admin) {
   );
   await admin.query(
     `insert into stations (
-       tenant_id, station_id, display_name, status, created_at, updated_at, revoked_at
+       tenant_id, station_id, status, created_at, updated_at, revoked_at
      ) values
-       ($1, $2, 'PIN Station A', 'active', now(), now(), null),
-       ($1, $3, 'PIN Station A2', 'active', now(), now(), null),
-       ($4, $5, 'PIN Station B', 'active', now(), now(), null)`,
+       ($1, $2, 'active', now(), now(), null),
+       ($1, $3, 'active', now(), now(), null),
+       ($4, $5, 'active', now(), now(), null)`,
     [tenantA, stationA, stationA2, tenantB, stationB],
   );
   await admin.query(
