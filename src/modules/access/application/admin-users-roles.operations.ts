@@ -80,10 +80,14 @@ export class AdminUsersRolesOperations {
     return this.authorization.execute(evidence, { capability: 'users.manage', kind: 'state-change', requiresRecentReauthentication: true }, (context) => this.runtime.replacePin.execute({ tenantId: context.tenantId }, { ...input, userId }, context.commitGuard));
   }
 
-  issueInvitation(evidence: ProtectedRequestEvidence, input: Readonly<Record<string, unknown>>) {
+  async issueInvitation(evidence: ProtectedRequestEvidence, input: Readonly<Record<string, unknown>>) {
     const grants = Array.isArray(input.grants) ? input.grants : [];
-    const highImpact = grants.some((grant) => typeof grant === 'object' && grant !== null && 'roleId' in grant && typeof grant.roleId === 'string');
-    return this.authorization.execute(evidence, { capability: 'users.manage', kind: 'state-change', requiresRecentReauthentication: highImpact }, (context) => this.invitations.issue({ tenantId: context.tenantId, inviterUserId: context.userId, inviterAdminIdentityId: context.adminIdentityId, targetUserId: typeof input.targetUserId === 'string' ? input.targetUserId : null, proposedDisplayName: typeof input.proposedDisplayName === 'string' ? input.proposedDisplayName : null, email: input.email, authorityRevision: Number(input.authorityRevision), grants: grants as never, clientRequestId: String(input.clientRequestId), correlationId: String(input.correlationId), guard: context.commitGuard }));
+    const highImpact = await this.authorization.execute(evidence, { capability: 'access_matrix.read', kind: 'read' }, async (context) => {
+      const matrix = await this.runtime.listAccessMatrix.execute({ tenantId: context.tenantId });
+      const requestedRoleIds = new Set(grants.flatMap((grant) => typeof grant === 'object' && grant !== null && 'roleId' in grant && typeof grant.roleId === 'string' ? [grant.roleId] : []));
+      return matrix.roles.some((role) => requestedRoleIds.has(role.roleId) && role.roleKey === 'tenant_admin' && role.managementMode === 'SYSTEM_MANAGED');
+    });
+    return this.authorization.execute(evidence, { capability: 'users.manage', kind: 'state-change', requiresRecentReauthentication: highImpact }, (context) => this.invitations.issue({ tenantId: context.tenantId, inviterUserId: context.userId, inviterAdminIdentityId: context.adminIdentityId, targetUserId: typeof input.targetUserId === 'string' ? input.targetUserId : null, proposedDisplayName: typeof input.proposedDisplayName === 'string' ? input.proposedDisplayName : null, email: input.email, grants: grants as never, clientRequestId: String(input.clientRequestId), correlationId: String(input.correlationId), guard: context.commitGuard }));
   }
 
   resendInvitation(evidence: ProtectedRequestEvidence, invitationId: string, input: Readonly<Record<string, unknown>>) {

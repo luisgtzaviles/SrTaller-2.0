@@ -42,7 +42,7 @@ export interface AdminInvitationRepositoryPort {
     tenantId: string; invitationId: string; challengeId: string; deliveryId: string;
     normalizedEmail: string; emailDisplay: string; targetUserId: string | null;
     proposedDisplayName: string | null; inviterUserId: string; inviterAdminIdentityId: string;
-    authorityRevision: number; grants: readonly AdminInvitationGrant[];
+    grants: readonly AdminInvitationGrant[];
     tokenDigest: Uint8Array; clientRequestId: string; correlationId: string; occurredAt: string;
   }>, guard: AdminInvitationMutationGuard): Promise<AdminInvitationRecord>;
   resend(input: Readonly<{

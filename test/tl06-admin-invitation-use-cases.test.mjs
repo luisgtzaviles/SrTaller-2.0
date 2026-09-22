@@ -18,7 +18,7 @@ function harness() {
     async issue(input, guard) {
       assert.equal(await guard.confirmCurrent({}), true);
       active = { tenantId: input.tenantId, invitationId: input.invitationId, challengeId: input.challengeId, normalizedEmail: input.normalizedEmail, targetUserId: input.targetUserId, proposedDisplayName: input.proposedDisplayName, status: 'ACTIVE', expiresAt: '2026-09-22T12:00:00.000Z' };
-      invitation = { tenantId: input.tenantId, invitationId: input.invitationId, normalizedEmail: input.normalizedEmail, emailDisplay: input.emailDisplay, targetUserId: input.targetUserId, proposedDisplayName: input.proposedDisplayName, inviterUserId: input.inviterUserId, inviterAdminIdentityId: input.inviterAdminIdentityId, status: 'PENDING', version: 0, authorityRevision: input.authorityRevision, grants: input.grants, expiresAt: '2026-09-22T12:00:00.000Z', acceptedAt: null, revokedAt: null, createdAt: input.occurredAt, updatedAt: input.occurredAt };
+      invitation = { tenantId: input.tenantId, invitationId: input.invitationId, normalizedEmail: input.normalizedEmail, emailDisplay: input.emailDisplay, targetUserId: input.targetUserId, proposedDisplayName: input.proposedDisplayName, inviterUserId: input.inviterUserId, inviterAdminIdentityId: input.inviterAdminIdentityId, status: 'PENDING', version: 0, authorityRevision: 0, grants: input.grants, expiresAt: '2026-09-22T12:00:00.000Z', acceptedAt: null, revokedAt: null, createdAt: input.occurredAt, updatedAt: input.occurredAt };
       return invitation;
     },
     async resend(input) { active = { ...active, challengeId: input.challengeId }; invitation = { ...invitation, version: invitation.version + 1 }; return invitation; },
@@ -34,7 +34,7 @@ function harness() {
 
 test('TL-06 issue binds server-approved grants and durable delivery result', async () => {
   const h = harness();
-  const result = await h.service.issue({ tenantId: ids[7], inviterUserId: ids[6], inviterAdminIdentityId: ids[5], targetUserId: null, proposedDisplayName: 'Invitada Demo', email: 'Invitada@Example.com', authorityRevision: 3, grants: [{ roleId: ids[4], roleVersion: 2, assignmentScope: 'TENANT_WIDE', branchId: null }], clientRequestId: ids[3], correlationId: ids[2], guard: { async confirmCurrent() { return true; } } });
+  const result = await h.service.issue({ tenantId: ids[7], inviterUserId: ids[6], inviterAdminIdentityId: ids[5], targetUserId: null, proposedDisplayName: 'Invitada Demo', email: 'Invitada@Example.com', grants: [{ roleId: ids[4], roleVersion: 2, assignmentScope: 'TENANT_WIDE', branchId: null }], clientRequestId: ids[3], correlationId: ids[2], guard: { async confirmCurrent() { return true; } } });
   assert.equal(result.normalizedEmail, 'invitada@example.com');
   assert.equal(result.grants[0].roleId, ids[4]);
   assert.equal(h.deliveries[0].status, 'DELIVERED');
@@ -42,7 +42,7 @@ test('TL-06 issue binds server-approved grants and durable delivery result', asy
 
 test('TL-06 resend supersedes through repository and acceptance establishes invitee password', async () => {
   const h = harness();
-  const issued = await h.service.issue({ tenantId: ids[7], inviterUserId: ids[6], inviterAdminIdentityId: ids[5], targetUserId: null, proposedDisplayName: 'Invitada Demo', email: 'i@example.com', authorityRevision: 0, grants: [{ roleId: ids[4], roleVersion: 0, assignmentScope: 'TENANT_WIDE', branchId: null }], clientRequestId: ids[3], correlationId: ids[2], guard: { async confirmCurrent() { return true; } } });
+  const issued = await h.service.issue({ tenantId: ids[7], inviterUserId: ids[6], inviterAdminIdentityId: ids[5], targetUserId: null, proposedDisplayName: 'Invitada Demo', email: 'i@example.com', grants: [{ roleId: ids[4], roleVersion: 0, assignmentScope: 'TENANT_WIDE', branchId: null }], clientRequestId: ids[3], correlationId: ids[2], guard: { async confirmCurrent() { return true; } } });
   const resent = await h.service.resend({ tenantId: ids[7], invitationId: issued.invitationId, expectedVersion: 0, clientRequestId: ids[1], correlationId: ids[0], guard: { async confirmCurrent() { return true; } } });
   assert.equal(resent.version, 1);
   const accepted = await h.service.accept({ token: 'b'.repeat(43), password: 'Safe invitation pass 123!', clientRequestId: ids[0], correlationId: ids[1] });

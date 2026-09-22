@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-06` is implementing its authorized scope.
 - **Overall status:** `ACTIVE` implementation.
-- **Progress:** readiness `8 / 8`; implementation `5 / 8`.
-- **Current work:** Block 6 — Admin UI Users/Roles/invitation acceptance.
-- **Next block:** Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
+- **Progress:** readiness `8 / 8`; implementation `6 / 8`.
+- **Current work:** Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
+- **Next block:** Block 8 — browser/accessibility proof, docs and full candidate freeze.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -81,19 +81,19 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 3 — atomic invitation acceptance and password establishment.
 - [x] Block 4 — Admin Users/Roles authorization and HTTP surface.
 - [x] Block 5 — last-effective-admin coordinator and Level-2 actions.
-- [~] Block 6 — Admin UI Users/Roles/invitation acceptance.
-- [ ] Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
+- [x] Block 6 — Admin UI Users/Roles/invitation acceptance.
+- [~] Block 7 — material PostgreSQL, isolation, concurrency and regression QA.
 - [ ] Block 8 — browser/accessibility proof, docs and full candidate freeze.
 
 ## Current
 
-Protected authority removal now performs a serialized post-mutation
-last-effective-admin check; Level-2 reuses TL-02 recent reauthentication.
+The Admin shell now includes responsive Users/Roles surfaces, protected Role
+presentation and public one-time invitation acceptance using canonical UI.
 
 ## Next
 
-Add minimal responsive Users/Roles screens and the public invitation password
-surface with protected system Role presentation.
+Run the new migrations materially and prove replay, supersession, cross-Tenant
+isolation and last-admin concurrency against PostgreSQL.
 
 ## Blockers
 

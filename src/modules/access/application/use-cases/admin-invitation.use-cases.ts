@@ -43,7 +43,7 @@ export class AdminInvitationService {
   async issue(input: Readonly<{
     tenantId: string; inviterUserId: string; inviterAdminIdentityId: string;
     targetUserId: string | null; proposedDisplayName: string | null; email: unknown;
-    authorityRevision: number; grants: Parameters<typeof canonicalizeAdminInvitationGrants>[0];
+    grants: Parameters<typeof canonicalizeAdminInvitationGrants>[0];
     clientRequestId: string; correlationId: string; guard: AdminInvitationMutationGuard;
   }>): Promise<AdminInvitationRecord> {
     const at = this.now().toISOString();
@@ -56,7 +56,7 @@ export class AdminInvitationService {
       inviterAdminIdentityId: input.inviterAdminIdentityId,
       targetUserId: input.targetUserId, proposedDisplayName: input.proposedDisplayName,
       normalizedEmail: email.normalized, emailDisplay: email.display,
-      authorityRevision: input.authorityRevision, grants, invitationId,
+      grants, invitationId,
       challengeId, deliveryId, tokenDigest: token.digest,
       clientRequestId: input.clientRequestId, correlationId: input.correlationId,
       occurredAt: at,
