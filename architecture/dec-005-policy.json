@@ -2161,6 +2161,7 @@
           "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts",
           "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts",
           "src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts",
+          "src/infrastructure/database/migrations/20260922130000_stations_create_inventory_enrollment_authority.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
