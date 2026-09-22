@@ -25,6 +25,7 @@ import {
   BRANCH_ADMINISTRATION_RUNTIME,
   BRANCH_SETTINGS_RUNTIME,
   ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR,
+  STATION_ADMINISTRATION_RUNTIME,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
   TRUSTED_STATION_CONTEXT_RESOLVER,
 } from '../stations/index.js';
@@ -32,6 +33,7 @@ import type {
   BranchAdministrationRuntime,
   BranchSettingsRuntime,
   AdminInvitationBranchCommitValidator,
+  StationAdministrationRuntime,
   TrustedStationAdmissionValidator,
   TrustedStationContextResolver,
 } from '../stations/index.js';
@@ -112,7 +114,10 @@ import {
   ACCESS_BRANCH_ADMINISTRATION_RUNTIME,
   AdminBranchesController,
 } from './presentation/admin-branches.controller.js';
-import { AdminStationsController } from './presentation/admin-stations.controller.js';
+import {
+  ACCESS_STATION_ADMINISTRATION_RUNTIME,
+  AdminStationsController,
+} from './presentation/admin-stations.controller.js';
 import { BranchSettingsAdministrationController } from './presentation/branch-settings-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
 import { TenantWideAuthorizationExecutorService } from './presentation/tenant-wide-authorization.executor.js';
@@ -175,6 +180,13 @@ type RegisteredAccessUseCases =
       useFactory: (
         branches: BranchAdministrationRuntime,
       ): BranchAdministrationRuntime => branches,
+    },
+    {
+      provide: ACCESS_STATION_ADMINISTRATION_RUNTIME,
+      inject: [STATION_ADMINISTRATION_RUNTIME],
+      useFactory: (
+        stations: StationAdministrationRuntime,
+      ): StationAdministrationRuntime => stations,
     },
     {
       provide: ACCESS_SESSION_RUNTIME,

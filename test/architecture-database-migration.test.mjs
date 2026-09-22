@@ -165,6 +165,7 @@ test('public migration API remains narrow with governed productive migrations', 
       '20260921201000_access_enable_admin_role_lifecycle.ts',
       '20260921202000_access_enforce_global_pending_invitation_email.ts',
       '20260922090000_access_bound_admin_invitation_challenge_expiry.ts',
+      '20260922130000_stations_create_inventory_enrollment_authority.ts',
     ],
   );
 

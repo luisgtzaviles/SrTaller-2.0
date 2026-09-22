@@ -140,11 +140,13 @@ export async function up(database: Kysely<DatabaseSchema>): Promise<void> {
     end;
     $function$
   `.execute(database);
-  await sql`create trigger station_audit_events_append_only before update or delete on station_audit_events for each row execute function stations_reject_audit_mutation()`.execute(database);
+  await sql`create trigger station_audit_events_reject_update before update on station_audit_events for each row execute function stations_reject_audit_mutation()`.execute(database);
+  await sql`create trigger station_audit_events_reject_delete before delete on station_audit_events for each row execute function stations_reject_audit_mutation()`.execute(database);
 }
 
 export async function down(database: Kysely<DatabaseSchema>): Promise<void> {
-  await sql`drop trigger if exists station_audit_events_append_only on station_audit_events`.execute(database);
+  await sql`drop trigger if exists station_audit_events_reject_delete on station_audit_events`.execute(database);
+  await sql`drop trigger if exists station_audit_events_reject_update on station_audit_events`.execute(database);
   await sql`drop function if exists stations_reject_audit_mutation()`.execute(database);
   await database.schema.dropTable('station_audit_events').execute();
   await database.schema.dropTable('station_administration_commands').execute();

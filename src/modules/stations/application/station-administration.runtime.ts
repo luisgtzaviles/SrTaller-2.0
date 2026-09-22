@@ -1,5 +1,3 @@
-import type { TenantId } from '../../tenancy/index.js';
-
 export type StationInventoryStatus = 'UNLINKED' | 'ACTIVE' | 'REVOKED';
 export type StationCredentialState = 'CURRENT' | 'ABSENT' | 'REVOKED';
 
@@ -52,7 +50,7 @@ export type IssuedStationEnrollment = Readonly<{
 }>;
 
 export interface StationAdministrationContext {
-  readonly tenantId: TenantId;
+  readonly tenantId: string;
   readonly sessionId: string;
   readonly userId: string;
   readonly adminIdentityId: string;

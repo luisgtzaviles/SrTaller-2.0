@@ -1,8 +1,6 @@
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { inspect } from 'node:util';
 
-import { sql } from 'kysely';
-
 import {
   useDatabasePersistenceExecutor,
   useTransactionalDatabasePersistenceExecutor,
@@ -300,13 +298,22 @@ export class KyselyStationAdministrationRuntime implements StationAdministration
       if (!branch || !canAccess(context, branch.branch_id)) throw new StationAdministrationError('STATION_ACCESS_DENIED');
       if (!await context.commitGuard.confirmCurrent(transactionContext, [branch.branch_id])) throw new StationAdministrationError('STATION_AUTHORITY_CHANGED');
       if (!branch.active) throw new StationAdministrationError('STATION_BRANCH_INACTIVE');
-      await database.updateTable('station_enrollment_challenges').set({
-        status: 'EXPIRED', updated_at: now, version: sql`version + 1`,
-      })
+      const expiredChallenges = await database.selectFrom('station_enrollment_challenges')
+        .select(['challenge_id', 'version'])
         .where('tenant_id', '=', context.tenantId)
         .where('status', '=', 'ACTIVE')
         .where('expires_at', '<=', now)
+        .forUpdate()
         .execute();
+      for (const expired of expiredChallenges) {
+        await database.updateTable('station_enrollment_challenges').set({
+          status: 'EXPIRED', updated_at: now, version: expired.version + 1,
+        })
+          .where('tenant_id', '=', context.tenantId)
+          .where('challenge_id', '=', expired.challenge_id)
+          .where('version', '=', expired.version)
+          .executeTakeFirstOrThrow();
+      }
       let stationVersion: number | null = null;
       let stationRevision: number | null = null;
       if (stationId) {
@@ -322,8 +329,23 @@ export class KyselyStationAdministrationRuntime implements StationAdministration
         stationVersion = updated.version;
         stationRevision = updated.admission_revision;
         await this.auditTrustCut(database, context, input.clientRequestId, stationId, station.branch_id, updated.version, updated.admission_revision, now, revokedTrust);
-        await database.updateTable('station_enrollment_challenges').set({ status: 'SUPERSEDED', superseded_at: now, updated_at: now, version: sql`version + 1` })
-          .where('tenant_id', '=', context.tenantId).where('intended_station_id', '=', stationId).where('status', '=', 'ACTIVE').execute();
+        const supersededChallenges = await database.selectFrom('station_enrollment_challenges')
+          .select(['challenge_id', 'version'])
+          .where('tenant_id', '=', context.tenantId)
+          .where('intended_station_id', '=', stationId)
+          .where('status', '=', 'ACTIVE')
+          .forUpdate()
+          .execute();
+        for (const superseded of supersededChallenges) {
+          await database.updateTable('station_enrollment_challenges').set({
+            status: 'SUPERSEDED', superseded_at: now, updated_at: now,
+            version: superseded.version + 1,
+          })
+            .where('tenant_id', '=', context.tenantId)
+            .where('challenge_id', '=', superseded.challenge_id)
+            .where('version', '=', superseded.version)
+            .executeTakeFirstOrThrow();
+        }
       }
       await database.insertInto('station_enrollment_challenges').values({
         tenant_id: context.tenantId, challenge_id: challengeId,

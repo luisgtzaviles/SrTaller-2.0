@@ -69,7 +69,13 @@
       "BranchSettingsRuntime",
       "BranchSettingsScope",
       "BranchTimeZone",
+      "IssuedStationEnrollment",
       "OperationalDateTime",
+      "STATION_ADMINISTRATION_RUNTIME",
+      "StationAdministrationContext",
+      "StationAdministrationRuntime",
+      "StationEnrollmentItem",
+      "StationInventoryItem",
       "StationsModuleContract",
       "TRUSTED_STATION_ADMISSION_VALIDATOR",
       "TRUSTED_STATION_CONTEXT_RESOLVER",
@@ -331,6 +337,12 @@
           {
             "token": "BRANCH_SETTINGS_RUNTIME",
             "contract": "BranchSettingsRuntime",
+            "consumerImportSpecifier": "../stations/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "STATION_ADMINISTRATION_RUNTIME",
+            "contract": "StationAdministrationRuntime",
             "consumerImportSpecifier": "../stations/index.js",
             "producerImportSpecifier": "./index.js"
           },
@@ -869,6 +881,15 @@
           "file": "src/modules/access/access.module.ts",
           "className": "AccessModule",
           "importSpecifier": "./presentation/admin-users-roles.controller.js"
+        }
+      },
+      "src/modules/access/presentation/admin-stations.controller.ts": {
+        "owner": "access",
+        "className": "AdminStationsController",
+        "composition": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "./presentation/admin-stations.controller.js"
         }
       },
       "src/modules/access/presentation/user-preferences.controller.ts": {
@@ -1790,9 +1811,12 @@
             "station_enrollment_consumptions",
             "stations"
           ],
-          "references": ["access_admin_identities", "access_admin_sessions", "branches", "tenants", "users"],
+          "references": ["branches", "tenants"],
           "functions": ["stations_reject_audit_mutation"],
-          "triggers": ["station_audit_events_append_only"]
+          "triggers": [
+            "station_audit_events_reject_delete",
+            "station_audit_events_reject_update"
+          ]
         }
       }
     },
@@ -2351,6 +2375,12 @@
         "allowedScopes": ["TenantPersistenceScope", "TenantBranchPersistenceScope"],
         "status": "materialized-owner-port"
       },
+      "src/modules/stations/application/station-administration.runtime.ts": {
+        "owner": "stations",
+        "contract": "StationAdministrationRuntime",
+        "allowedScopes": ["StationAdministrationContext"],
+        "status": "materialized-owner-port"
+      },
     "src/modules/repairs/application/ports/repair-repository.port.ts": {
       "owner": "repairs",
       "contract": "RepairRepositoryPort",
@@ -2424,6 +2454,7 @@
       "CatalogFieldPolicyScope": ["tenantId"],
       "CatalogFieldPolicyConfigurationContext": ["tenantId", "branchId"],
       "CustomerPersistenceScope": ["tenantId", "branchId"],
+      "StationAdministrationContext": ["tenantId"],
       "RepairCreateContext": ["tenantId", "branchId"],
       "RepairEquipmentCorrectionContext": ["tenantId", "branchId"],
       "RepairConfigurationContext": ["tenantId", "branchId"],
@@ -2483,6 +2514,12 @@
       "src/modules/stations/infrastructure/persistence/kysely-branch-administration.transaction.ts": {
         "owner": "stations",
         "port": "src/modules/stations/application/ports/branch-administration-transaction.port.ts",
+        "composition": "src/modules/stations/stations.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/stations/infrastructure/persistence/kysely-station-administration.runtime.ts": {
+        "owner": "stations",
+        "port": "src/modules/stations/application/station-administration.runtime.ts",
         "composition": "src/modules/stations/stations.module.ts",
         "status": "materialized-owner-adapter"
       },
@@ -3268,6 +3305,7 @@
     "src/modules/access/presentation/access-session.controller.ts",
     "src/modules/access/presentation/admin-session.controller.ts",
     "src/modules/access/presentation/admin-users-roles.controller.ts",
+    "src/modules/access/presentation/admin-stations.controller.ts",
     "src/modules/access/presentation/admin-authorization.executor.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/access/presentation/tenant-wide-authorization.executor.ts",
@@ -3278,6 +3316,7 @@
     "src/modules/stations/application/branch-time-zone.ts",
     "src/modules/stations/application/branch-settings-runtime.service.ts",
     "src/modules/stations/application/branch-administration.service.ts",
+    "src/modules/stations/application/station-administration.runtime.ts",
     "src/modules/stations/application/ports/branch-settings-runtime.port.ts",
     "src/modules/stations/application/ports/local-station-bootstrap-runtime.port.ts",
     "src/modules/stations/application/ports/branch-repository.port.ts",
@@ -3293,6 +3332,7 @@
     "src/modules/stations/infrastructure/http/trusted-station-request-context.resolver.ts",
     "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
     "src/modules/stations/infrastructure/persistence/kysely-branch-administration.transaction.ts",
+    "src/modules/stations/infrastructure/persistence/kysely-station-administration.runtime.ts",
       "src/modules/stations/infrastructure/persistence/kysely-branch-administration.transaction.ts",
     "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
     "src/modules/stations/presentation/local-station-bootstrap.controller.ts",

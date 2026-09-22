@@ -4,7 +4,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { STATION_ADMINISTRATION_RUNTIME } from '../../stations/index.js';
 import type { StationAdministrationContext, StationAdministrationRuntime } from '../../stations/index.js';
 import { ADMIN_AUTHORIZATION_EXECUTOR, ContextualAuthorizationError } from '../index.js';
 import type { AdminAuthorizationExecutor, AuthorizedAdminContext, ProtectedRequestEvidence } from '../index.js';
@@ -12,6 +11,9 @@ import { ACCESS_SESSION_RUNTIME } from './access-session.controller.js';
 import type { AccessSessionRuntime } from './access-session.controller.js';
 
 type RequestHeaders = Readonly<Record<string, string | string[] | undefined>>;
+export const ACCESS_STATION_ADMINISTRATION_RUNTIME = Symbol(
+  'srtaller.access.station-administration-runtime',
+);
 function scalar(headers: RequestHeaders, name: string): string | undefined { const value = Object.entries(headers).find(([key]) => key.toLowerCase() === name)?.[1]; return typeof value === 'string' ? value : undefined; }
 function evidence(headers: RequestHeaders): ProtectedRequestEvidence { return Object.freeze({ cookieHeader: scalar(headers, 'cookie'), origin: scalar(headers, 'origin'), host: scalar(headers, 'host'), forwardedProto: scalar(headers, 'x-forwarded-proto'), fetchSite: scalar(headers, 'sec-fetch-site'), contentType: scalar(headers, 'content-type'), csrfToken: scalar(headers, 'x-sr-admin-csrf-token') }); }
 function branchIds(body: unknown): readonly string[] { if (typeof body !== 'object' || body === null || Array.isArray(body)) return Object.freeze([]); const branchId = (body as Record<string, unknown>).branchId; return typeof branchId === 'string' ? Object.freeze([branchId]) : Object.freeze([]); }
@@ -29,7 +31,7 @@ function translate(error: unknown): never {
 export class AdminStationsController {
   constructor(
     @Inject(ADMIN_AUTHORIZATION_EXECUTOR) private readonly authorization: AdminAuthorizationExecutor,
-    @Inject(STATION_ADMINISTRATION_RUNTIME) private readonly stations: StationAdministrationRuntime,
+    @Inject(ACCESS_STATION_ADMINISTRATION_RUNTIME) private readonly stations: StationAdministrationRuntime,
     @Inject(ACCESS_SESSION_RUNTIME) private readonly access: AccessSessionRuntime,
   ) {}
 

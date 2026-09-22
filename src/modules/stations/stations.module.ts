@@ -59,18 +59,13 @@ type StationsRuntimeComposition = Readonly<{
   verifier: KyselyStationCredentialVerifier;
   branchRepository: ReturnType<typeof createKyselyBranchRepository>;
   branchTransactions: KyselyBranchAdministrationTransaction;
+  stationAdministration: StationAdministrationRuntime;
 }>;
 
 @Module({
   imports: [RuntimeInfrastructureModule, TenancyModule],
   controllers: [LocalStationBootstrapController],
   providers: [
-    {
-      provide: STATION_ADMINISTRATION_RUNTIME,
-      inject: [APPLICATION_DATABASE_CONNECTION],
-      useFactory: (database: ApplicationDatabaseConnection): StationAdministrationRuntime =>
-        new KyselyStationAdministrationRuntime(database as never),
-    },
     {
       provide: LOCAL_STATION_BOOTSTRAP_RUNTIME,
       inject: [LOCAL_RUNTIME_CONFIGURATION],
@@ -126,7 +121,14 @@ type StationsRuntimeComposition = Readonly<{
               typeof KyselyBranchAdministrationTransaction
             >[0],
           ),
+          stationAdministration: new KyselyStationAdministrationRuntime(database as never),
         }),
+    },
+    {
+      provide: STATION_ADMINISTRATION_RUNTIME,
+      inject: [STATIONS_RUNTIME_COMPOSITION],
+      useFactory: (composition: StationsRuntimeComposition): StationAdministrationRuntime =>
+        composition.stationAdministration,
     },
     {
       provide: BRANCH_ADMINISTRATION_RUNTIME,
