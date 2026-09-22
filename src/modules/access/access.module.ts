@@ -15,19 +15,21 @@ import { LocalEmailDelivery, ResendEmailDelivery } from '../../infrastructure/em
 import { StationsModule } from '../stations/stations.module.js';
 import { UsersModule } from '../users/users.module.js';
 import { TenancyModule } from '../tenancy/tenancy.module.js';
-import { TENANT_BOOTSTRAP_PERSISTENCE } from '../tenancy/index.js';
-import type { TenantBootstrapPersistence } from '../tenancy/index.js';
-import { TENANT_BOOTSTRAP_USER_WRITER } from '../users/index.js';
-import type { TenantBootstrapUserWriter } from '../users/index.js';
+import { TENANT_BOOTSTRAP_PERSISTENCE, TENANT_LIFECYCLE_COMMIT_RUNTIME } from '../tenancy/index.js';
+import type { TenantBootstrapPersistence, TenantLifecycleCommitRuntime } from '../tenancy/index.js';
+import { ADMIN_INVITATION_USER_COMMIT_RUNTIME, TENANT_BOOTSTRAP_USER_WRITER } from '../users/index.js';
+import type { AdminInvitationUserCommitRuntime, TenantBootstrapUserWriter } from '../users/index.js';
 import {
   BRANCH_ADMINISTRATION_RUNTIME,
   BRANCH_SETTINGS_RUNTIME,
+  ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
   TRUSTED_STATION_CONTEXT_RESOLVER,
 } from '../stations/index.js';
 import type {
   BranchAdministrationRuntime,
   BranchSettingsRuntime,
+  AdminInvitationBranchCommitValidator,
   TrustedStationAdmissionValidator,
   TrustedStationContextResolver,
 } from '../stations/index.js';
@@ -44,7 +46,7 @@ import type {
   UserProductRuntime,
 } from '../users/index.js';
 
-import { ADMIN_AUTHORIZATION_EXECUTOR, ADMIN_INVITATION_SERVICE, CONTEXTUAL_AUTHORIZATION_EXECUTOR, REGISTRATION_PASSWORD_PROTECTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_BOOTSTRAP_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
+import { ADMIN_AUTHORIZATION_EXECUTOR, CONTEXTUAL_AUTHORIZATION_EXECUTOR, REGISTRATION_PASSWORD_PROTECTOR, SENSITIVE_ACTION_LEVEL2_EXECUTOR, TENANT_BOOTSTRAP_EXECUTOR, TENANT_WIDE_AUTHORIZATION_EXECUTOR } from './index.js';
 import type { AdminAuthorizationExecutor } from './index.js';
 import type { ContextualAuthorizationExecutor } from './index.js';
 import type { TenantWideAuthorizationExecutor } from './index.js';
@@ -119,10 +121,18 @@ import { UserPreferencesController } from './presentation/user-preferences.contr
 import { BootstrapTenantUseCase } from './application/use-cases/bootstrap-tenant.use-case.js';
 import { KyselyTenantBootstrapAccessWriter, KyselyTenantBootstrapTransaction } from './infrastructure/persistence/kysely-tenant-bootstrap-access.writer.js';
 import { KyselyAdminInvitationRepository } from './infrastructure/persistence/kysely-admin-invitation.repository.js';
-import { AdminInvitationService } from './application/use-cases/admin-invitation.use-cases.js';
+import { ADMIN_INVITATION_SERVICE, AdminInvitationService } from './application/use-cases/admin-invitation.use-cases.js';
 import { AdminUsersRolesOperations } from './application/admin-users-roles.operations.js';
 import { AdminUsersRolesController, PublicAdminInvitationController } from './presentation/admin-users-roles.controller.js';
 import { KyselyAdminLifecycleRepository } from './infrastructure/persistence/kysely-admin-lifecycle.repository.js';
+import type { AdminInvitationRepositoryPort } from './application/ports/admin-invitation-repository.port.js';
+import type { AdminLifecycleRepositoryPort } from './application/ports/admin-users-roles-runtime.port.js';
+
+type AccessCompositionRuntime = AccessSessionRuntime & Readonly<{
+  users: UserProductRuntime;
+  adminInvitationRepository: AdminInvitationRepositoryPort;
+  adminLifecycle: AdminLifecycleRepositoryPort;
+}>;
 
 type RegisteredAccessPersistenceAdapter =
   | KyselyAccessRepositoryFactory
@@ -169,6 +179,10 @@ type RegisteredAccessUseCases =
         TRUSTED_STATION_CONTEXT_RESOLVER,
         AUTHENTICATION_USER_ADMISSION_VALIDATOR,
         AUTHENTICATION_USER_READER,
+        USER_PRODUCT_RUNTIME,
+        TENANT_LIFECYCLE_COMMIT_RUNTIME,
+        ADMIN_INVITATION_USER_COMMIT_RUNTIME,
+        ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR,
         ACCESS_PIN_HASHER_FACTORY,
         BRANCH_SETTINGS_RUNTIME,
       ],
@@ -178,9 +192,13 @@ type RegisteredAccessUseCases =
         trustedStations: TrustedStationContextResolver,
         userAdmission: AuthenticationUserAdmissionValidator,
         users: AuthenticationUserReader,
+        productUsers: UserProductRuntime,
+        tenantLifecycle: TenantLifecycleCommitRuntime,
+        invitationUsers: AdminInvitationUserCommitRuntime,
+        invitationBranches: AdminInvitationBranchCommitValidator,
         pinHashers: AccessPinHasherFactory,
         branchSettings: BranchSettingsRuntime,
-      ): AccessSessionRuntime => {
+      ): AccessCompositionRuntime => {
         const accessRepository = createKyselyAccessRepository(database);
         const pinRepository = createKyselyPinCredentialRepository(database);
         const adminRepository = new KyselyAdminAuthRepository(database);
@@ -255,6 +273,14 @@ type RegisteredAccessUseCases =
           tokens,
           registrationPasswordHasher: adminPasswordHasher,
           tenantBootstrapTransaction: new KyselyTenantBootstrapTransaction(database as never),
+          users: productUsers,
+          adminInvitationRepository: new KyselyAdminInvitationRepository(
+            database,
+            tenantLifecycle,
+            invitationUsers,
+            invitationBranches,
+          ),
+          adminLifecycle: new KyselyAdminLifecycleRepository(database),
           admin: Object.freeze({
             provision: new ProvisionAdminIdentityUseCase(adminRepository, users, adminPasswordHasher),
             login: new LoginAdminUseCase(adminRepository, users, adminPasswordHasher, adminTokens),
@@ -290,7 +316,7 @@ type RegisteredAccessUseCases =
       provide: TENANT_BOOTSTRAP_EXECUTOR,
       inject: [ACCESS_SESSION_RUNTIME, TENANT_BOOTSTRAP_PERSISTENCE, TENANT_BOOTSTRAP_USER_WRITER],
       useFactory: (
-        runtime: AccessSessionRuntime,
+        runtime: AccessCompositionRuntime,
         tenancy: TenantBootstrapPersistence,
         users: TenantBootstrapUserWriter,
       ): TenantBootstrapExecutor => ({
@@ -314,7 +340,7 @@ type RegisteredAccessUseCases =
       provide: CONTEXTUAL_AUTHORIZATION_EXECUTOR,
       inject: [ACCESS_SESSION_RUNTIME],
       useFactory: (
-        runtime: AccessSessionRuntime,
+        runtime: AccessCompositionRuntime,
       ): ContextualAuthorizationExecutor =>
         new ContextualAuthorizationExecutorService(runtime),
     },
@@ -347,13 +373,12 @@ type RegisteredAccessUseCases =
     },
     {
       provide: ADMIN_INVITATION_SERVICE,
-      inject: [APPLICATION_DATABASE_CONNECTION, ACCESS_SESSION_RUNTIME, REGISTRATION_RUNTIME_CONFIGURATION],
+      inject: [ACCESS_SESSION_RUNTIME, REGISTRATION_RUNTIME_CONFIGURATION],
       useFactory: (
-        database: ApplicationDatabaseConnection,
-        runtime: AccessSessionRuntime,
+        runtime: AccessCompositionRuntime,
         configuration: RegistrationRuntimeConfiguration,
       ): AdminInvitationService => new AdminInvitationService(
-        new KyselyAdminInvitationRepository(database),
+        runtime.adminInvitationRepository,
         runtime.registrationPasswordHasher,
         configuration.mode === 'local'
           ? new LocalEmailDelivery()
@@ -363,14 +388,12 @@ type RegisteredAccessUseCases =
     },
     {
       provide: AdminUsersRolesOperations,
-      inject: [ADMIN_AUTHORIZATION_EXECUTOR, USER_PRODUCT_RUNTIME, ACCESS_SESSION_RUNTIME, ADMIN_INVITATION_SERVICE, APPLICATION_DATABASE_CONNECTION],
+      inject: [ADMIN_AUTHORIZATION_EXECUTOR, ACCESS_SESSION_RUNTIME, ADMIN_INVITATION_SERVICE],
       useFactory: (
         authorization: AdminAuthorizationExecutor,
-        users: UserProductRuntime,
-        runtime: AccessSessionRuntime,
+        runtime: AccessCompositionRuntime,
         invitations: AdminInvitationService,
-        database: ApplicationDatabaseConnection,
-      ): AdminUsersRolesOperations => new AdminUsersRolesOperations(authorization, users, runtime, invitations, new KyselyAdminLifecycleRepository(database)),
+      ): AdminUsersRolesOperations => new AdminUsersRolesOperations(authorization, runtime.users, runtime, invitations, runtime.adminLifecycle),
     },
     {
       provide: AccessSelfPreferencesOperations,
@@ -385,16 +408,14 @@ type RegisteredAccessUseCases =
       provide: AccessAdministrationOperations,
       inject: [
         CONTEXTUAL_AUTHORIZATION_EXECUTOR,
-        USER_PRODUCT_RUNTIME,
         ACCESS_SESSION_RUNTIME,
       ],
       useFactory: (
         authorization: ContextualAuthorizationExecutor,
-        users: UserProductRuntime,
-        runtime: AccessSessionRuntime,
+        runtime: AccessCompositionRuntime,
       ): AccessAdministrationOperations => new AccessAdministrationOperations(
         authorization,
-        users,
+        runtime.users,
         (scope: unknown) => runtime.listAccessMatrix.execute(scope),
         (scope: unknown, input: unknown, guard) => runtime.createAccessRole.execute(scope, input, guard),
         (scope: unknown, roleId: unknown, input: unknown, guard) => runtime.replaceAccessRoleCapabilities.execute(scope, roleId, input, guard),

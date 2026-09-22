@@ -157,10 +157,6 @@ export const ADMIN_AUTHORIZATION_EXECUTOR: unique symbol = Symbol(
   'srtaller.access.admin-authorization-executor',
 );
 
-export const ADMIN_INVITATION_SERVICE: unique symbol = Symbol(
-  'srtaller.access.admin-invitation-service',
-);
-
 /** Registration receives only this narrow server-owned bootstrap boundary. */
 export interface TenantBootstrapExecutor {
   execute(input: Readonly<{

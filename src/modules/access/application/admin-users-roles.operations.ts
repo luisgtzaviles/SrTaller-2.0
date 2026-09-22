@@ -2,9 +2,8 @@ import { randomUUID } from 'node:crypto';
 
 import type { UserProductRuntime } from '../../users/index.js';
 import type { AdminAuthorizationExecutor, AuthorizedAdminContext, ProtectedRequestEvidence } from '../index.js';
-import type { AccessSessionRuntime } from '../presentation/access-session.controller.js';
+import type { AdminLifecycleRepositoryPort, AdminUsersRolesAccessRuntime } from './ports/admin-users-roles-runtime.port.js';
 import type { AdminInvitationService } from './use-cases/admin-invitation.use-cases.js';
-import type { KyselyAdminLifecycleRepository } from '../infrastructure/persistence/kysely-admin-lifecycle.repository.js';
 
 function isControlPlaneCapability(value: unknown): boolean {
   return typeof value === 'string' && ['tenant.profile.', 'users.', 'access_matrix.', 'branches.', 'stations.'].some((prefix) => value.startsWith(prefix));
@@ -14,7 +13,7 @@ function requestedCapabilities(input: unknown): readonly unknown[] {
   return typeof input === 'object' && input !== null && 'capabilityCodes' in input && Array.isArray(input.capabilityCodes) ? input.capabilityCodes : [];
 }
 
-function auditGuard(context: AuthorizedAdminContext, lifecycle: KyselyAdminLifecycleRepository, input: Readonly<{ eventType: string; level: 1 | 2; correlationId: string; occurredAt: string; continuity?: boolean; targetUserId?: string | undefined; protectedAuthorityEvent?: string | undefined }>) {
+function auditGuard(context: AuthorizedAdminContext, lifecycle: AdminLifecycleRepositoryPort, input: Readonly<{ eventType: string; level: 1 | 2; correlationId: string; occurredAt: string; continuity?: boolean; targetUserId?: string | undefined; protectedAuthorityEvent?: string | undefined }>) {
   return Object.freeze({
     confirmCurrent: context.commitGuard.confirmCurrent,
     ...(input.continuity ? { confirmContinuity: context.commitGuard.confirmEffectiveTenantAdmin } : {}),
@@ -31,9 +30,9 @@ export class AdminUsersRolesOperations {
   constructor(
     private readonly authorization: AdminAuthorizationExecutor,
     private readonly users: UserProductRuntime,
-    private readonly runtime: AccessSessionRuntime,
+    private readonly runtime: AdminUsersRolesAccessRuntime,
     private readonly invitations: AdminInvitationService,
-    private readonly lifecycle: KyselyAdminLifecycleRepository,
+    private readonly lifecycle: AdminLifecycleRepositoryPort,
   ) {}
 
   listUsers(evidence: ProtectedRequestEvidence) {

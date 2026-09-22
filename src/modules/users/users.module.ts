@@ -13,6 +13,7 @@ import {
   USER_PREFERENCES_RUNTIME,
   USER_PRODUCT_RUNTIME,
   TENANT_BOOTSTRAP_USER_WRITER,
+  ADMIN_INVITATION_USER_COMMIT_RUNTIME,
 } from './index.js';
 import type {
   AuthenticationUserAdmissionValidator,
@@ -20,6 +21,7 @@ import type {
   UserPreferencesRuntime,
   UserProductRuntime,
   TenantBootstrapUserWriter,
+  AdminInvitationUserCommitRuntime,
 } from './index.js';
 import type { GetUserUseCase } from './application/use-cases/get-user.use-case.js';
 import type { ProvisionFirstUserUseCase } from './application/use-cases/provision-first-user.use-case.js';
@@ -33,6 +35,7 @@ import type { UserMutationCommitGuard } from './application/ports/user-repositor
 import { KyselyAuthenticationUserReader } from './infrastructure/persistence/kysely-authentication-user.reader.js';
 import { KyselyUserPreferencesRepository } from './infrastructure/persistence/kysely-user-preferences.repository.js';
 import { KyselyTenantBootstrapUserWriter } from './infrastructure/persistence/kysely-tenant-bootstrap-user.writer.js';
+import { KyselyAdminInvitationUserCommit } from './infrastructure/persistence/kysely-admin-invitation-user.commit.js';
 import {
   GetUserPreferencesUseCase,
   UpdateUserPreferencesUseCase,
@@ -42,7 +45,8 @@ type RegisteredUsersPersistenceAdapter =
   | KyselyUserRepositoryFactory
   | KyselyAuthenticationUserReader
   | KyselyUserPreferencesRepository
-  | KyselyTenantBootstrapUserWriter;
+  | KyselyTenantBootstrapUserWriter
+  | KyselyAdminInvitationUserCommit;
 type RegisteredUsersUseCases =
   | GetUserUseCase
   | ListUsersUseCase
@@ -66,6 +70,10 @@ type UsersRuntimeComposition = Readonly<{
     {
       provide: TENANT_BOOTSTRAP_USER_WRITER,
       useFactory: (): TenantBootstrapUserWriter => new KyselyTenantBootstrapUserWriter(),
+    },
+    {
+      provide: ADMIN_INVITATION_USER_COMMIT_RUNTIME,
+      useFactory: (): AdminInvitationUserCommitRuntime => new KyselyAdminInvitationUserCommit(),
     },
     {
       provide: USERS_RUNTIME_COMPOSITION,
@@ -135,6 +143,7 @@ type UsersRuntimeComposition = Readonly<{
     USER_PRODUCT_RUNTIME,
     AUTHENTICATION_USER_READER,
     TENANT_BOOTSTRAP_USER_WRITER,
+    ADMIN_INVITATION_USER_COMMIT_RUNTIME,
   ],
 })
 export class UsersModule {

@@ -8,10 +8,11 @@ import type { DatabaseSchema } from '../../../../infrastructure/database/databas
 import type { ApplicationDatabaseConnection } from '../../../../infrastructure/runtime/index.js';
 import type { AdminAuthorizationCommitGuard } from '../../index.js';
 import { AccessPersistenceError } from '../../application/ports/access-repository.port.js';
+import type { AdminLifecycleRepositoryPort } from '../../application/ports/admin-users-roles-runtime.port.js';
 
 type Database = Kysely<DatabaseSchema> | Transaction<DatabaseSchema>;
 
-export class KyselyAdminLifecycleRepository {
+export class KyselyAdminLifecycleRepository implements AdminLifecycleRepositoryPort {
   constructor(private readonly connection: ApplicationDatabaseConnection) {}
 
   recordEvent(transactionContext: object, input: Readonly<{ tenantId: string; actorUserId: string; actorAdminIdentityId: string; sessionId: string; correlationId: string; eventType: string; targetUserId?: string | undefined; roleId?: string | undefined; assignmentId?: string | undefined; branchId?: string | undefined; level: 1 | 2; occurredAt: string }>): Promise<void> {

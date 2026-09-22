@@ -6,6 +6,10 @@ import type { AdminInvitationMutationGuard, AdminInvitationRepositoryPort, Admin
 import { adminInvitationExpiresAt, canonicalizeAdminInvitationGrants, normalizeAdminInvitationEmail } from '../../domain/admin-invitation.js';
 import { parseAdminPassword } from '../../domain/admin-password.js';
 
+export const ADMIN_INVITATION_SERVICE: unique symbol = Symbol(
+  'srtaller.access.admin-invitation-service',
+);
+
 export type AdminInvitationErrorCode =
   | 'ADMIN_INVITATION_INVALID'
   | 'ADMIN_INVITATION_NOT_FOUND'

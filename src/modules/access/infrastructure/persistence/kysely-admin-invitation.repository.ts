@@ -6,6 +6,10 @@ import { databasePersistenceCapability } from '../../../../infrastructure/databa
 import { databaseTransactionCapability } from '../../../../infrastructure/database/database-transaction-capability.js';
 import type { AccessAdminInvitationTable, DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
 import type { ApplicationDatabaseConnection } from '../../../../infrastructure/runtime/index.js';
+import type { TenantLifecycleCommitRuntime } from '../../../tenancy/index.js';
+import { parseTenantId } from '../../../tenancy/index.js';
+import type { AdminInvitationBranchCommitValidator } from '../../../stations/index.js';
+import type { AdminInvitationUserCommitRuntime } from '../../../users/index.js';
 import type { AdminInvitationGrant } from '../../domain/admin-invitation.js';
 import { digestAdminInvitationGrants } from '../../domain/admin-invitation.js';
 import type { AdminInvitationChallengeRecord, AdminInvitationRecord, AdminInvitationRepositoryPort, AdminInvitationWriteResult } from '../../application/ports/admin-invitation-repository.port.js';
@@ -21,7 +25,12 @@ function isPendingEmailConflict(error: unknown): boolean {
 }
 
 export class KyselyAdminInvitationRepository implements AdminInvitationRepositoryPort {
-  constructor(private readonly connection: ApplicationDatabaseConnection) {}
+  constructor(
+    private readonly connection: ApplicationDatabaseConnection,
+    private readonly tenants: TenantLifecycleCommitRuntime,
+    private readonly users: AdminInvitationUserCommitRuntime,
+    private readonly branches: AdminInvitationBranchCommitValidator,
+  ) {}
 
   async list(tenantId: string): Promise<readonly AdminInvitationRecord[]> {
     return this.connection[databasePersistenceCapability]('access', async (db) => {
@@ -37,7 +46,7 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
         const replay = await this.replay(db, input.tenantId, input.clientRequestId, 'ISSUE', input.invitationId, fingerprint({ email: input.normalizedEmail, grants: input.grants, target: input.targetUserId, name: input.proposedDisplayName }));
         if (replay) return Object.freeze({ invitation: replay, deliveryRequired: false });
         if (!await guard.confirmCurrent(raw)) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
-        const authorityRevision = await this.validateAuthorityAndGrants(db, input.tenantId, input.inviterUserId, input.inviterAdminIdentityId, null, input.grants);
+        const authorityRevision = await this.validateAuthorityAndGrants(db, raw, input.tenantId, input.inviterUserId, input.inviterAdminIdentityId, null, input.grants);
         await db.insertInto('access_admin_invitations').values({ tenant_id: input.tenantId, invitation_id: input.invitationId, normalized_email: input.normalizedEmail, email_display: input.emailDisplay, target_user_id: input.targetUserId, proposed_display_name: input.proposedDisplayName, inviter_user_id: input.inviterUserId, inviter_admin_identity_id: input.inviterAdminIdentityId, status: 'PENDING', version: 0, authority_revision: authorityRevision, intended_grants_digest: digestAdminInvitationGrants(input.grants), expires_at: new Date(at.getTime() + 86_400_000), accepted_at: null, revoked_at: null, created_at: at, updated_at: at }).execute();
         await db.insertInto('access_admin_invitation_grants').values(input.grants.map((grant, index) => ({ tenant_id: input.tenantId, invitation_id: input.invitationId, grant_index: index, role_id: grant.roleId, role_version: grant.roleVersion, assignment_scope: grant.assignmentScope, branch_id: grant.branchId, created_at: at }))).execute();
         await this.insertChallengeDispatch(db, input.tenantId, input.invitationId, input.challengeId, input.deliveryId, input.normalizedEmail, input.tokenDigest, at);
@@ -99,13 +108,11 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
       if (!invitation || !challenge || invitation.status !== 'PENDING' || challenge.status !== 'ACTIVE' || at >= invitation.expires_at || at >= challenge.expires_at) throw new AdminInvitationError('ADMIN_INVITATION_UNAVAILABLE');
       const grants = await this.grants(db, invitation.tenant_id, invitation.invitation_id);
       if (!sameBytes(invitation.intended_grants_digest, digestAdminInvitationGrants(grants))) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
-      await this.validateAuthorityAndGrants(db, invitation.tenant_id, invitation.inviter_user_id, invitation.inviter_admin_identity_id, invitation.authority_revision, grants);
-      const tenant = await db.selectFrom('tenants').select('lifecycle_status').where('tenant_id', '=', invitation.tenant_id).forShare().executeTakeFirst();
-      if (!tenant) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
-      if (invitation.target_user_id === null) await db.insertInto('users').values({ tenant_id: invitation.tenant_id, user_id: input.userId, display_name: invitation.proposed_display_name as string, operational_identifier: null, status: 'active', version: 0, admission_revision: 0, created_at: at, updated_at: at }).execute();
+      await this.validateAuthorityAndGrants(db, raw, invitation.tenant_id, invitation.inviter_user_id, invitation.inviter_admin_identity_id, invitation.authority_revision, grants);
+      if (invitation.target_user_id === null) await this.users.create({ tenantId: invitation.tenant_id }, { userId: input.userId, displayName: invitation.proposed_display_name as string, occurredAt: input.occurredAt }, raw);
       else {
-        const user = await db.selectFrom('users').select(['status']).where('tenant_id', '=', invitation.tenant_id).where('user_id', '=', input.userId).forUpdate().executeTakeFirst();
-        if (!user || user.status !== 'active') throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
+        const user = await this.users.findActive({ tenantId: invitation.tenant_id, userId: input.userId }, raw);
+        if (!user) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
       }
       await db.insertInto('access_admin_identities').values({ tenant_id: invitation.tenant_id, admin_identity_id: input.adminIdentityId, user_id: input.userId, normalized_email: invitation.normalized_email, email_display: invitation.email_display, verified_at: at, status: 'active', identity_version: 0, created_at: at, updated_at: at }).execute();
       await db.insertInto('access_admin_password_credentials').values({ tenant_id: invitation.tenant_id, admin_identity_id: input.adminIdentityId, user_id: input.userId, status: 'active', algorithm: 'argon2id', profile_version: input.password.profileVersion, pepper_version: input.password.pepperVersion, memory_kib: input.password.memoryKiB, passes: input.password.passes, parallelism: input.password.parallelism, salt: input.password.salt, verifier: input.password.verifier, credential_version: 1, session_revision: 1, created_at: at, updated_at: at, revoked_at: null }).execute();
@@ -123,28 +130,32 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
     await this.connection[databasePersistenceCapability]('access', async (db) => { await db.updateTable('access_admin_invitation_dispatches').set({ status: input.status, attempt_count: (eb) => eb('attempt_count', '+', 1), provider_reference: input.providerReference, reason_code: input.reasonCode, updated_at: new Date(input.occurredAt) }).where('tenant_id', '=', input.tenantId).where('delivery_id', '=', input.deliveryId).where('status', '=', 'PENDING').execute(); });
   }
 
-  private async validateAuthorityAndGrants(db: AccessDatabase, tenantId: string, inviterUserId: string, identityId: string, authorityRevision: number | null, grants: readonly AdminInvitationGrant[]): Promise<number> {
-    const tenant = await db.selectFrom('tenants').select('lifecycle_status').where('tenant_id', '=', tenantId).forShare().executeTakeFirst();
-    if (tenant?.lifecycle_status !== 'ACTIVE') throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
-    const issuer = await db.selectFrom('access_admin_identities as i').innerJoin('users as u', (join) => join.onRef('u.tenant_id', '=', 'i.tenant_id').onRef('u.user_id', '=', 'i.user_id')).innerJoin('access_admin_password_credentials as c', (join) => join.onRef('c.tenant_id', '=', 'i.tenant_id').onRef('c.admin_identity_id', '=', 'i.admin_identity_id')).select(['u.status as user_status', 'u.admission_revision', 'i.status as identity_status', 'i.verified_at', 'c.status as credential_status']).where('i.tenant_id', '=', tenantId).where('i.admin_identity_id', '=', identityId).where('i.user_id', '=', inviterUserId).forShare().executeTakeFirst();
-    if (!issuer || issuer.user_status !== 'active' || issuer.identity_status !== 'active' || issuer.credential_status !== 'active' || issuer.verified_at === null || (authorityRevision !== null && issuer.admission_revision !== authorityRevision)) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
-    const authority = await db.selectFrom('access_role_assignments as a')
-      .innerJoin('access_roles as r', (join) => join.onRef('r.tenant_id', '=', 'a.tenant_id').onRef('r.role_id', '=', 'a.role_id'))
-      .innerJoin('access_role_capabilities as c', (join) => join.onRef('c.tenant_id', '=', 'r.tenant_id').onRef('c.role_id', '=', 'r.role_id'))
-      .select('c.capability_code')
-      .where('a.tenant_id', '=', tenantId).where('a.user_id', '=', inviterUserId)
-      .where('a.assignment_scope', '=', 'TENANT_WIDE').where('a.branch_id', 'is', null)
-      .where('a.status', '=', 'active').where('r.status', '=', 'active')
-      .where('c.capability_code', 'in', ['users.manage', 'access_matrix.manage'])
-      .forShare(['a', 'r', 'c']).execute();
+  private async validateAuthorityAndGrants(db: AccessDatabase, transactionContext: object, tenantId: string, inviterUserId: string, identityId: string, authorityRevision: number | null, grants: readonly AdminInvitationGrant[]): Promise<number> {
+    const tenant = await this.tenants.lock({ tenantId: parseTenantId(tenantId) }, transactionContext);
+    if (tenant.lifecycleStatus !== 'ACTIVE') throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
+    const issuerUser = await this.users.findActive({ tenantId, userId: inviterUserId }, transactionContext);
+    const identity = await db.selectFrom('access_admin_identities').select(['status', 'verified_at']).where('tenant_id', '=', tenantId).where('admin_identity_id', '=', identityId).where('user_id', '=', inviterUserId).forShare().executeTakeFirst();
+    const credential = await db.selectFrom('access_admin_password_credentials').select('status').where('tenant_id', '=', tenantId).where('admin_identity_id', '=', identityId).where('user_id', '=', inviterUserId).forShare().executeTakeFirst();
+    if (!issuerUser || identity?.status !== 'active' || credential?.status !== 'active' || identity.verified_at === null || (authorityRevision !== null && issuerUser.admissionRevision !== authorityRevision)) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
+    const assignments = await db.selectFrom('access_role_assignments').select('role_id')
+      .where('tenant_id', '=', tenantId).where('user_id', '=', inviterUserId)
+      .where('assignment_scope', '=', 'TENANT_WIDE').where('branch_id', 'is', null)
+      .where('status', '=', 'active').forShare().execute();
+    const assignedRoleIds = assignments.map(({ role_id }) => role_id);
+    const activeRoles = assignedRoleIds.length === 0 ? [] : await db.selectFrom('access_roles').select('role_id')
+      .where('tenant_id', '=', tenantId).where('role_id', 'in', assignedRoleIds).where('status', '=', 'active').forShare().execute();
+    const activeRoleIds = activeRoles.map(({ role_id }) => role_id);
+    const authority = activeRoleIds.length === 0 ? [] : await db.selectFrom('access_role_capabilities').select('capability_code')
+      .where('tenant_id', '=', tenantId).where('role_id', 'in', activeRoleIds)
+      .where('capability_code', 'in', ['users.manage', 'access_matrix.manage']).forShare().execute();
     const effectiveCapabilities = new Set(authority.map(({ capability_code }) => capability_code));
     if (!effectiveCapabilities.has('users.manage') || !effectiveCapabilities.has('access_matrix.manage')) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
     for (const grant of grants) {
       const role = await db.selectFrom('access_roles').select(['version', 'status']).where('tenant_id', '=', tenantId).where('role_id', '=', grant.roleId).forShare().executeTakeFirst();
       if (!role || role.status !== 'active' || role.version !== grant.roleVersion) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
-      if (grant.branchId) { const branch = await db.selectFrom('branches').select('active').where('tenant_id', '=', tenantId).where('branch_id', '=', grant.branchId).forShare().executeTakeFirst(); if (!branch?.active) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED'); }
+      if (grant.branchId && !await this.branches.validateActive({ tenantId, branchId: grant.branchId }, transactionContext)) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
     }
-    return issuer.admission_revision;
+    return issuerUser.admissionRevision;
   }
 
   private async insertChallengeDispatch(db: AccessDatabase, tenantId: string, invitationId: string, challengeId: string, deliveryId: string, destination: string, digest: Uint8Array, at: Date): Promise<void> {

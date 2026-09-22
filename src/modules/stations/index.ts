@@ -96,6 +96,17 @@ export const TRUSTED_STATION_ADMISSION_VALIDATOR: unique symbol = Symbol(
   'srtaller.stations.trusted-station-admission-validator',
 );
 
+export interface AdminInvitationBranchCommitValidator {
+  validateActive(
+    scope: Readonly<{ tenantId: string; branchId: string }>,
+    transactionContext: object,
+  ): Promise<boolean>;
+}
+
+export const ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR: unique symbol = Symbol(
+  'srtaller.stations.admin-invitation-branch-commit-validator',
+);
+
 /** Compile-time marker for the public stations module boundary. */
 export interface StationsModuleContract {
   readonly module: 'stations';

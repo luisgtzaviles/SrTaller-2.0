@@ -56,11 +56,55 @@ function passwordHasher() {
 
 function token(value) { return Object.freeze({ token: value.repeat(43), digest: createHash('sha256').update(value.repeat(43)).digest() }); }
 
+function invitationRepository(connection, Repository) {
+  return new Repository(
+    connection,
+    Object.freeze({
+      async lock({ tenantId }, transaction) {
+        const row = await transaction.selectFrom('tenants')
+          .select(['tenant_id', 'lifecycle_status'])
+          .where('tenant_id', '=', tenantId)
+          .forUpdate()
+          .executeTakeFirstOrThrow();
+        return Object.freeze({ tenantId: row.tenant_id, lifecycleStatus: row.lifecycle_status });
+      },
+    }),
+    Object.freeze({
+      async findActive({ tenantId, userId }, transaction) {
+        const row = await transaction.selectFrom('users')
+          .select(['user_id', 'admission_revision'])
+          .where('tenant_id', '=', tenantId)
+          .where('user_id', '=', userId)
+          .where('status', '=', 'active')
+          .forShare()
+          .executeTakeFirst();
+        return row ? Object.freeze({ userId: row.user_id, status: 'active', admissionRevision: row.admission_revision }) : null;
+      },
+      async create({ tenantId }, input, transaction) {
+        const at = new Date(input.occurredAt);
+        await transaction.insertInto('users').values({ tenant_id: tenantId, user_id: input.userId, display_name: input.displayName, operational_identifier: null, status: 'active', version: 0, admission_revision: 0, created_at: at, updated_at: at }).execute();
+        return Object.freeze({ userId: input.userId, status: 'active', admissionRevision: 0 });
+      },
+    }),
+    Object.freeze({
+      async validateActive({ tenantId, branchId }, transaction) {
+        const row = await transaction.selectFrom('branches')
+          .select('active')
+          .where('tenant_id', '=', tenantId)
+          .where('branch_id', '=', branchId)
+          .forShare()
+          .executeTakeFirst();
+        return row?.active === true;
+      },
+    }),
+  );
+}
+
 test('TL-06 PostgreSQL executes invitation replay, supersession, acceptance and secret-safe audit', { skip: !enabled, timeout: 60_000 }, async () => {
   const [{ createDatabaseConnection }, { LocalEmailDelivery }, { AdminInvitationService }, , , { KyselyAdminInvitationRepository }] = modules;
   const database = pool(); const connection = createDatabaseConnection(config('invitation')); const seeded = await seedTenant(database); let now = new Date('2026-09-21T21:00:00.000Z'); const ids = Array.from({ length: 20 }, () => randomUUID()); let idIndex = 0; const tokens = [token('a'), token('b'), token('c'), token('d')]; let tokenIndex = 0;
   try {
-    await connection.verify(); const repository = new KyselyAdminInvitationRepository(connection); const service = new AdminInvitationService(repository, passwordHasher(), new LocalEmailDelivery(), 'http://127.0.0.1:4173', () => now, () => ids[idIndex++], () => tokens[tokenIndex++]);
+    await connection.verify(); const repository = invitationRepository(connection, KyselyAdminInvitationRepository); const service = new AdminInvitationService(repository, passwordHasher(), new LocalEmailDelivery(), 'http://127.0.0.1:4173', () => now, () => ids[idIndex++], () => tokens[tokenIndex++]);
     const inviterAdminSessionId = randomUUID(); const requestId = randomUUID(); const input = { tenantId: seeded.tenantId, inviterUserId: seeded.users[0].userId, inviterAdminIdentityId: seeded.users[0].identityId, inviterAdminSessionId, targetUserId: null, proposedDisplayName: 'Invitada TL06', email: 'Invitada@Example.test', grants: [{ roleId: seeded.roleId, roleVersion: 0, assignmentScope: 'TENANT_WIDE', branchId: null }], clientRequestId: requestId, correlationId: randomUUID(), guard: { async confirmCurrent() { return true; } } };
     const issued = await service.issue(input); const replay = await service.issue(input);
     assert.equal(replay.invitationId, issued.invitationId);
@@ -82,7 +126,7 @@ test('TL-06 PostgreSQL executes invitation replay, supersession, acceptance and 
 test('TL-06 PostgreSQL fails closed across tenants, branches and stale issuer authority', { skip: !enabled, timeout: 60_000 }, async () => {
   const [{ createDatabaseConnection }, { LocalEmailDelivery }, { AdminInvitationService }, , , { KyselyAdminInvitationRepository }] = modules; const database = pool(); const connection = createDatabaseConnection(config('isolation')); const alpha = await seedTenant(database); const beta = await seedTenant(database); let tokenValue = token('e');
   try {
-    await connection.verify(); const repository = new KyselyAdminInvitationRepository(connection); const service = new AdminInvitationService(repository, passwordHasher(), new LocalEmailDelivery(), 'http://127.0.0.1:4173', () => new Date('2026-09-21T22:00:00.000Z'), randomUUID, () => tokenValue); const guard = { async confirmCurrent() { return true; } };
+    await connection.verify(); const repository = invitationRepository(connection, KyselyAdminInvitationRepository); const service = new AdminInvitationService(repository, passwordHasher(), new LocalEmailDelivery(), 'http://127.0.0.1:4173', () => new Date('2026-09-21T22:00:00.000Z'), randomUUID, () => tokenValue); const guard = { async confirmCurrent() { return true; } };
     await assert.rejects(service.issue({ tenantId: alpha.tenantId, inviterUserId: alpha.users[0].userId, inviterAdminIdentityId: alpha.users[0].identityId, targetUserId: null, proposedDisplayName: 'Cross tenant', email: 'cross@example.test', grants: [{ roleId: beta.roleId, roleVersion: 0, assignmentScope: 'TENANT_WIDE', branchId: null }], clientRequestId: randomUUID(), correlationId: randomUUID(), guard }), (error) => error?.code === 'ADMIN_INVITATION_AUTHORITY_CHANGED');
     await assert.rejects(service.issue({ tenantId: alpha.tenantId, inviterUserId: alpha.users[0].userId, inviterAdminIdentityId: alpha.users[0].identityId, targetUserId: null, proposedDisplayName: 'Cross branch', email: 'branch@example.test', grants: [{ roleId: alpha.roleId, roleVersion: 0, assignmentScope: 'BRANCH_RESTRICTED', branchId: beta.branchId }], clientRequestId: randomUUID(), correlationId: randomUUID(), guard }), (error) => error?.code === 'ADMIN_INVITATION_AUTHORITY_CHANGED');
     tokenValue = token('g'); await service.issue({ tenantId: alpha.tenantId, inviterUserId: alpha.users[0].userId, inviterAdminIdentityId: alpha.users[0].identityId, targetUserId: null, proposedDisplayName: 'Global pending', email: 'global-pending@example.test', grants: [{ roleId: alpha.roleId, roleVersion: 0, assignmentScope: 'TENANT_WIDE', branchId: null }], clientRequestId: randomUUID(), correlationId: randomUUID(), guard });
