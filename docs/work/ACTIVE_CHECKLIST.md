@@ -1,152 +1,128 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: TL-06 — Tenant Administration Users/Roles Integration
-iteration: 3 - Main Reconciliation and Remote Revalidation
+work_unit: TL-07 — Station Inventory + Enrollment Authority
+iteration: 1 - Readiness and Owner decisions
 type: PRODUCT
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
-branch: feature/tl-06-admin-users-roles-readiness
-base_sha: 81b57994c69ed3584776ff080253f9a772e6425b
-status: PROMOTION
+branch: feature/tl-07-station-inventory-enrollment-readiness
+base_sha: 74fe2b5fd5b66ee48428953f3e027f2815c839ca
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
 
-Current PBI: NONE
-
 ## Objective
 
-Deliver the minimum Tenant Administration Users/Roles capability for verified
-invitations, explicit administrative authority delegation, context separation
-and last-effective-admin safety.
+Audit and define implementation-ready Station inventory and enrollment authority contracts without implementing product functionality.
 
 ## Why
 
-Complete the authorized Tenant Lifecycle administrative identity boundary
-without coupling Admin Context to Station/PIN or weakening tenant isolation.
+To execute one authorized objective with a transferable repository-native handoff.
 
 ## In Scope
 
-- Verified-email invitations and invitee-owned password establishment.
-- Tenant-managed Roles and multiple assignments from Admin Context.
-- Admin-only, operational-only and combined User modes.
-- Transaction-safe last-effective-Tenant-Admin protection.
-- Level-2 reauthentication for sensitive authority/lifecycle mutations.
-- Cross-tenant isolation, durable sanitized audit and reusable email delivery.
-- Reconciliation with the integrated owner-scoped PostgreSQL harness.
+- Audit the current Station, binding, credential and trusted-context runtime.
+- Inspect legacy local Station data without writes or secret exposure.
+- Define Station Inventory V1, enrollment authority, lifecycle, relink,
+  authorization, audit, migration, UI and test contracts.
+- Identify the minimum Owner decisions required before implementation.
 
 ## Out of Scope
 
-- TL-07, Station enrollment, Super Admin, billing and Production email setup.
-- Changes to the 240-second owner-scoped budget, retries or suite parallelism.
-- Merge of PR #69, deploy and unrelated cleanup.
+- Product/runtime/schema implementation.
+- Device redemption, activation or operational handoff owned by TL-08.
+- Push, PR, merge, deploy, infrastructure and unrelated cleanup.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`ADR-012`](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
-- [`ADR-015`](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md)
-- [`Tenant Lifecycle MVP`](../architecture/TENANT_LIFECYCLE_MVP.md)
-- [`TL-06 Readiness`](../architecture-readiness/tenant-lifecycle/TL-06_TENANT_ADMIN_USERS_ROLES_INTEGRATION_READINESS.md)
 
 ## Risks
 
-- Concurrent authority removal could leave a Tenant without an effective Admin.
-- Invitation replay, expiry or stale issuer authority could elevate a recipient.
-- Reusing Operational guards could couple Admin Context to Station/PIN.
-- IDs or email lookup could leak or mutate another Tenant.
-- Reconciliation could accidentally restore the obsolete per-suite PostgreSQL
-  container lifecycle or weaken the material eight-suite campaign.
+- Existing Station persistence does not materialize the append-only binding
+  history already required by the accepted PBI-024 design.
+- Station trust changes must immediately deny PIN login and existing
+  Operational Sessions without crossing persistence ownership boundaries.
+- Admin authorization currently resolves only tenant-wide capabilities; TL-07
+  needs a branch-scoped control-plane path consistent with TL-06.
+- Legacy Station rows have no persisted display name and cannot receive an
+  invented name during migration.
 
 ## Plan
 
-- [x] Complete readiness and Owner decisions.
-- [x] Implement invitation persistence, email dispatch and atomic acceptance.
-- [x] Implement Admin Users/Roles APIs and UI.
-- [x] Implement last-effective-admin and Level-2 protections.
-- [x] Prove tenant isolation, concurrency and responsive accessibility.
-- [x] Complete the original focused and full candidate verification.
-- [x] Remediate invitation expiry/resend lifecycle on the preserved branch.
-- [x] Preserve the reviewed TL-06 checkpoint during the external Quality work.
-- [x] Confirm the Quality Work Unit is closed and current `main` is authoritative.
-- [~] Merge current `main` ordinarily and audit the combined state.
-- [ ] Run focused TL-06 and integrated PostgreSQL verification.
-- [ ] Run one canonical `verify:full` on the reconciled exact HEAD.
-- [ ] Push normally, require fresh PR #69 CI and review the exact final HEAD.
+- [x] Initialize the governed Work Unit from exact synchronized `main`.
+- [x] Audit accepted Station, Tenant, Branch, Admin and Session contracts.
+- [x] Audit current code, persistence, HTTP/UI surfaces and trust writers.
+- [x] Inspect local legacy Station inventory read-only.
+- [x] Materialize the implementation-ready TL-07 readiness contract.
+- [x] Reconcile PBI-031 and the documentation index.
+- [x] Run proportional architecture, link, secret, diff and lifecycle checks.
+- [!] Obtain the Owner decisions required before implementation.
 
 ## Current
 
-TL-06 has resumed on its preserved branch. Its previous remote promotion found
-the invitation expiry/resend lifecycle defect, which is fixed at the preserved
-checkpoint. The external owner-scoped PostgreSQL Quality dependency is now
-integrated and closed; current `main` is being merged ordinarily into TL-06.
+Readiness contract and PBI-031 reconciliation are complete; the Work Unit is
+stopped before implementation for six explicit Owner decisions.
 
 ## Next
 
-Complete the checklist conflict resolution, audit the combined product and
-harness contracts, then execute focused TL-06 verification.
+Owner resolves `TL7D-001`–`TL7D-006`; a later explicitly authorized iteration
+may then implement TL-07. TL-08 remains unstarted.
 
 ## Blockers
 
-None. PR #69 remains open and unmerged while the reconciled candidate is
-revalidated.
+- Owner must define the legacy local Station display name.
+- Owner must approve the visible enrollment artifact and the exact semantics
+  of unlink/relink before product implementation begins.
 
 ## Important Discoveries
 
-- A single User supports admin-only, operational-only and combined identities.
-- The legacy Users/Roles surface is Operational Context and is not the TL-06
-  authorization boundary.
-- The protected `tenant_admin` Role rejects content edits; assignments remain
-  subject to the serialized last-effective-admin invariant.
-- TL-04 email provider infrastructure is reused while invitation persistence
-  remains Access-owned.
-- Expired invitations transition durably to `EXPIRED`, release pending-email
-  uniqueness, expire the active challenge and cannot have their original
-  deadline extended by resend.
-- The integrated Quality harness uses one governed PostgreSQL container, eight
-  exact serial suites and a fresh random database with deterministic drop and
-  absence verification per suite.
+- Current production runtime has no Station administration or enrollment
+  endpoint. `POST /api/stations/local-bootstrap` is development-only and only
+  sets the cookie derived from the governed local fixture.
+- Station trust is currently `(Station active + binding current + Branch
+  active + credential current)` with monotonic admission revisions.
+- Credential, binding, Station or Branch revocation/state change denies a new
+  trusted context; stale Operational Sessions cannot regain validity.
+- Current `station_bindings` primary key allows one row per Station and the
+  local seed overwrites `branch_id`; this does not satisfy the accepted
+  append-only relink history and must be migrated in implementation.
+- Local PostgreSQL 18.4 contains one active Station, one active credential and
+  one current binding to `SR Taller Fixture — Hermosillo`; no display-name
+  field exists for the Station. The inspection made zero writes.
+- The repository currently defines 88 migrations; local data has 87 applied.
+  No migration was run in this readiness iteration.
 
 ## Focused Verification
 
-- [x] Original TL-06 domain/application/UI and material PostgreSQL proof.
-- [x] Invitation lifecycle remediation focused proof.
-- [ ] Reconciled invitation, identity, User-mode, Role and last-admin suites.
-- [ ] Reconciled Level-2, tenancy, email and audit suites.
-- [ ] TL-06 PostgreSQL 3/3 with current migrations and zero pending on rerun.
-- [ ] Owner-scoped PostgreSQL campaign 8/8 under the unchanged budget.
-- [ ] Typecheck, build, architecture, links, secret scan and `git diff --check`.
-- [ ] Canonical `verify:full` on one exact reconciled HEAD.
+- [x] Markdown local links.
+- [x] `verify:architecture`.
+- [x] Focused Station/Operational Session tests: 33/33 PASS.
+- [x] Secret-pattern scan of added lines.
+- [x] `git diff --check`.
+- [x] `work-unit:check --mode ACTIVE`.
 
 ## Promotion Gates
 
-- [x] Existing PR #69 and prior remote promotion are preserved.
-- [x] External Quality dependency integrated and closed on `main`.
-- [~] Ordinary `main` reconciliation in progress.
-- [ ] Local focused and full gates on the reconciled candidate.
-- [ ] Fresh authoritative run-1, run-2, comparison and promotion gate.
-- [ ] Exact-HEAD security/architectural review without material findings.
-- [ ] Merge/exact-main closure — not authorized.
+- Existing authoritative promotion policy remains unchanged.
 
 ## Remote Actions / Authorization
 
-- Normal push to the existing TL-06 branch and reuse of Draft PR #69 are
-  authorized after local verification.
-- Merge, deploy, TL-07 and force push remain unauthorized.
+- No remote action is implied by checklist initialization.
 
 ## Handoff Notes
 
-- Preserve the invitation-lifecycle remediation at the reviewed checkpoint.
-- Preserve `apps/dev-preview-web/src/.DS_Store` as unrelated Owner material.
-- Do not reopen Quality merely because a passing owner-scoped run is near its
-  unchanged 240-second contract.
+- Branch creation/switching is explicit and occurred before this command.
+- Preserve `apps/dev-preview-web/src/.DS_Store`; it is unrelated and remains
+  untracked.
+- No product, schema, runtime or local data write is authorized in iteration 1.
 
 ## Closure Predicate
 
-The reconciled TL-06 branch preserves all authorized product and invitation
-semantics; focused and canonical full verification pass on one exact HEAD;
-fresh PR #69 run-1/run-2 materially execute owner-scoped 8/8 and TL-06 3/3,
-comparison and promotion gate pass; security/architectural review has no
-material findings; merge and exact-main closure remain separately authorized.
+TL-07 readiness is reviewable when the current implementation and legacy data
+are truthfully audited, the V1 command/security/migration/UI/test contracts are
+implementation-ready, all unresolved Owner decisions are explicit, and the
+documentation-only gates pass. This does not authorize implementation.
