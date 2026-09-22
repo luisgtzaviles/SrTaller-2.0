@@ -17,4 +17,3 @@ export class LocalRegistrationEmailDelivery implements RegistrationEmailDelivery
     return Object.freeze({ adapter: 'local', captured: this.#messages.length, messages: '[REDACTED]' });
   }
 }
-

@@ -8,7 +8,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-04-public-registration
 base_sha: 07a954ea7c07304ea490f9d79edecaffa69576c5
-status: READY_FOR_PROMOTION
+status: PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -19,15 +19,15 @@ Sprint: NONE
 
 Current PBI: NONE
 
-Overall state: Local candidate verified / Ready for authorized remote promotion
+Overall state: Remote promotion / Authoritative CI coverage remediation
 
 Progress: 16 / 16
 
-Current work: Stopped at the local promotion checkpoint
+Current work: Ensure TL-04 PostgreSQL material runs in authoritative CI
 
-Next block: Remote promotion only after explicit Owner authorization
+Next block: Revalidate the remediated exact HEAD and authoritative remote gates
 
-Blockers: none; `TL4D-001–007` approved by Owner
+Blockers: authoritative CI initially omitted the TL-04 PostgreSQL material suite
 
 Last updated: 2026-09-21
 
@@ -91,20 +91,22 @@ grant without gaining a path to choose Tenant, identity, Role or capabilities.
 
 ## Current
 
-All eight blocks are materialized. PostgreSQL 18.4, concurrency/replay,
-retention, provider contracts, Chrome responsive/accessibility proof and the
-exact-candidate full gate are GREEN. TL-04 is ready for an explicitly
-authorized remote promotion; no remote action has occurred.
+All eight product blocks are materialized. During the authorized remote
+promotion, PR #67 exposed that the authoritative workflow did not execute the
+TL-04 PostgreSQL material suite. The same candidate branch is being remediated
+so the required material suite runs in both authoritative legs.
 
 ## Next
 
-Await explicit Owner authorization for remote promotion. TL-05 remains
-unstarted.
+Revalidate the amended exact HEAD, push normally and require all authoritative
+PR gates plus the TL-04 PostgreSQL suite to pass. TL-05 remains unstarted.
 
 ## Blockers
 
-- None currently. Production remains fail-closed until approved legal content,
-  Resend secret and verified sender/domain are configured operationally.
+- Remote promotion cannot complete until authoritative CI executes and passes
+  the TL-04 PostgreSQL material suite. Production remains fail-closed until
+  approved legal content, Resend secret and verified sender/domain are
+  configured operationally.
 
 ## Important Discoveries
 
@@ -137,7 +139,8 @@ unstarted.
 ## Remote Actions / Authorization
 
 - Local implementation, focused tests and logical commits are authorized.
-- Push, PR, merge and deploy are not authorized.
+- Push and one Draft PR are authorized for this promotion cycle. Merge and
+  deploy remain unauthorized.
 
 ## Handoff Notes
 

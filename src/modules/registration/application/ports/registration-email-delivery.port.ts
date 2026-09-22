@@ -16,4 +16,3 @@ export type RegistrationEmailDeliveryResult = Readonly<{
 export interface RegistrationEmailDeliveryPort {
   deliver(message: RegistrationEmailMessage): Promise<RegistrationEmailDeliveryResult>;
 }
-

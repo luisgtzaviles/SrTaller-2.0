@@ -4,4 +4,3 @@ export interface RegistrationModuleContract {
   readonly module: 'registration';
   readonly access: AccessModuleContract;
 }
-
