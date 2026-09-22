@@ -3,18 +3,19 @@
 ## Estado
 
 - **Work Unit:** TL-05 — Branch Management V1 + Tenant Activation.
-- **Iteración:** readiness aprobada; implementación local de bloques 2–9
-  autorizada.
-- **Tipo / riesgo:** `DISCOVERY` / `ARCHITECTURAL`.
+- **Iteración:** implementación local materializada; candidato en verificación
+  final.
+- **Tipo / riesgo:** `PRODUCT` / `ARCHITECTURAL`.
 - **Dependencias satisfechas:** ADR-015, Tenant Lifecycle MVP y TL-02–04
   integrados y cerrados.
-- **Resultado:** `READY FOR IMPLEMENTATION`; `TL5D-001–004` están aprobadas y
-  los bloques 2–9 fueron autorizados en la misma Work Unit.
+- **Resultado:** bloques 2–8 materializados y probados; bloque 9 congela
+  documentación, evidencia y el gate completo antes de promoción.
 - **Fuera de alcance:** TL-06, Station enrollment, billing, planes, Super Admin,
   hard delete y cambios de producto no descritos aquí.
 
-Este documento prepara una extensión del agregado Branch existente. No crea
-endpoints, tablas, migraciones, UI, eventos ni cambios de datos.
+Este documento definió y ahora registra la extensión material del agregado
+Branch existente. TL-05 conserva el owner `stations` y no crea un agregado
+Branch paralelo.
 
 ## 1. Auditoría de la implementación Branch actual
 
@@ -60,7 +61,8 @@ ni deseado en V1.
 
 ### 1.3 Datos locales observados, sin writes
 
-La inspección read-only de PostgreSQL 18.4 encontró 81 migraciones:
+La inspección inicial read-only de PostgreSQL 18.4 encontró 81 migraciones; la
+implementación TL-05 eleva el manifest gobernado a 84:
 
 | Tenant | Estado | Branches | Activas | Admin efectivo |
 |---|---:|---:|---:|---:|
@@ -439,13 +441,31 @@ ADR nuevo.
   timezone, UI y relaciones operacionales completas.
 - Modelo, comandos, transacción, mutex de última Branch, migración, eventos,
   bloques y pruebas definidos.
-- Producto, schema y datos permanecen sin cambios.
+- Producto y schema TL-05 están materializados; el walkthrough sólo añadió
+  datos sintéticos locales autorizados.
 - `TL5D-001–003` aprobadas y registradas.
 - `TL5D-004` aprobada con mapping exacto y fail-closed.
 - Implementación local de bloques 2–9 autorizada; promoción permanece separada.
 - TL-06 no está iniciado.
 
-## 17. Readiness
+## 17. Resultado de implementación
+
+- Branch V1 persiste nombre, timezone IANA, lifecycle, versión y timestamps;
+- create/update/deactivate/reactivate usan journal idempotente y audit
+  append-only dentro de una transacción `SERIALIZABLE`;
+- la activación `ONBOARDING -> ACTIVE` conserva ownership Tenancy mediante un
+  runtime público estrecho y contexto transaccional opaco;
+- el mutex Tenant impide desactivar concurrentemente la última Branch activa;
+- Admin API exige capabilities explícitas y Level 2 para lifecycle;
+- el path operacional anterior conserva lectura de timezone y ya no escribe;
+- Admin login/shell/onboarding/lista/edición/lifecycle pasaron proof Chrome en
+  desktop, 768, 640, light/dark y teclado;
+- PostgreSQL TL-05 pasa `3/3`, 84 migraciones y rerun `0 pending`.
+
+La evidencia local está en
+[`docs/quality/evidence/tl-05/`](../../quality/evidence/tl-05/README.md).
+
+## 18. Readiness
 
 TL-05 es compatible con ADR-015 y puede extender los owners existentes sin un
 nuevo agregado, capability bundle o mecanismo de autenticación. El diseño
@@ -454,4 +474,4 @@ No queda una decisión Owner pendiente antes de implementar. Los nombres legacy
 son identificadores explícitos de fixtures de desarrollo y no afirmaciones
 físicas ni datos Avicell.
 
-**TL-05 READINESS: `READY FOR IMPLEMENTATION`.**
+**TL-05 IMPLEMENTATION: `FINAL VERIFICATION IN PROGRESS`.**
