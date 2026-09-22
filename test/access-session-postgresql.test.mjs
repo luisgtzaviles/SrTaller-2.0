@@ -242,7 +242,7 @@ async function seed(admin) {
     [tenantA],
   );
   await admin.query('insert into branches (tenant_id, branch_id, active, created_at) values ($1,$2,true,now())', [tenantA, branchA]);
-  await admin.query("insert into stations (tenant_id,station_id,status,created_at,updated_at) values ($1,$2,'active',now(),now()),($1,$3,'active',now(),now())", [tenantA, stationA, stationASecond]);
+  await admin.query("insert into stations (tenant_id,station_id,display_name,status,created_at,updated_at) values ($1,$2,'Session Station A','active',now(),now()),($1,$3,'Session Station A2','active',now(),now())", [tenantA, stationA, stationASecond]);
   await admin.query('insert into station_bindings (tenant_id,station_id,branch_id,created_at) values ($1,$2,$3,now()),($1,$4,$3,now())', [tenantA, stationA, branchA, stationASecond]);
   await admin.query("insert into station_credentials (credential_id,credential_hash,tenant_id,station_id,created_at) values ($1,'station-a-hash',$2,$3,now()),($4,'station-a-alternate-hash',$2,$3,now()),($5,'station-a-second-hash',$2,$6,now())", [stationCredentialA, tenantA, stationA, stationCredentialAAlternate, stationCredentialASecond, stationASecond]);
   await admin.query("insert into users (tenant_id,user_id,display_name,operational_identifier,status,version,created_at,updated_at) values ($1,$2,'Operador A','operador-a','active',0,now(),now()),($1,$3,'Operador A2','operador-a2','active',0,now(),now())", [tenantA, userA, userASecond]);
@@ -267,7 +267,7 @@ async function seedTenantB(admin) {
      )`,
     [tenantB, branchB],
   );
-  await admin.query("insert into stations (tenant_id,station_id,status,created_at,updated_at) values ($1,$2,'active',now(),now())", [tenantB, stationB]);
+  await admin.query("insert into stations (tenant_id,station_id,display_name,status,created_at,updated_at) values ($1,$2,'Session Station B','active',now(),now())", [tenantB, stationB]);
   await admin.query('insert into station_bindings (tenant_id,station_id,branch_id,created_at) values ($1,$2,$3,now())', [tenantB, stationB, branchB]);
   await admin.query("insert into station_credentials (credential_id,credential_hash,tenant_id,station_id,created_at) values ($1,'station-b-hash',$2,$3,now())", [stationCredentialB, tenantB, stationB]);
   await admin.query("insert into users (tenant_id,user_id,display_name,operational_identifier,status,version,created_at,updated_at) values ($1,$2,'Operador B','operador-b','active',0,now(),now())", [tenantB, userA]);

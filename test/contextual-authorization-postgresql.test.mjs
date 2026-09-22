@@ -237,10 +237,10 @@ async function seedMaterialContext(admin) {
     [tenantA, branchA, branchA2, tenantB, branchB],
   );
   await admin.query(
-    `insert into stations (tenant_id, station_id, status, created_at, updated_at)
+    `insert into stations (tenant_id, station_id, display_name, status, created_at, updated_at)
      values
-       ($1, $2, 'active', now(), now()),
-       ($3, $4, 'active', now(), now())`,
+       ($1, $2, 'Authorization Station A', 'active', now(), now()),
+       ($3, $4, 'Authorization Station B', 'active', now(), now())`,
     [tenantA, stationA, tenantB, stationB],
   );
   await admin.query(

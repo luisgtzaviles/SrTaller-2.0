@@ -53,6 +53,10 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     stations: { owner: 'stations', kind: 'table' },
     station_bindings: { owner: 'stations', kind: 'table' },
     station_credentials: { owner: 'stations', kind: 'table' },
+    station_enrollment_challenges: { owner: 'stations', kind: 'table' },
+    station_enrollment_consumptions: { owner: 'stations', kind: 'table' },
+    station_administration_commands: { owner: 'stations', kind: 'table' },
+    station_audit_events: { owner: 'stations', kind: 'table' },
     repairs: { owner: 'repairs', kind: 'table' },
     customers: { owner: 'customers', kind: 'table' },
     customer_contact_phones: { owner: 'customers', kind: 'table' },
@@ -265,6 +269,7 @@ test('productive migration root remains exact and governed', async () => {
       '20260921201000_access_enable_admin_role_lifecycle.ts',
       '20260921202000_access_enforce_global_pending_invitation_email.ts',
       '20260922090000_access_bound_admin_invitation_challenge_expiry.ts',
+      '20260922130000_stations_create_inventory_enrollment_authority.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');
@@ -290,7 +295,7 @@ test('database schema types are immutable and require externally supplied identi
   assert.match(schema, /readonly branch_id: ImmutableColumn<string>/u);
   assert.match(schema, /readonly time_zone: MutableColumn<string>/u);
   assert.match(schema, /readonly active: DefaultedMutableColumn<boolean>/u);
-  assert.match(schema, /readonly revoked_at: ImmutableColumn<Date \| null>/u);
+  assert.match(schema, /readonly revoked_at: MutableColumn<Date \| null>/u);
   assert.match(schema, /readonly created_at: ImmutableColumn<Date>/u);
   assert.doesNotMatch(schema, /Generated/u);
 });

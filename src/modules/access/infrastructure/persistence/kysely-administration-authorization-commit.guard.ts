@@ -11,7 +11,7 @@ implements AdministrationAuthorizationCommitGuardPort {
     'access_matrix.manage',
   ] as const);
 
-  private async hasTenantWideCapability(
+  private async hasCapability(
     scope: Parameters<AdministrationAuthorizationCommitGuardPort['confirmCurrent']>[0],
     capability: Parameters<AdministrationAuthorizationCommitGuardPort['confirmCurrent']>[1],
     transactionContext: object,
@@ -33,7 +33,7 @@ implements AdministrationAuthorizationCommitGuardPort {
       transactionContext,
       'access',
       async (database) => {
-        const grant = await database
+        let query = database
           .selectFrom('access_role_assignments')
           .innerJoin('access_roles', (join) => join
             .onRef('access_roles.tenant_id', '=', 'access_role_assignments.tenant_id')
@@ -41,22 +41,44 @@ implements AdministrationAuthorizationCommitGuardPort {
           .innerJoin('access_role_capabilities', (join) => join
             .onRef('access_role_capabilities.tenant_id', '=', 'access_roles.tenant_id')
             .onRef('access_role_capabilities.role_id', '=', 'access_roles.role_id'))
-          .select('access_role_assignments.assignment_id')
+          .select([
+            'access_role_assignments.assignment_id',
+            'access_role_assignments.assignment_scope',
+            'access_role_assignments.branch_id',
+          ])
           .where('access_role_assignments.tenant_id', '=', scope.tenantId)
           .where('access_role_assignments.user_id', '=', scope.userId)
-          .where('access_role_assignments.assignment_scope', '=', 'TENANT_WIDE')
-          .where('access_role_assignments.branch_id', 'is', null)
           .where('access_role_assignments.status', '=', 'active')
           .where('access_role_assignments.revoked_at', 'is', null)
           .where('access_roles.status', '=', 'active')
-          .where('access_role_capabilities.capability_code', '=', capability)
+          .where('access_role_capabilities.capability_code', '=', capability);
+        const branchIds = scope.branchIds;
+        query = branchIds === undefined
+          ? query.where('access_role_assignments.assignment_scope', '=', 'TENANT_WIDE')
+            .where('access_role_assignments.branch_id', 'is', null)
+          : query.where((expression) => expression.or([
+            expression('access_role_assignments.assignment_scope', '=', 'TENANT_WIDE'),
+            expression.and([
+              expression('access_role_assignments.assignment_scope', '=', 'BRANCH_RESTRICTED'),
+              expression('access_role_assignments.branch_id', 'in', [...branchIds]),
+            ]),
+          ]));
+        const grants = await query
           .forShare([
             'access_role_assignments',
             'access_roles',
             'access_role_capabilities',
           ])
-          .executeTakeFirst();
-        return grant !== undefined;
+          .execute();
+        if (grants.some((grant) =>
+          grant.assignment_scope === 'TENANT_WIDE' && grant.branch_id === null,
+        )) return true;
+        if (branchIds === undefined || branchIds.length === 0) return false;
+        const grantedBranches = new Set(grants
+          .filter((grant) => grant.assignment_scope === 'BRANCH_RESTRICTED')
+          .map((grant) => grant.branch_id)
+          .filter((branchId): branchId is string => branchId !== null));
+        return branchIds.every((branchId) => grantedBranches.has(branchId));
       },
     );
   }
@@ -66,7 +88,7 @@ implements AdministrationAuthorizationCommitGuardPort {
     capability: Parameters<AdministrationAuthorizationCommitGuardPort['confirmCurrent']>[1],
     transactionContext: object,
   ): Promise<boolean> {
-    return this.hasTenantWideCapability(scope, capability, transactionContext);
+    return this.hasCapability(scope, capability, transactionContext);
   }
 
   async confirmContinuity(

@@ -127,10 +127,17 @@ export interface AdminAuthorizationRequirement {
   readonly capability: CapabilityCode;
   readonly kind: ProtectedOperationKind;
   readonly requiresRecentReauthentication?: boolean;
+  /** Exact Branch resources affected by the command. */
+  readonly branchIds?: readonly string[];
+  /** Allows list/read projection from Branch-restricted assignments. */
+  readonly allowBranchRestricted?: boolean;
 }
 
 export interface AdminAuthorizationCommitGuard {
-  confirmCurrent(transactionContext: object): Promise<boolean>;
+  confirmCurrent(
+    transactionContext: object,
+    exactBranchIds?: readonly string[],
+  ): Promise<boolean>;
   confirmEffectiveTenantAdmin(transactionContext: object): Promise<boolean>;
 }
 
@@ -142,6 +149,10 @@ export interface AuthorizedAdminContext {
   readonly userDisplayName: string;
   readonly capability: CapabilityCode;
   readonly reauthenticatedAt: string | null;
+  /** null means tenant-wide authority; otherwise exact authorized Branch IDs. */
+  readonly authorizedBranchIds: readonly string[] | null;
+  /** Digest of the effective role/assignment revisions used for enrollment issue. */
+  readonly authorityDigest: Uint8Array;
   readonly commitGuard: AdminAuthorizationCommitGuard;
 }
 

@@ -112,3 +112,4 @@ export interface StationsModuleContract {
   readonly module: 'stations';
   readonly tenancy: TenancyModuleContract;
 }
+export * from './application/station-administration.runtime.js';

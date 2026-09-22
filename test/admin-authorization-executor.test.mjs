@@ -9,7 +9,7 @@ const tenantId = 'b0000000-0000-4000-8000-000000000001';
 const userId = 'b0000000-0000-4000-8000-000000000002';
 const sessionId = 'b0000000-0000-4000-8000-000000000003';
 
-function fixture({ capabilities = ['users.read'], reauthenticatedAt = null } = {}) {
+function fixture({ capabilities = ['users.read'], reauthenticatedAt = null, branchIds = null } = {}) {
   const material = new NodeAdminSessionToken().issue();
   const calls = { commitSession: 0, commitCapability: 0, resolve: 0 };
   const session = {
@@ -31,10 +31,14 @@ function fixture({ capabilities = ['users.read'], reauthenticatedAt = null } = {
     capabilities: async (resolvedTenant, resolvedUser) => {
       assert.equal(resolvedTenant, tenantId); assert.equal(resolvedUser, userId); return capabilities;
     },
+    capabilityAuthority: async (resolvedTenant, resolvedUser, capability) => {
+      assert.equal(resolvedTenant, tenantId); assert.equal(resolvedUser, userId);
+      return capabilities.includes(capability) ? { branchIds, digest: Buffer.alloc(32, 7) } : null;
+    },
   } };
   const guard = { confirmCurrent: async (scope, capability) => {
     calls.commitCapability += 1;
-    assert.deepEqual(scope, { tenantId, userId });
+    assert.deepEqual(scope, branchIds === null ? { tenantId, userId } : { tenantId, userId, branchIds });
     return capabilities.includes(capability);
   } };
   const evidence = {
@@ -86,4 +90,19 @@ test('Level-2 requirement needs recent password reauthentication at request and 
   await recent.executor.execute(recent.evidence, { capability: 'users.read', kind: 'state-change', requiresRecentReauthentication: true }, async (context) => {
     assert.equal(await context.commitGuard.confirmCurrent({}), true);
   });
+});
+
+test('Branch-restricted Admin authority is exact and cannot be elevated to Tenant-wide', async () => {
+  const branchA = 'b0000000-0000-4000-8000-000000000011';
+  const branchB = 'b0000000-0000-4000-8000-000000000012';
+  const scoped = fixture({ capabilities: ['stations.read'], branchIds: [branchA] });
+  const result = await scoped.executor.execute(scoped.evidence, { capability: 'stations.read', kind: 'read', allowBranchRestricted: true }, async (context) => {
+    assert.deepEqual(context.authorizedBranchIds, [branchA]);
+    assert.equal(await context.commitGuard.confirmCurrent({}, [branchA]), true);
+    assert.equal(await context.commitGuard.confirmCurrent({}, [branchB]), false);
+    return 'scoped';
+  });
+  assert.equal(result, 'scoped');
+  await assert.rejects(scoped.executor.execute(scoped.evidence, { capability: 'stations.read', kind: 'read' }, async () => undefined), (error) => error instanceof ContextualAuthorizationError && error.code === 'ACCESS_DENIED');
+  await assert.rejects(scoped.executor.execute(scoped.evidence, { capability: 'stations.read', kind: 'read', branchIds: [branchB] }, async () => undefined), (error) => error instanceof ContextualAuthorizationError && error.code === 'ACCESS_DENIED');
 });

@@ -1029,7 +1029,8 @@
       "src/infrastructure/database/migrations/20260921200000_access_create_admin_invitations.ts",
       "src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts",
       "src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts",
-      "src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts"
+      "src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts",
+      "src/infrastructure/database/migrations/20260922130000_stations_create_inventory_enrollment_authority.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1777,6 +1778,21 @@
           "references": [],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260922130000_stations_create_inventory_enrollment_authority.ts": {
+          "owner": "stations",
+          "tables": [
+            "station_administration_commands",
+            "station_audit_events",
+            "station_bindings",
+            "station_credentials",
+            "station_enrollment_challenges",
+            "station_enrollment_consumptions",
+            "stations"
+          ],
+          "references": ["access_admin_identities", "access_admin_sessions", "branches", "tenants", "users"],
+          "functions": ["stations_reject_audit_mutation"],
+          "triggers": ["station_audit_events_append_only"]
         }
       }
     },
@@ -1815,6 +1831,10 @@
           "StationTable",
           "StationBindingTable",
           "StationCredentialTable",
+          "StationEnrollmentChallengeTable",
+          "StationEnrollmentConsumptionTable",
+          "StationAdministrationCommandTable",
+          "StationAuditEventTable",
           "UserTable",
           "NewRepairFormMode",
           "UserPreferencesTable",
@@ -2618,6 +2638,10 @@
         "owner": "stations",
         "kind": "table"
       },
+      "station_enrollment_challenges": { "owner": "stations", "kind": "table" },
+      "station_enrollment_consumptions": { "owner": "stations", "kind": "table" },
+      "station_administration_commands": { "owner": "stations", "kind": "table" },
+      "station_audit_events": { "owner": "stations", "kind": "table" },
       "repairs": {
         "owner": "repairs",
         "kind": "table"

@@ -251,15 +251,18 @@ try {
     );
   }
   await client.query(
-    `INSERT INTO stations (tenant_id, station_id, status, created_at, updated_at, revoked_at)
-     VALUES ($1::uuid, $2::uuid, 'active', $3::timestamptz, $3::timestamptz, null)
-     ON CONFLICT (tenant_id, station_id) DO UPDATE SET status = 'active', updated_at = EXCLUDED.updated_at, revoked_at = null`,
+    `INSERT INTO stations (tenant_id, station_id, display_name, status, created_at, updated_at, revoked_at)
+     VALUES ($1::uuid, $2::uuid, 'SR Taller Fixture — Dispositivo 1', 'active', $3::timestamptz, $3::timestamptz, null)
+     ON CONFLICT (tenant_id, station_id) DO UPDATE SET display_name = EXCLUDED.display_name, status = 'active', updated_at = EXCLUDED.updated_at, revoked_at = null`,
     [rows.tenant.tenantId, LOCAL_STATION_ID, rows.tenant.createdAt],
   );
   await client.query(
     `INSERT INTO station_bindings (tenant_id, station_id, branch_id, revoked_at, created_at)
-     VALUES ($1::uuid, $2::uuid, $3::uuid, null, $4::timestamptz)
-     ON CONFLICT (tenant_id, station_id) DO UPDATE SET branch_id = EXCLUDED.branch_id, revoked_at = null`,
+     SELECT $1::uuid, $2::uuid, $3::uuid, null, $4::timestamptz
+     WHERE NOT EXISTS (
+       SELECT 1 FROM station_bindings
+       WHERE tenant_id = $1::uuid AND station_id = $2::uuid AND revoked_at IS NULL
+     )`,
     [rows.tenant.tenantId, LOCAL_STATION_ID, rows.branches[0].branchId, rows.tenant.createdAt],
   );
   await client.query(

@@ -19,14 +19,31 @@ const jsonMediaType = /^application\/json(?:\s*;|$)/iu;
 function authenticationRequired(): never { throw new ContextualAuthorizationError('AUTHENTICATION_REQUIRED'); }
 function accessDenied(): never { throw new ContextualAuthorizationError('ACCESS_DENIED'); }
 
-function requirement(value: AdminAuthorizationRequirement): Readonly<Required<AdminAuthorizationRequirement>> {
+type NormalizedRequirement = Readonly<{
+  capability: ReturnType<typeof parseCapabilityCode>;
+  kind: 'read' | 'state-change';
+  requiresRecentReauthentication: boolean;
+  branchIds: readonly string[] | null;
+  allowBranchRestricted: boolean;
+}>;
+
+function requirement(value: AdminAuthorizationRequirement): NormalizedRequirement {
   try {
     if (value?.kind !== 'read' && value?.kind !== 'state-change') accessDenied();
     if (value.requiresRecentReauthentication !== undefined && typeof value.requiresRecentReauthentication !== 'boolean') accessDenied();
+    const branchIds = value.branchIds === undefined
+      ? null
+      : Object.freeze([...new Set(value.branchIds.map((branchId) => {
+        if (typeof branchId !== 'string' || !/^[0-9a-f-]{36}$/u.test(branchId)) accessDenied();
+        return branchId;
+      }))].sort());
+    if (value.allowBranchRestricted !== undefined && typeof value.allowBranchRestricted !== 'boolean') accessDenied();
     return Object.freeze({
       capability: parseCapabilityCode(value.capability),
       kind: value.kind,
       requiresRecentReauthentication: value.requiresRecentReauthentication ?? false,
+      branchIds,
+      allowBranchRestricted: value.allowBranchRestricted ?? false,
     });
   } catch (error: unknown) {
     if (error instanceof ContextualAuthorizationError) throw error;
@@ -82,8 +99,15 @@ export class AdminAuthorizationExecutorService implements AdminAuthorizationExec
           csrfCookie: cookies.csrf,
           touch: true,
         });
-      const capabilities = await this.runtime.admin.capabilities(session.tenantId, session.userId);
-      if (!capabilities.includes(required.capability)) accessDenied();
+      const authority = await this.runtime.admin.capabilityAuthority(session.tenantId, session.userId, required.capability);
+      if (!authority) accessDenied();
+      if (
+        authority.branchIds !== null &&
+        (
+          (required.branchIds === null && !required.allowBranchRestricted) ||
+          (required.branchIds !== null && !required.branchIds.every((branchId) => authority.branchIds!.includes(branchId)))
+        )
+      ) accessDenied();
       if (required.requiresRecentReauthentication && !adminSessionHasRecentReauthentication(session, new Date().toISOString())) accessDenied();
 
       const context: AuthorizedAdminContext = Object.freeze({
@@ -94,17 +118,28 @@ export class AdminAuthorizationExecutorService implements AdminAuthorizationExec
         userDisplayName: session.displayName,
         capability: required.capability,
         reauthenticatedAt: session.reauthenticatedAt,
+        authorizedBranchIds: authority.branchIds,
+        authorityDigest: authority.digest,
         commitGuard: Object.freeze({
-          confirmCurrent: async (transactionContext: object) =>
-            await this.runtime.admin.resolve.confirmCurrentAtCommit(
+          confirmCurrent: async (transactionContext: object, exactBranchIds?: readonly string[]) => {
+            if (
+              exactBranchIds !== undefined &&
+              authority.branchIds !== null &&
+              !exactBranchIds.every((branchId) => authority.branchIds!.includes(branchId))
+            ) return false;
+            const scopedBranchIds = exactBranchIds ?? required.branchIds ?? (required.allowBranchRestricted ? authority.branchIds : null);
+            return await this.runtime.admin.resolve.confirmCurrentAtCommit(
               session,
               required.requiresRecentReauthentication,
               transactionContext,
             ) && await this.capabilityGuard.confirmCurrent(
-              { tenantId: session.tenantId as TenantId, userId: session.userId },
+              (() => scopedBranchIds === null
+                  ? { tenantId: session.tenantId as TenantId, userId: session.userId }
+                  : { tenantId: session.tenantId as TenantId, userId: session.userId, branchIds: scopedBranchIds })(),
               required.capability,
               transactionContext,
-            ),
+            );
+          },
           confirmEffectiveTenantAdmin: async (transactionContext: object) =>
             this.capabilityGuard.confirmEffectiveTenantAdmin(
               session.tenantId as TenantId,
