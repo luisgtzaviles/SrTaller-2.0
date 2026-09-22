@@ -19,13 +19,13 @@ Sprint: NONE
 
 Current PBI: NONE
 
-Overall state: Implementation authorized / Active
+Overall state: Implementation complete / Final verification in progress
 
-Progress: 10 / 16
+Progress: 15 / 16
 
-Current work: Block 3 — TL-02 password handoff and TL-03 grant source
+Current work: Block 8 — exact-candidate authoritative `verify:full`
 
-Next block: Block 4 — challenge lifecycle, resend and abuse controls
+Next block: Reconcile `READY_FOR_PROMOTION` only after the exact candidate is GREEN
 
 Blockers: none; `TL4D-001–007` approved by Owner
 
@@ -82,21 +82,23 @@ grant without gaining a path to choose Tenant, identity, Role or capabilities.
 - [x] Record Owner decisions `TL4D-001–007` and implementation authority.
 - [x] Block 1: contract/module and narrow Access bootstrap executor.
 - [x] Block 2: additive persistence, lifecycle/CAS, cleanup and audit.
-- [~] Block 3: TL-02 password handoff and TL-03 grant source.
-- [ ] Block 4: challenge lifecycle, resend and abuse controls.
-- [ ] Block 5: delivery port, local/test and Resend adapters.
-- [ ] Block 6: public HTTP boundary and sanitized errors.
-- [ ] Block 7: public registration/verification UI and accessibility.
-- [ ] Block 8: PostgreSQL/E2E/isolation, docs and promotion verification.
+- [x] Block 3: TL-02 password handoff and TL-03 grant source.
+- [x] Block 4: challenge lifecycle, resend and abuse controls.
+- [x] Block 5: delivery port, local/test and Resend adapters.
+- [x] Block 6: public HTTP boundary and sanitized errors.
+- [x] Block 7: public registration/verification UI and accessibility.
+- [~] Block 8: PostgreSQL/E2E/isolation, docs and promotion verification.
 
 ## Current
 
-Owner decisions and implementation authority are recorded. Block 3 is active;
-no later block is credited before its focused acceptance evidence is green.
+All product blocks are materialized. PostgreSQL 18.4, concurrency/replay,
+retention, provider contracts and Chrome responsive/accessibility proof are
+GREEN. The exact-candidate full gate is running before promotion readiness can
+be credited.
 
 ## Next
 
-Complete password protection, immutable grant construction and bootstrap handoff.
+Run `verify:full`, reconcile the final candidate and stop before remote writes.
 TL-05 remains unstarted.
 
 ## Blockers
@@ -123,6 +125,9 @@ TL-05 remains unstarted.
 - [x] Secret-pattern scan.
 - [x] `git diff --check`.
 - [x] `work-unit:check --mode ACTIVE`.
+- [x] PostgreSQL 18.4 TL-04 material suite `3/3`; 81 migrations and rerun `0 pending`.
+- [x] Chrome desktop/768/640, light/dark and keyboard proof.
+- [ ] Exact-candidate `verify:full`.
 
 ## Promotion Gates
 

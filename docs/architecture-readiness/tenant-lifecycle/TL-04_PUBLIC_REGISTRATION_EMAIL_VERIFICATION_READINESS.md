@@ -3,13 +3,14 @@
 ## Estado
 
 - **Work Unit:** TL-04 — Public Registration + Email Verification.
-- **Iteración:** discovery/readiness; no implementa funcionalidad de producto.
-- **Tipo / riesgo:** `DISCOVERY` / `ARCHITECTURAL`.
-- **Resultado:** `OWNER DECISIONS REQUIRED`.
+- **Iteración:** contrato aprobado y plan de implementación.
+- **Tipo / riesgo:** `IMPLEMENTATION` / `ARCHITECTURAL`.
+- **Resultado:** `IMPLEMENTATION AUTHORIZED`; la materialización y sus gates
+  viven en el Work Unit TL-04.
 - **Dependencias satisfechas:** ADR-015, contrato Tenant Lifecycle MVP, TL-02 y
   TL-03 están integrados y cerrados.
-- **Bloqueo de implementación:** seleccionar transporte de correo y aprobar
-  TTL/retención, documentos legales y host público conforme a la sección 15.
+- **Bloqueo de implementación:** ninguno; `TL4D-001–007` fueron resueltos por
+  el Owner conforme a la sección 15.
 
 Este documento diseña la conversión segura de un visitante anónimo en la
 autoridad interna e inmutable que TL-03 puede consumir. No crea endpoints,
@@ -168,9 +169,10 @@ Adapters previstos:
   habilitar un endpoint productivo;
 - **production/Preview:** provider aprobado y configuración externa fail-closed.
 
-No existe provider aprobado hoy. Su selección debe quedar en DEC de integración
-con remitente/dominio, secreto, límites, idempotencia, entregabilidad, costo y
-ruta de reemplazo.
+Resend es el provider transaccional V1 aprobado detrás del port reemplazable,
+con sender `SR Taller <no-reply@srtaller.com>`. Su API key es configuración
+externa; verificación DNS/dominio es prerequisito operacional, nunca autoridad
+de aplicación. Esta selección acotada no decide mensajería general.
 
 ### 6.2 Entrega y fallos
 
@@ -393,17 +395,17 @@ No se inicia TL-05 ni se crea Branch durante estos bloques.
 - `verify:full`, review `ARCHITECTURAL`, PR CI y exact-main sólo en fases
   posteriores autorizadas.
 
-## 15. Decisiones Owner requeridas
+## 15. Decisiones Owner aprobadas
 
-| ID | Decisión | Recomendación |
-|---|---|---|
-| TL4D-001 | Provider transaccional y sender/domain de verificación | Aprobar evaluación/selección de un provider reemplazable y un subdominio remitente dedicado; no reutilizar una integración de marketing. |
-| TL4D-002 | TTL del challenge y vigencia del attempt/grant | Challenge **30 min**; attempt `PENDING` **24 h**; estado `VERIFIED` retryable **24 h** antes de fail-closed/soporte. |
-| TL4D-003 | Retención/purga | Limpiar verifier al consumir; purgar secretos/PII de expirados en máximo **24 h**; conservar metadata terminal sanitizada **30 días**. Retención durable de acceptance/audit requiere confirmación legal. |
-| TL4D-004 | Rate limits públicos y señal de red | Aprobar defaults configurables: register 5/15 min por email principal y 30/h por señal de red; resend 1/60 s y 5/24 h por email; verify inválido 10/15 min por token/señal. Usar HMAC de IP truncada/efímera con TTL corto, sin IP raw ni user-agent; sin CAPTCHA inicial. |
-| TL4D-005 | Host/rutas públicas | Usar `admin.srtaller.com/registro` para MVP y compartir deployment/componentes; no crear Landing ni subdominio elegido por usuario. |
-| TL4D-006 | Terms/privacy publicables | Proveer textos/URLs, claves y versiones iniciales; confirmar si una acción explícita acepta ambos documentos o requieren checkboxes separados. Recomendado: confirmaciones separadas y evidencia por documento. |
-| TL4D-007 | Tamaño de entrega | Mantener backend, email adapter y UI mínima dentro de un solo TL-04 candidate con bloques/commits separados; no promover un endpoint público incompleto. |
+| ID | Dirección aprobada |
+|---|---|
+| TL4D-001 | Resend detrás de `EmailDeliveryPort`; sender `SR Taller <no-reply@srtaller.com>`; secretos sólo externos y fallo de delivery sin corrupción del Attempt. |
+| TL4D-002 | Challenge 60 minutos; Attempt pendiente 24 horas; resend genera un challenge nuevo y supersede todos los anteriores. |
+| TL4D-003 | Attempt expirado/no consumido retenible hasta 30 días; material temporal se elimina cuando deja de ser necesario; aceptación durable sobrevive por su asociación eventual. |
+| TL4D-004 | Resend mínimo cada 60 segundos y máximo 5 por hora por Attempt/email normalizado; señal de red sólo HMAC/efímera; verify acotado; sin CAPTCHA V1. |
+| TL4D-005 | Superficie canónica `https://srtaller.com/registro` y `https://srtaller.com/verificar`; handoff `https://admin.srtaller.com/login`; hostname nunca es autoridad Tenant. |
+| TL4D-006 | Terms y Privacy son documentos versionados separados; una aceptación UI puede cubrir ambos, pero la evidencia durable registra cada versión; Production falla cerrado sin bundle publicado. |
+| TL4D-007 | Backend y UI pública mínima viajan en un único Work Unit TL-04; Landing permanece fuera de alcance. |
 
 Las decisiones criptográficas, locks, DTOs, redacción y reutilización TL-02/03
 son ingeniería dentro de contratos aceptados. No requieren reabrir ADR-015.
@@ -418,15 +420,17 @@ arquitectónico que exija otro ADR.
 - [x] Bootstrap handoff, replay y concurrencia definidos.
 - [x] Abuse, terms/privacy, schema, UI y tests delimitados.
 - [x] Bloques de implementación preparados.
-- [!] Provider, TTL/retención, red/network signal, host y documentos legales
-  requieren decisión Owner.
-- [ ] Autorización de implementación TL-04.
-- [ ] Implementación, verificación, review, promoción e integración.
+- [x] Provider, TTL/retención, red/network signal, host y documentos legales
+  resueltos por `TL4D-001–007`.
+- [x] Autorización de implementación TL-04.
+- [~] Implementación y verificación local en curso; review, promoción e
+  integración requieren fases y autoridad posteriores.
 
 ## 17. Readiness
 
 TL-04 es técnicamente coherente con ADR-015 y no necesita reabrir TL-02/TL-03.
-La implementación debe fallar cerrada hasta que `TL4D-001–007` se aprueben o
-el Owner disponga explícitamente cuáles son decisiones de ingeniería delegadas.
+`TL4D-001–007` están aprobadas y el Work Unit puede materializar el contrato;
+Production sigue fail-closed sin bundle legal, secreto Resend y sender/dominio
+operacionalmente válidos.
 
-**TL-04 READINESS: `OWNER DECISIONS REQUIRED`.**
+**TL-04 READINESS: `IMPLEMENTATION AUTHORIZED`.**
