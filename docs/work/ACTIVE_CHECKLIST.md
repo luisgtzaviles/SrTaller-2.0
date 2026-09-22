@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-06` is implementing its authorized scope.
 - **Overall status:** `ACTIVE` implementation.
-- **Progress:** readiness `8 / 8`; implementation `0 / 8`.
-- **Current work:** Block 1 — persistence/domain invitation foundation.
-- **Next block:** Block 2 — shared email delivery and invitation dispatch.
+- **Progress:** readiness `8 / 8`; implementation `1 / 8`.
+- **Current work:** Block 2 — shared email delivery and invitation dispatch.
+- **Next block:** Block 3 — atomic invitation acceptance and password establishment.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -76,8 +76,8 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Define migrations, audit, HTTP/UI blocks and test plan.
 - [x] Complete focused documentary validation and Owner handoff.
 - [x] Receive explicit Owner implementation authorization.
-- [~] Block 1 — invitation persistence, domain and audit foundation.
-- [ ] Block 2 — TL-04 email transport reuse and durable dispatch.
+- [x] Block 1 — invitation persistence, domain and audit foundation.
+- [~] Block 2 — TL-04 email transport reuse and durable dispatch.
 - [ ] Block 3 — atomic invitation acceptance and password establishment.
 - [ ] Block 4 — Admin Users/Roles authorization and HTTP surface.
 - [ ] Block 5 — last-effective-admin coordinator and Level-2 actions.
@@ -87,13 +87,13 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Current
 
-Owner authorized the complete V1 direction. Block 1 is inspecting the approved
-persistence/domain increment before implementation.
+Invitation storage, grant intent, digest-only challenges, durable dispatch,
+idempotency journal and append-only allowlisted audit are materialized.
 
 ## Next
 
-Materialize invitation persistence/domain with focused tests, then commit the
-coherent block only when green.
+Evolve the TL-04 email delivery contract for invitation-specific messages
+without introducing a second provider abstraction.
 
 ## Blockers
 
