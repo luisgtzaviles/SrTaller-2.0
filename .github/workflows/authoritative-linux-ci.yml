@@ -355,6 +355,7 @@ jobs:
           SR_PIN_PEPPER: NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ
           SR_ADMIN_PASSWORD_PEPPER: RUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUU
           SR_REGISTRATION_ABUSE_PEPPER: SEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISEg
+          SR_RESEND_API_KEY: re_synthetic_full_verification_key
 
       - name: Run compiled UI route smoke
         run: >-
@@ -383,6 +384,7 @@ jobs:
           SR_PIN_PEPPER: NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ
           SR_ADMIN_PASSWORD_PEPPER: RUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUU
           SR_REGISTRATION_ABUSE_PEPPER: SEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISEg
+          SR_RESEND_API_KEY: re_synthetic_full_verification_key
 
       - name: Check whitespace and repository immutability
         shell: bash
