@@ -1,36 +1,26 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: TL-05 — Branch Management V1 + Tenant Activation
-iteration: 2 - Implementation
-type: PRODUCT
-risk: ARCHITECTURAL
-shadow_risk: ARCHITECTURAL
-branch: feature/tl-05-branch-management-readiness
-base_sha: 34029bd4c0a892aba1a202444603bfd9c3c05f96
-status: PROMOTION
+work_unit: QUALITY — Stabilize Owner-Scoped PostgreSQL Verification Runtime
+iteration: 1 - Authorized Start
+type: QUALITY
+risk: SENSITIVE
+shadow_risk: SENSITIVE
+branch: fix/owner-scoped-postgresql-runtime
+base_sha: 81b57994c69ed3584776ff080253f9a772e6425b
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
-last_updated: 2026-09-21
+last_updated: 2026-09-22
 -->
-
-## Status Snapshot
 
 Current PBI: NONE
 
-- **Milestone:** Tenant Lifecycle MVP.
-- **Sprint:** none selected.
-- **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
-- **Overall status:** `PROMOTION`.
-- **Progress:** `9 / 9` implementation blocks complete.
-- **Current work:** remote candidate under authoritative CI and deliberate architectural/security review.
-- **Next block:** complete exact-HEAD CI and review, then stop for Owner merge authorization.
-- **Blockers:** none.
-- **Last updated:** 2026-09-21.
+Dependent candidate preserved: TL-06 at
+`edd9bb4d73dd2eba41eba5aaf6367d8b2dde7850`.
 
 ## Objective
 
-Implement Branch Management V1 and the authoritative ONBOARDING-to-ACTIVE
-Tenant transition through the Tenant Admin Context.
+Make all eight isolated owner-scoped PostgreSQL verification suites complete deterministically within the existing 240-second authoritative harness budget without weakening coverage, isolation or fail-closed behavior.
 
 ## Why
 
@@ -38,131 +28,121 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## In Scope
 
-- Audit the existing Branch aggregate, schema, repositories and operational relationships.
-- Define Branch V1 commands in Tenant Admin Context.
-- Define atomic Tenant activation and last-active-Branch concurrency protection.
-- Define authorization, Level-2 reauth, timezone, migration, audit and minimal Admin UI boundaries.
-- Produce implementation blocks, material test plan and explicit Owner decisions.
-- Materialize the approved schema, commands, HTTP surface, Admin UI and audit.
-- Prove concurrency, authorization, tenant isolation and regression safety.
+- Measure the exact owner-scoped PostgreSQL harness phases and all eight suites.
+- Define the isolation semantics actually required by the accepted contracts.
+- Remove proven duplicated orchestration cost without changing product behavior.
+- Preserve real PostgreSQL 18.4, all assertions, all suites and fail-closed behavior.
+- Add regression protection for suite inventory, isolation, failure attribution,
+  cleanup, authoritative migrations and the unchanged 240-second budget.
+- Demonstrate deterministic focused runs and the canonical full gate locally.
 
 ## Out of Scope
 
-- TL-06, Station enrollment, billing, plans or Super Admin.
-- Push, PR, merge, deploy or infrastructure changes.
+- TL-06 product behavior and its preserved branch/candidate.
+- Timeout increases, retries-to-green, averaging, skips or reduced assertions.
+- TL-07, merge, deploy, GitHub policy and unrelated cleanup.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`TENANT_LIFECYCLE_MVP.md`](../architecture/TENANT_LIFECYCLE_MVP.md)
-- [`ADR-015`](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md)
-- [`MULTITENANCY_MODEL.md`](../architecture/MULTITENANCY_MODEL.md)
-- [`DATA_ARCHITECTURE.md`](../architecture/DATA_ARCHITECTURE.md)
-- [`TL-05 readiness`](../architecture-readiness/tenant-lifecycle/TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md)
+- [`DEC-051`](../decisions/dec-051-testing-ci-strategy/DECISION_PROPOSAL.md)
+- [`DEC-063`](../decisions/dec-063-definition-of-done/DECISION_PROPOSAL.md)
+- [`PBI-023 PostgreSQL suite matrix`](../architecture-readiness/pbi-023/postgresql-ci/SUITE_MATRIX.md)
+- [`PBI-025 CI flakiness incident`](../quality/evidence/pbi-025/CI_FLAKINESS_INCIDENT.md)
 
 ## Risks
 
-- Legacy mapping is exact-ID-only and must fail closed for any extra unnamed row.
-- Last-active-Branch enforcement must survive concurrent deactivation.
-- Operational Branch settings currently expose a conflicting mutation path.
-- The operational timezone mutation must be retired without breaking reads.
+- Shared infrastructure could accidentally leak state or make test order material.
+- Parallel execution could trade elapsed time for nondeterministic contention.
+- A timeout increase or retry would conceal rather than remediate the defect.
+- Harness changes could weaken failure attribution or cleanup evidence.
 
 ## Plan
 
-- [x] Audit baseline Git, Work Unit and applicable contracts.
-- [x] Audit Branch schema, repository, data and Station relationships.
-- [x] Audit Tenant activation and starter capability bundle.
-- [x] Define Branch V1 commands and Admin Context authority.
-- [x] Define atomic activation and last-active-Branch locking.
-- [x] Define timezone, migration/backfill and audit contracts.
-- [x] Define minimal Admin UI/onboarding scope.
-- [x] Define implementation blocks and material test plan.
-- [x] Record `TL5D-001–004` and explicit implementation authorization.
-- [x] Block 2 — Branch V1 schema, migration and persistence.
-- [x] Block 3 — transactional commands and Tenant activation.
-- [x] Block 4 — Admin authorization and cross-Tenant protection.
-- [x] Block 5 — Admin HTTP and operational-authority retirement.
-- [x] Block 6 — Admin login/session shell.
-- [x] Block 7 — Branch onboarding and management UI.
-- [x] Block 8 — PostgreSQL concurrency, regression and browser QA.
-- [x] Block 9 — canonical docs, full verification and candidate freeze.
+- [x] Preserve TL-06 local/remote HEAD and leave PR #69 unmerged.
+- [x] Start this Quality Work Unit from clean, synchronized `main`.
+- [x] Instrument and measure provisioning, migration, execution and cleanup.
+- [x] Audit data, transaction, schema, process and container isolation semantics.
+- [x] Quantify duplicated invariant work across all eight suites.
+- [x] Select and implement the smallest deterministic orchestration fix.
+- [x] Add regression protection without changing the 240-second budget.
+- [x] Execute repeated focused diagnostics and record every attempt.
+- [x] Run architecture/persistence/migration checks and `verify:full`.
+- [x] Reconcile final evidence and freeze a promotion candidate.
+
+## Progress
+
+10 / 10 blocks complete.
 
 ## Current
 
-The separate Admin Session gate, responsive shell, first-Branch onboarding,
-list/create/edit and Level-2 lifecycle UX passed material local QA. Remote
-promotion is active; the deliberate review replaced the bespoke Level-2 modal
-with the focus-managed Design System dialog before freezing the final PR HEAD.
+The Quality candidate is complete locally. The serial fresh-database design,
+focused checks, normal composite and governed `verify:full` all pass; TL-06
+remains frozen at its reviewed candidate.
 
 ## Next
 
-Complete authoritative CI and deliberate review on the remediated exact PR
-HEAD, then stop for explicit Owner merge authorization. Do not start TL-06.
+Await separate Owner authorization for remote promotion. No push, PR, merge or
+deploy has occurred.
 
 ## Blockers
 
-- None.
+None for local Quality work. TL-06 promotion remains externally blocked until
+this Work Unit is integrated and TL-06 is reconciled from the resulting main.
 
 ## Important Discoveries
 
-- Branch already exists under `stations`; it must be extended, not duplicated.
-- `active` and `admission_revision` already protect Station/Session admission.
-- Starter Tenant Admin policy v1 already contains all three Branch capabilities.
-- Local PostgreSQL has 84 migrations, two active fixture Branches and no effective Tenant Admin; it remains correctly `ONBOARDING`.
-- Current operational timezone mutation must not remain an alternate authority after TL-05.
-- Both legacy rows belong to Tenant `SR Taller`; Branch `...0101` has one
-  active linked Station and Branch `...0102` has none.
-- Approved mapping is exact-ID-only and identifies development fixtures, not
-  Avicell business data or physical locations.
-- Material Chrome QA found and corrected two integration defects before freeze:
-  the Admin CSRF header name was inconsistent across session/Branch surfaces,
-  and the first-Branch editor could flash for a Tenant with existing Branches.
-- Deliberate promotion review found that the Level-2 prompt duplicated modal
-  infrastructure without the Design System focus lifecycle; the remediated
-  prompt now inherits focus trap, Escape, inert background and focus restore.
+- Two first-attempt PR runs timed out at the fixed 240-second child-process
+  boundary while executing `owner-scoped-adapters`; run-1 completed the same
+  stage and TL-06 passed 3/3.
+- The current harness provisions a fresh container/database and reapplies the
+  full migration chain independently for each of eight files, serially.
+- The instrumented baseline passed in 150,495 ms: 113,759 ms in the eight
+  child processes plus 36,736 ms of repeated per-file harness lifecycle.
+- A parallelism-2 experiment failed closed in the repair suite and was
+  rejected; it is not retried or used as green evidence.
+- One disposable PostgreSQL 18.4 campaign container with a fresh database per
+  file preserves data/schema/transaction/process isolation and removes only
+  duplicated server lifecycle.
+- Corrected diagnostics passed 8/8 in 123,654 ms, 126,212 ms (reverse order)
+  and 120,300 ms; material comparison and cleanup passed.
+- The normal PostgreSQL composite passed 17/17; owner-scoped execution was
+  119,883 ms and remained inside the unchanged 240-second budget.
 
 ## Focused Verification
 
-- [x] Read-only PostgreSQL schema/data/relationship audit.
-- [x] Documentation links, policy consistency and secret scan.
-- [x] Architecture and repository structure checks.
-- [x] `git diff --check`.
-- [x] `work-unit:check --mode ACTIVE`.
-- [x] Branch V1 schema tests and typecheck.
-- [x] Local PostgreSQL migration apply plus second run `0 pending`.
-- [x] Upgrade-safe Branch command snapshot migration on the already-migrated local database.
-- [x] TL-05 PostgreSQL Branch command suite `3 / 3`.
-- [x] Concurrent two-Branch deactivation leaves exactly one active Branch.
-- [x] Focused Admin capability and Level-2 route contract tests `3 / 3`.
-- [x] Admin UI contract tests `4 / 4`, typecheck and production build.
-- [x] Material Admin login, duplicate-name create, edit/reload, deactivate and reactivate proof.
-- [x] Desktop, 768 px, 640 px, light/dark and keyboard proof; no page-level horizontal overflow.
-- [x] Level-2 reauthentication uses the canonical focus-managed Design System dialog.
-- [x] Authoritative `verify:full`: stages 0–17 PASS, including TL-05 PostgreSQL `3 / 3`, 84 migrations and rerun `0 pending`.
+- [x] All eight owner-scoped suites selected and materially executed.
+- [x] Per-phase and per-suite timing evidence.
+- [x] Isolation/reset and order-independence regressions.
+- [x] Failure propagation and deterministic cleanup regressions.
+- [x] Migration/schema authority and 240-second budget static checks.
+- [x] Relevant architecture/persistence tests, typecheck and `git diff --check`.
+- [x] Canonical `verify:full` campaign: Stages 0–17 PASS; cleanup PASS.
 
 ## Promotion Gates
 
-- Existing authoritative promotion policy remains unchanged.
-- The classifier required `FULL` before promotion because the readiness
-  contract lives under `docs/architecture-readiness/`; the frozen candidate
-  passed that gate without bypasses or threshold changes.
+- [x] Local focused verification PASS.
+- [x] Local governed `verify` PASS.
+- [x] Local governed `verify:full` PASS.
+- [ ] Remote PR/CI/review — not authorized in this Work Unit turn.
+- [ ] Merge/exact-main closure — not authorized.
 
 ## Remote Actions / Authorization
 
-- No remote action is implied by checklist initialization.
+- No push, PR, merge or deploy is authorized for this Quality Work Unit.
 
 ## Handoff Notes
 
-- Permanent readiness artifact:
-  [`TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md`](../architecture-readiness/tenant-lifecycle/TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md).
-- Product implementation is authorized locally; no remote action is implied.
-- Preserve `apps/dev-preview-web/src/.DS_Store` untracked.
-- TL-06 remains unstarted.
+- Branch creation/switching is explicit and occurred before this command.
+- Preserve `feature/tl-06-admin-users-roles-readiness` and remote PR #69 at
+  `edd9bb4d73dd2eba41eba5aaf6367d8b2dde7850` without product changes.
+- Preserve `apps/dev-preview-web/src/.DS_Store` as unrelated Owner material.
 
 ## Closure Predicate
 
-For this product Work Unit: authorized scope implemented, focused and full
-verification PASS, Owner-reviewable browser proof complete, candidate promoted,
-merged under explicit authority, exact-main CI GREEN and deterministic closure
-ref published. This local iteration does not satisfy that predicate by itself.
+All eight owner-scoped PostgreSQL suites remain materially selected, isolated,
+fail-closed and clean; the unchanged 240-second authoritative budget is met
+with reasonable margin in diagnostic repetitions; focused checks and
+`verify:full` pass on one exact clean HEAD; no product behavior changes; the
+Work Unit is `READY_FOR_PROMOTION` and remote actions remain separately gated.
