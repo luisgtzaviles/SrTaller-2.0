@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import type { Kysely, Transaction } from 'kysely';
 
+import { databasePersistenceCapability } from '../../../../infrastructure/database/database-persistence-capability.js';
 import { databaseTransactionCapability } from '../../../../infrastructure/database/database-transaction-capability.js';
 import type { DatabaseSchema } from '../../../../infrastructure/database/database-types.js';
 import type { ApplicationDatabaseConnection } from '../../../../infrastructure/runtime/index.js';
@@ -13,7 +14,28 @@ type Database = Kysely<DatabaseSchema> | Transaction<DatabaseSchema>;
 export class KyselyAdminLifecycleRepository {
   constructor(private readonly connection: ApplicationDatabaseConnection) {}
 
-  async transitionRole(input: Readonly<{ tenantId: string; roleId: string; expectedVersion: number; active: boolean; clientRequestId: string; actorUserId: string; sessionId: string; correlationId: string; occurredAt: string }>, guard: AdminAuthorizationCommitGuard) {
+  recordEvent(transactionContext: object, input: Readonly<{ tenantId: string; actorUserId: string; actorAdminIdentityId: string; sessionId: string; correlationId: string; eventType: string; targetUserId?: string | undefined; roleId?: string | undefined; assignmentId?: string | undefined; branchId?: string | undefined; level: 1 | 2; occurredAt: string }>): Promise<void> {
+    return this.event(transactionContext as Database, { ...input, at: new Date(input.occurredAt) });
+  }
+
+  async listAdminIdentities(tenantId: string) {
+    return this.connection[databasePersistenceCapability]('access', async (database) => {
+      const rows = await database.selectFrom('access_admin_identities')
+        .select(['admin_identity_id', 'user_id', 'email_display', 'verified_at', 'status'])
+        .where('tenant_id', '=', tenantId)
+        .orderBy('created_at', 'asc')
+        .execute();
+      return Object.freeze(rows.map((row) => Object.freeze({
+        adminIdentityId: row.admin_identity_id,
+        userId: row.user_id,
+        emailDisplay: row.email_display,
+        verified: row.verified_at !== null,
+        status: row.status,
+      })));
+    });
+  }
+
+  async transitionRole(input: Readonly<{ tenantId: string; roleId: string; expectedVersion: number; active: boolean; clientRequestId: string; actorUserId: string; actorAdminIdentityId: string; sessionId: string; correlationId: string; occurredAt: string }>, guard: AdminAuthorizationCommitGuard) {
     return this.connection[databaseTransactionCapability]({ isolationLevel: 'serializable', accessMode: 'read write' }, async (raw) => {
       const db = raw as unknown as Database; const at = new Date(input.occurredAt);
       if (!await guard.confirmCurrent(raw)) throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
@@ -31,7 +53,7 @@ export class KyselyAdminLifecycleRepository {
     });
   }
 
-  async revokeAdminIdentity(input: Readonly<{ tenantId: string; targetUserId: string; adminIdentityId: string; actorUserId: string; sessionId: string; correlationId: string; occurredAt: string }>, guard: AdminAuthorizationCommitGuard): Promise<void> {
+  async revokeAdminIdentity(input: Readonly<{ tenantId: string; targetUserId: string; adminIdentityId: string; actorUserId: string; actorAdminIdentityId: string; sessionId: string; correlationId: string; occurredAt: string }>, guard: AdminAuthorizationCommitGuard): Promise<void> {
     await this.connection[databaseTransactionCapability]({ isolationLevel: 'serializable', accessMode: 'read write' }, async (raw) => {
       const db = raw as unknown as Database; const at = new Date(input.occurredAt);
       if (!await guard.confirmCurrent(raw)) throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
@@ -46,7 +68,7 @@ export class KyselyAdminLifecycleRepository {
     });
   }
 
-  private async event(db: Database, input: Readonly<{ tenantId: string; actorUserId: string; sessionId: string; correlationId: string; eventType: string; targetUserId?: string; roleId?: string; level: 1 | 2; at: Date }>): Promise<void> {
-    await db.insertInto('access_admin_lifecycle_events').values({ tenant_id: input.tenantId, event_id: randomUUID(), actor_user_id: input.actorUserId, actor_admin_identity_id: null, session_id: input.sessionId, target_user_id: input.targetUserId ?? null, role_id: input.roleId ?? null, assignment_id: null, invitation_id: null, branch_id: null, event_type: input.eventType, result: 'SUCCEEDED', reason_code: 'COMMAND_APPLIED', sensitivity_level: input.level, correlation_id: input.correlationId, occurred_at: input.at }).execute();
+  private async event(db: Database, input: Readonly<{ tenantId: string; actorUserId: string; actorAdminIdentityId: string; sessionId: string; correlationId: string; eventType: string; targetUserId?: string | undefined; roleId?: string | undefined; assignmentId?: string | undefined; branchId?: string | undefined; level: 1 | 2; at: Date }>): Promise<void> {
+    await db.insertInto('access_admin_lifecycle_events').values({ tenant_id: input.tenantId, event_id: randomUUID(), actor_user_id: input.actorUserId, actor_admin_identity_id: input.actorAdminIdentityId, session_id: input.sessionId, target_user_id: input.targetUserId ?? null, role_id: input.roleId ?? null, assignment_id: input.assignmentId ?? null, invitation_id: null, branch_id: input.branchId ?? null, event_type: input.eventType, result: 'SUCCEEDED', reason_code: 'COMMAND_APPLIED', sensitivity_level: input.level, correlation_id: input.correlationId, occurred_at: input.at }).execute();
   }
 }

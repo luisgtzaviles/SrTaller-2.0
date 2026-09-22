@@ -41,7 +41,7 @@ export class AdminInvitationService {
   list(tenantId: string) { return this.repository.list(tenantId); }
 
   async issue(input: Readonly<{
-    tenantId: string; inviterUserId: string; inviterAdminIdentityId: string;
+    tenantId: string; inviterUserId: string; inviterAdminIdentityId: string; inviterAdminSessionId: string;
     targetUserId: string | null; proposedDisplayName: string | null; email: unknown;
     grants: Parameters<typeof canonicalizeAdminInvitationGrants>[0];
     clientRequestId: string; correlationId: string; guard: AdminInvitationMutationGuard;
@@ -54,6 +54,7 @@ export class AdminInvitationService {
     const result = await this.repository.issue({
       tenantId: input.tenantId, inviterUserId: input.inviterUserId,
       inviterAdminIdentityId: input.inviterAdminIdentityId,
+      inviterAdminSessionId: input.inviterAdminSessionId,
       targetUserId: input.targetUserId, proposedDisplayName: input.proposedDisplayName,
       normalizedEmail: email.normalized, emailDisplay: email.display,
       grants, invitationId,
@@ -67,7 +68,8 @@ export class AdminInvitationService {
 
   async resend(input: Readonly<{
     tenantId: string; invitationId: string; expectedVersion: number; clientRequestId: string;
-    correlationId: string; guard: AdminInvitationMutationGuard;
+    correlationId: string; actorUserId: string; actorAdminIdentityId: string;
+    actorAdminSessionId: string; guard: AdminInvitationMutationGuard;
   }>): Promise<AdminInvitationRecord> {
     const at = this.now().toISOString(); const challengeId = this.createId(); const deliveryId = this.createId(); const token = this.createToken();
     const result = await this.repository.resend({ ...input, challengeId, deliveryId, tokenDigest: token.digest, occurredAt: at }, input.guard);
@@ -89,7 +91,7 @@ export class AdminInvitationService {
   }
 
   private async deliver(invitation: AdminInvitationRecord, challengeId: string, deliveryId: string, token: string, occurredAt: string): Promise<void> {
-    const result = await this.delivery.deliver({ deliveryId, destination: invitation.emailDisplay, templateKey: 'admin-invitation', templateVersion: 1, actionUrl: `${this.publicBaseUrl}/admin/invitaciones/aceptar?token=${encodeURIComponent(token)}`, expiresAt: adminInvitationExpiresAt(invitation.createdAt) });
+    const result = await this.delivery.deliver({ deliveryId, destination: invitation.emailDisplay, templateKey: 'admin-invitation', templateVersion: 1, actionUrl: `${this.publicBaseUrl}/admin/invitaciones/aceptar#token=${encodeURIComponent(token)}`, expiresAt: adminInvitationExpiresAt(invitation.createdAt) });
     await this.repository.recordDelivery({ tenantId: invitation.tenantId, deliveryId, status: result.status, providerReference: result.providerReference, reasonCode: result.reasonCode, occurredAt });
   }
 }

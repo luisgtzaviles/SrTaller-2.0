@@ -144,6 +144,7 @@ export class AccessPersistenceError extends Error {
 export interface AccessMutationCommitGuard {
   confirmCurrent(transactionContext: object): Promise<boolean>;
   confirmContinuity?(transactionContext: object): Promise<boolean>;
+  recordAudit?(transactionContext: object, result: AccessRoleRecord | AccessRoleAssignmentRecord): Promise<void>;
 }
 
 export interface AccessRepositoryPort {

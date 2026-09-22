@@ -643,7 +643,9 @@ class KyselyUserRepository implements UserRepositoryPort {
           if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
             throw new UserPersistenceError('USER_AUTHORIZATION_CHANGED');
           }
-          return mapLifecycleCommand(command);
+          const result = mapLifecycleCommand(command);
+          await guard?.recordAudit?.(transactionContext, result);
+          return result;
         });
     } catch (error: unknown) {
       throw mapUserError(error);

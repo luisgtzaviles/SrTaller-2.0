@@ -89,7 +89,7 @@ To execute one authorized objective with a transferable repository-native handof
 
 PostgreSQL materially proves invitation replay/supersession/acceptance,
 cross-Tenant and cross-Branch isolation, stale authority rejection and the
-concurrent last-effective-admin invariant across 86 migrations.
+concurrent last-effective-admin invariant across 87 migrations.
 
 ## Next
 
@@ -114,7 +114,7 @@ None.
 - [x] Architecture and dependency contracts.
 - [x] Secret-pattern scan.
 - [x] `git diff --check`.
-- [x] PostgreSQL 18.4 migration upgrade and rerun; 86 migrations, 0 pending.
+- [x] PostgreSQL 18.4 migration upgrade and rerun; 87 migrations, 0 pending.
 - [x] TL-02 through TL-06 material PostgreSQL regressions.
 
 ## Promotion Gates

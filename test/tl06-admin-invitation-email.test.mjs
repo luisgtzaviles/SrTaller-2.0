@@ -9,7 +9,7 @@ const invitation = Object.freeze({
   destination: 'invitee@example.com',
   templateKey: 'admin-invitation',
   templateVersion: 1,
-  actionUrl: 'http://127.0.0.1:4173/admin/invitaciones/aceptar?token=secret-value',
+  actionUrl: 'http://127.0.0.1:4173/admin/invitaciones/aceptar#token=secret-value',
   expiresAt: '2026-09-22T12:00:00.000Z',
 });
 

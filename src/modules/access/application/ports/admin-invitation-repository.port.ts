@@ -47,17 +47,20 @@ export interface AdminInvitationRepositoryPort {
     tenantId: string; invitationId: string; challengeId: string; deliveryId: string;
     normalizedEmail: string; emailDisplay: string; targetUserId: string | null;
     proposedDisplayName: string | null; inviterUserId: string; inviterAdminIdentityId: string;
+    inviterAdminSessionId: string;
     grants: readonly AdminInvitationGrant[];
     tokenDigest: Uint8Array; clientRequestId: string; correlationId: string; occurredAt: string;
   }>, guard: AdminInvitationMutationGuard): Promise<AdminInvitationWriteResult>;
   resend(input: Readonly<{
     tenantId: string; invitationId: string; challengeId: string; deliveryId: string;
     tokenDigest: Uint8Array; expectedVersion: number; clientRequestId: string;
-    correlationId: string; occurredAt: string;
+    correlationId: string; actorUserId: string; actorAdminIdentityId: string;
+    actorAdminSessionId: string; occurredAt: string;
   }>, guard: AdminInvitationMutationGuard): Promise<AdminInvitationWriteResult>;
   revoke(input: Readonly<{
     tenantId: string; invitationId: string; expectedVersion: number; clientRequestId: string;
-    correlationId: string; actorUserId: string; occurredAt: string;
+    correlationId: string; actorUserId: string; actorAdminIdentityId: string;
+    actorAdminSessionId: string; occurredAt: string;
   }>, guard: AdminInvitationMutationGuard): Promise<AdminInvitationRecord>;
   findByChallengeDigest(tokenDigest: Uint8Array): Promise<AdminInvitationChallengeRecord | null>;
   accept(input: Readonly<{

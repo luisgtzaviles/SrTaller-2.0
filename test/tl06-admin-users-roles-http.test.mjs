@@ -15,8 +15,8 @@ test('TL-06 Admin Users/Roles HTTP stays on Admin Context and derives tenant ser
   assert.match(operations, /capability: 'access_matrix\.manage'/u);
   assert.doesNotMatch(controller, /tenantId/u);
   assert.match(operations, /tenantId: context\.tenantId/u);
-  assert.match(operations, /requiresRecentReauthentication: protectedRole/u);
-  assert.match(operations, /requiresRecentReauthentication: protectedAssignment/u);
+  assert.match(operations, /requiresRecentReauthentication: impact\.highImpact/u);
+  assert.match(operations, /isControlPlaneCapability/u);
 });
 
 test('TL-06 module reuses one invitation service and the shared email provider', async () => {
@@ -33,10 +33,12 @@ test('TL-06 sensitive authority changes require Level-2 and post-mutation contin
     readFile('src/modules/access/infrastructure/persistence/kysely-administration-authorization-commit.guard.ts', 'utf8'),
     readFile('src/modules/access/infrastructure/persistence/kysely-admin-lifecycle.repository.ts', 'utf8'),
   ]);
-  assert.match(operations, /requiresRecentReauthentication: protectedAssignment/u);
+  assert.match(operations, /requiresRecentReauthentication: impact\.highImpact/u);
   assert.match(operations, /requiresRecentReauthentication: administrative/u);
   assert.match(operations, /requiresRecentReauthentication: true/u);
   assert.match(operations, /confirmContinuity: context\.commitGuard\.confirmEffectiveTenantAdmin/u);
+  assert.match(operations, /recordAudit/u);
+  assert.match(lifecycle, /access_admin_lifecycle_events/u);
   assert.match(lifecycle, /confirmEffectiveTenantAdmin\(raw\)/u);
   assert.match(guard, /forUpdate\('role'\)/u);
   assert.match(lifecycle, /management_mode !== 'TENANT_MANAGED'/u);

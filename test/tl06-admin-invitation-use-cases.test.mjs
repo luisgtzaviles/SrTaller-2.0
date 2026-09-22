@@ -13,6 +13,7 @@ const ids = [
 
 function harness() {
   let index = 0; let invitation; let active; const deliveries = [];
+  const delivery = new LocalEmailDelivery();
   const repository = {
     async list() { return invitation ? [invitation] : []; },
     async issue(input, guard) {
@@ -28,8 +29,8 @@ function harness() {
     async recordDelivery(input) { deliveries.push(input); },
   };
   const passwords = { principalDigest() { return new Uint8Array(32); }, async hash(input) { assert.equal(input.password, 'Safe invitation pass 123!'); return { algorithm: 'argon2id', profileVersion: 1, pepperVersion: 1, memoryKiB: 65536, passes: 3, parallelism: 4, salt: new Uint8Array(16), verifier: new Uint8Array(32) }; }, async verify() { return false; } };
-  const service = new AdminInvitationService(repository, passwords, new LocalEmailDelivery(), 'http://127.0.0.1:4173', () => new Date('2026-09-21T12:00:00.000Z'), () => ids[index++], () => ({ token: 'a'.repeat(43), digest: new Uint8Array(32) }));
-  return { service, deliveries, get invitation() { return invitation; } };
+  const service = new AdminInvitationService(repository, passwords, delivery, 'http://127.0.0.1:4173', () => new Date('2026-09-21T12:00:00.000Z'), () => ids[index++], () => ({ token: 'a'.repeat(43), digest: new Uint8Array(32) }));
+  return { service, deliveries, delivery, get invitation() { return invitation; } };
 }
 
 test('TL-06 issue binds server-approved grants and durable delivery result', async () => {
@@ -38,6 +39,8 @@ test('TL-06 issue binds server-approved grants and durable delivery result', asy
   assert.equal(result.normalizedEmail, 'invitada@example.com');
   assert.equal(result.grants[0].roleId, ids[4]);
   assert.equal(h.deliveries[0].status, 'DELIVERED');
+  assert.equal(h.delivery.takeLatestForTest()?.actionUrl.includes('/admin/invitaciones/aceptar#token='), true);
+  assert.equal(h.delivery.takeLatestForTest()?.actionUrl.includes('?token='), false);
 });
 
 test('TL-06 resend supersedes through repository and acceptance establishes invitee password', async () => {

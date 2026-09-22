@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Header, Headers, Inject, Param, Patch, Post, UnauthorizedException } from '@nestjs/common';
 
 import { ADMIN_INVITATION_SERVICE, ContextualAuthorizationError } from '../index.js';
@@ -41,5 +43,5 @@ export class AdminUsersRolesController {
 @Controller('api/public/admin-invitations')
 export class PublicAdminInvitationController {
   constructor(@Inject(ADMIN_INVITATION_SERVICE) private readonly invitations: AdminInvitationService) {}
-  @Post('acceptance') @Header('Cache-Control', 'no-store') async accept(@Body() body: unknown) { try { const b = object(body); const item = await this.invitations.accept({ token: b.token, password: b.password, clientRequestId: String(b.clientRequestId), correlationId: String(b.correlationId) }); return { status: item.status }; } catch (error) { translate(error); } }
+  @Post('acceptance') @Header('Cache-Control', 'no-store') async accept(@Body() body: unknown) { try { const b = object(body); const item = await this.invitations.accept({ token: b.token, password: b.password, clientRequestId: String(b.clientRequestId), correlationId: randomUUID() }); return { status: item.status }; } catch (error) { translate(error); } }
 }

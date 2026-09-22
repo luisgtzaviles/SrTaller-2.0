@@ -565,7 +565,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             })
             .returningAll()
             .executeTakeFirstOrThrow();
-          return mapRoleCommand(command);
+          const result = mapRoleCommand(command);
+          await guard?.recordAudit?.(transactionContext, result);
+          return result;
         });
     } catch (error: unknown) {
       throw mapAccessError(error);
@@ -655,7 +657,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
           if (guard?.confirmContinuity && !await guard.confirmContinuity(transactionContext)) {
             throw new AccessPersistenceError('ACCESS_AUTHORIZATION_CHANGED');
           }
-          return mapRoleCommand(command);
+          const result = mapRoleCommand(command);
+          await guard?.recordAudit?.(transactionContext, result);
+          return result;
         });
     } catch (error: unknown) {
       throw mapAccessError(error);
@@ -738,7 +742,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
             })
             .returningAll()
             .executeTakeFirstOrThrow();
-          return mapRoleCommand(command);
+          const result = mapRoleCommand(command);
+          await guard?.recordAudit?.(transactionContext, result);
+          return result;
         });
     } catch (error: unknown) {
       throw mapAccessError(error);
@@ -997,7 +1003,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
               .executeTakeFirstOrThrow();
             return replayAssignCommand(prior, trustedInput);
           }
-          return mapCommandResult(command);
+          const result = mapCommandResult(command);
+          await guard?.recordAudit?.(transactionContext, result);
+          return result;
         });
     } catch (error: unknown) {
       throw mapAccessError(error);
@@ -1105,7 +1113,9 @@ class KyselyAccessRepository implements AccessRepositoryPort {
               .executeTakeFirstOrThrow();
             return replayRevokeCommand(prior, trustedInput);
           }
-          return mapCommandResult(command);
+          const result = mapCommandResult(command);
+          await guard?.recordAudit?.(transactionContext, result);
+          return result;
         });
     } catch (error: unknown) {
       throw mapAccessError(error);

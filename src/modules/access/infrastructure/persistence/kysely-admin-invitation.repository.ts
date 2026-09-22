@@ -15,6 +15,10 @@ type AccessDatabase = Kysely<DatabaseSchema> | Transaction<DatabaseSchema>;
 function fingerprint(value: unknown): Uint8Array { return createHash('sha256').update(JSON.stringify(value)).digest(); }
 function sameBytes(left: Uint8Array, right: Uint8Array): boolean { return left.byteLength === right.byteLength && timingSafeEqual(Buffer.from(left), Buffer.from(right)); }
 function iso(value: Date | string | null): string | null { return value === null ? null : (value instanceof Date ? value : new Date(value)).toISOString(); }
+function isPendingEmailConflict(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error && String(error.code) === '23505'
+    && 'constraint' in error && String(error.constraint) === 'access_admin_invitations_pending_email_uq';
+}
 
 export class KyselyAdminInvitationRepository implements AdminInvitationRepositoryPort {
   constructor(private readonly connection: ApplicationDatabaseConnection) {}
@@ -27,19 +31,24 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
   }
 
   async issue(input: Parameters<AdminInvitationRepositoryPort['issue']>[0], guard: Parameters<AdminInvitationRepositoryPort['issue']>[1]): Promise<AdminInvitationWriteResult> {
-    return this.connection[databaseTransactionCapability]({ isolationLevel: 'serializable', accessMode: 'read write' }, async (raw) => {
-      const db = raw as unknown as AccessDatabase; const at = new Date(input.occurredAt);
-      const replay = await this.replay(db, input.tenantId, input.clientRequestId, 'ISSUE', input.invitationId, fingerprint({ email: input.normalizedEmail, grants: input.grants, target: input.targetUserId, name: input.proposedDisplayName }));
-      if (replay) return Object.freeze({ invitation: replay, deliveryRequired: false });
-      if (!await guard.confirmCurrent(raw)) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
-      const authorityRevision = await this.validateAuthorityAndGrants(db, input.tenantId, input.inviterUserId, input.inviterAdminIdentityId, null, input.grants);
-      await db.insertInto('access_admin_invitations').values({ tenant_id: input.tenantId, invitation_id: input.invitationId, normalized_email: input.normalizedEmail, email_display: input.emailDisplay, target_user_id: input.targetUserId, proposed_display_name: input.proposedDisplayName, inviter_user_id: input.inviterUserId, inviter_admin_identity_id: input.inviterAdminIdentityId, status: 'PENDING', version: 0, authority_revision: authorityRevision, intended_grants_digest: digestAdminInvitationGrants(input.grants), expires_at: new Date(at.getTime() + 86_400_000), accepted_at: null, revoked_at: null, created_at: at, updated_at: at }).execute();
-      await db.insertInto('access_admin_invitation_grants').values(input.grants.map((grant, index) => ({ tenant_id: input.tenantId, invitation_id: input.invitationId, grant_index: index, role_id: grant.roleId, role_version: grant.roleVersion, assignment_scope: grant.assignmentScope, branch_id: grant.branchId, created_at: at }))).execute();
-      await this.insertChallengeDispatch(db, input.tenantId, input.invitationId, input.challengeId, input.deliveryId, input.normalizedEmail, input.tokenDigest, at);
-      await this.command(db, input.tenantId, input.clientRequestId, 'ISSUE', input.invitationId, fingerprint({ email: input.normalizedEmail, grants: input.grants, target: input.targetUserId, name: input.proposedDisplayName }), 'PENDING', 0, at);
-      await this.event(db, { tenantId: input.tenantId, eventType: 'INVITATION_ISSUED', actorUserId: input.inviterUserId, invitationId: input.invitationId, correlationId: input.correlationId, level: 1, at });
-      return Object.freeze({ invitation: await this.read(db, input.tenantId, input.invitationId), deliveryRequired: true });
-    });
+    try {
+      return await this.connection[databaseTransactionCapability]({ isolationLevel: 'serializable', accessMode: 'read write' }, async (raw) => {
+        const db = raw as unknown as AccessDatabase; const at = new Date(input.occurredAt);
+        const replay = await this.replay(db, input.tenantId, input.clientRequestId, 'ISSUE', input.invitationId, fingerprint({ email: input.normalizedEmail, grants: input.grants, target: input.targetUserId, name: input.proposedDisplayName }));
+        if (replay) return Object.freeze({ invitation: replay, deliveryRequired: false });
+        if (!await guard.confirmCurrent(raw)) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
+        const authorityRevision = await this.validateAuthorityAndGrants(db, input.tenantId, input.inviterUserId, input.inviterAdminIdentityId, null, input.grants);
+        await db.insertInto('access_admin_invitations').values({ tenant_id: input.tenantId, invitation_id: input.invitationId, normalized_email: input.normalizedEmail, email_display: input.emailDisplay, target_user_id: input.targetUserId, proposed_display_name: input.proposedDisplayName, inviter_user_id: input.inviterUserId, inviter_admin_identity_id: input.inviterAdminIdentityId, status: 'PENDING', version: 0, authority_revision: authorityRevision, intended_grants_digest: digestAdminInvitationGrants(input.grants), expires_at: new Date(at.getTime() + 86_400_000), accepted_at: null, revoked_at: null, created_at: at, updated_at: at }).execute();
+        await db.insertInto('access_admin_invitation_grants').values(input.grants.map((grant, index) => ({ tenant_id: input.tenantId, invitation_id: input.invitationId, grant_index: index, role_id: grant.roleId, role_version: grant.roleVersion, assignment_scope: grant.assignmentScope, branch_id: grant.branchId, created_at: at }))).execute();
+        await this.insertChallengeDispatch(db, input.tenantId, input.invitationId, input.challengeId, input.deliveryId, input.normalizedEmail, input.tokenDigest, at);
+        await this.command(db, input.tenantId, input.clientRequestId, 'ISSUE', input.invitationId, fingerprint({ email: input.normalizedEmail, grants: input.grants, target: input.targetUserId, name: input.proposedDisplayName }), 'PENDING', 0, at);
+        await this.event(db, { tenantId: input.tenantId, eventType: 'INVITATION_ISSUED', actorUserId: input.inviterUserId, actorAdminIdentityId: input.inviterAdminIdentityId, sessionId: input.inviterAdminSessionId, invitationId: input.invitationId, correlationId: input.correlationId, level: 1, at });
+        return Object.freeze({ invitation: await this.read(db, input.tenantId, input.invitationId), deliveryRequired: true });
+      });
+    } catch (error: unknown) {
+      if (isPendingEmailConflict(error)) throw new AdminInvitationError('ADMIN_INVITATION_INVALID');
+      throw error;
+    }
   }
 
   async resend(input: Parameters<AdminInvitationRepositoryPort['resend']>[0], guard: Parameters<AdminInvitationRepositoryPort['resend']>[1]): Promise<AdminInvitationWriteResult> {
@@ -55,7 +64,7 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
       const version = current.version + 1;
       await db.updateTable('access_admin_invitations').set({ version, updated_at: at }).where('tenant_id', '=', input.tenantId).where('invitation_id', '=', input.invitationId).execute();
       await this.command(db, input.tenantId, input.clientRequestId, 'RESEND', input.invitationId, fp, 'PENDING', version, at);
-      await this.event(db, { tenantId: input.tenantId, eventType: 'INVITATION_RESENT', actorUserId: current.inviter_user_id, invitationId: input.invitationId, correlationId: input.correlationId, level: 1, at });
+      await this.event(db, { tenantId: input.tenantId, eventType: 'INVITATION_RESENT', actorUserId: input.actorUserId, actorAdminIdentityId: input.actorAdminIdentityId, sessionId: input.actorAdminSessionId, invitationId: input.invitationId, correlationId: input.correlationId, level: 1, at });
       return Object.freeze({ invitation: await this.read(db, input.tenantId, input.invitationId), deliveryRequired: true });
     });
   }
@@ -69,7 +78,7 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
       if (!changed) throw new AdminInvitationError('ADMIN_INVITATION_UNAVAILABLE');
       await db.updateTable('access_admin_invitation_challenges').set({ status: 'SUPERSEDED', superseded_at: at, updated_at: at, version: (eb) => eb('version', '+', 1) }).where('tenant_id', '=', input.tenantId).where('invitation_id', '=', input.invitationId).where('status', '=', 'ACTIVE').execute();
       await this.command(db, input.tenantId, input.clientRequestId, 'REVOKE', input.invitationId, fp, 'REVOKED', changed.version, at);
-      await this.event(db, { tenantId: input.tenantId, eventType: 'INVITATION_REVOKED', actorUserId: input.actorUserId, invitationId: input.invitationId, correlationId: input.correlationId, level: 1, at });
+      await this.event(db, { tenantId: input.tenantId, eventType: 'INVITATION_REVOKED', actorUserId: input.actorUserId, actorAdminIdentityId: input.actorAdminIdentityId, sessionId: input.actorAdminSessionId, invitationId: input.invitationId, correlationId: input.correlationId, level: 1, at });
       return this.read(db, input.tenantId, input.invitationId);
     });
   }
@@ -115,8 +124,21 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
   }
 
   private async validateAuthorityAndGrants(db: AccessDatabase, tenantId: string, inviterUserId: string, identityId: string, authorityRevision: number | null, grants: readonly AdminInvitationGrant[]): Promise<number> {
+    const tenant = await db.selectFrom('tenants').select('lifecycle_status').where('tenant_id', '=', tenantId).forShare().executeTakeFirst();
+    if (tenant?.lifecycle_status !== 'ACTIVE') throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
     const issuer = await db.selectFrom('access_admin_identities as i').innerJoin('users as u', (join) => join.onRef('u.tenant_id', '=', 'i.tenant_id').onRef('u.user_id', '=', 'i.user_id')).innerJoin('access_admin_password_credentials as c', (join) => join.onRef('c.tenant_id', '=', 'i.tenant_id').onRef('c.admin_identity_id', '=', 'i.admin_identity_id')).select(['u.status as user_status', 'u.admission_revision', 'i.status as identity_status', 'i.verified_at', 'c.status as credential_status']).where('i.tenant_id', '=', tenantId).where('i.admin_identity_id', '=', identityId).where('i.user_id', '=', inviterUserId).forShare().executeTakeFirst();
     if (!issuer || issuer.user_status !== 'active' || issuer.identity_status !== 'active' || issuer.credential_status !== 'active' || issuer.verified_at === null || (authorityRevision !== null && issuer.admission_revision !== authorityRevision)) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
+    const authority = await db.selectFrom('access_role_assignments as a')
+      .innerJoin('access_roles as r', (join) => join.onRef('r.tenant_id', '=', 'a.tenant_id').onRef('r.role_id', '=', 'a.role_id'))
+      .innerJoin('access_role_capabilities as c', (join) => join.onRef('c.tenant_id', '=', 'r.tenant_id').onRef('c.role_id', '=', 'r.role_id'))
+      .select('c.capability_code')
+      .where('a.tenant_id', '=', tenantId).where('a.user_id', '=', inviterUserId)
+      .where('a.assignment_scope', '=', 'TENANT_WIDE').where('a.branch_id', 'is', null)
+      .where('a.status', '=', 'active').where('r.status', '=', 'active')
+      .where('c.capability_code', 'in', ['users.manage', 'access_matrix.manage'])
+      .forShare(['a', 'r', 'c']).execute();
+    const effectiveCapabilities = new Set(authority.map(({ capability_code }) => capability_code));
+    if (!effectiveCapabilities.has('users.manage') || !effectiveCapabilities.has('access_matrix.manage')) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
     for (const grant of grants) {
       const role = await db.selectFrom('access_roles').select(['version', 'status']).where('tenant_id', '=', tenantId).where('role_id', '=', grant.roleId).forShare().executeTakeFirst();
       if (!role || role.status !== 'active' || role.version !== grant.roleVersion) throw new AdminInvitationError('ADMIN_INVITATION_AUTHORITY_CHANGED');
@@ -143,5 +165,5 @@ export class KyselyAdminInvitationRepository implements AdminInvitationRepositor
   private async grants(db: AccessDatabase, tenantId: string, invitationId: string): Promise<readonly AdminInvitationGrant[]> { const rows = await db.selectFrom('access_admin_invitation_grants').selectAll().where('tenant_id', '=', tenantId).where('invitation_id', '=', invitationId).orderBy('grant_index').execute(); return Object.freeze(rows.map((row) => Object.freeze({ roleId: row.role_id, roleVersion: row.role_version, assignmentScope: row.assignment_scope, branchId: row.branch_id }))); }
   private async read(db: AccessDatabase, tenantId: string, invitationId: string): Promise<AdminInvitationRecord> { const row = await db.selectFrom('access_admin_invitations').selectAll().where('tenant_id', '=', tenantId).where('invitation_id', '=', invitationId).executeTakeFirst(); if (!row) throw new AdminInvitationError('ADMIN_INVITATION_NOT_FOUND'); return this.map(db, row); }
   private async map(db: AccessDatabase, row: Selectable<AccessAdminInvitationTable>): Promise<AdminInvitationRecord> { return Object.freeze({ tenantId: row.tenant_id, invitationId: row.invitation_id, normalizedEmail: row.normalized_email, emailDisplay: row.email_display, targetUserId: row.target_user_id, proposedDisplayName: row.proposed_display_name, inviterUserId: row.inviter_user_id, inviterAdminIdentityId: row.inviter_admin_identity_id, status: row.status, version: row.version, authorityRevision: row.authority_revision, grants: await this.grants(db, row.tenant_id, row.invitation_id), expiresAt: iso(row.expires_at) as string, acceptedAt: iso(row.accepted_at), revokedAt: iso(row.revoked_at), createdAt: iso(row.created_at) as string, updatedAt: iso(row.updated_at) as string }); }
-  private async event(db: AccessDatabase, input: Readonly<{ tenantId: string; eventType: string; actorUserId?: string; targetUserId?: string; invitationId?: string; correlationId: string; level: 1 | 2; at: Date }>): Promise<void> { await db.insertInto('access_admin_lifecycle_events').values({ tenant_id: input.tenantId, event_id: randomUUID(), actor_user_id: input.actorUserId ?? null, actor_admin_identity_id: null, session_id: null, target_user_id: input.targetUserId ?? null, role_id: null, assignment_id: null, invitation_id: input.invitationId ?? null, branch_id: null, event_type: input.eventType, result: 'SUCCEEDED', reason_code: 'COMMAND_APPLIED', sensitivity_level: input.level, correlation_id: input.correlationId, occurred_at: input.at }).execute(); }
+  private async event(db: AccessDatabase, input: Readonly<{ tenantId: string; eventType: string; actorUserId?: string; actorAdminIdentityId?: string; sessionId?: string; targetUserId?: string; invitationId?: string; correlationId: string; level: 1 | 2; at: Date }>): Promise<void> { await db.insertInto('access_admin_lifecycle_events').values({ tenant_id: input.tenantId, event_id: randomUUID(), actor_user_id: input.actorUserId ?? null, actor_admin_identity_id: input.actorAdminIdentityId ?? null, session_id: input.sessionId ?? null, target_user_id: input.targetUserId ?? null, role_id: null, assignment_id: null, invitation_id: input.invitationId ?? null, branch_id: null, event_type: input.eventType, result: 'SUCCEEDED', reason_code: 'COMMAND_APPLIED', sensitivity_level: input.level, correlation_id: input.correlationId, occurred_at: input.at }).execute(); }
 }
