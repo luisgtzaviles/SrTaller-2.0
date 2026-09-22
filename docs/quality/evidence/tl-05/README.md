@@ -3,7 +3,8 @@
 ## Estado
 
 - **Work Unit:** TL-05 — Branch Management V1 + Tenant Activation.
-- **Estado:** implementación y proof local completos; full gate final pendiente.
+- **Estado:** implementación, proof local y full gate completos;
+  `READY_FOR_PROMOTION`.
 - **Riesgo:** `ARCHITECTURAL`; promoción requiere `verify:full` y revisión
   deliberada de arquitectura, seguridad y tenancy sobre el candidato exacto.
 - **Base:** cierre gobernado de TL-04 sobre `main`.

@@ -6,7 +6,7 @@
   gates de producto; Git/GitHub/CI/runtime gobiernan la materialización.
 - **Programa:** MVP Operating Roadmap.
 - **Stage:** MVP.
-- **Fase:** Tenant Lifecycle MVP — Branch Management V1 implementation.
+- **Fase:** Tenant Lifecycle MVP — Branch Management V1 promotion candidate.
 - **Checkpoint alcanzado:** Pricing Catalog cerrado conforme a los PBI y
   autoridades técnicas enlazadas; TL-01–04 están cerrados por integración
   gobernada, exact-main CI y closure refs. `Released` permanece separado.
@@ -15,12 +15,12 @@
 - **Sprint 01:** `Closed`; cinco PBIs committed `Done`; ninguno `Released`.
 - **PBI actual:** `NONE`.
 - **Siguiente PBI candidato:** ninguno; PBI-042 permanece fuera de alcance.
-- **Blocking gate:** ninguno para implementación local TL-05; `TL5D-001–004`
-  y los bloques 2–9 fueron autorizados. Production no está autorizada.
+- **Blocking gate:** ninguno para promoción local TL-05; `TL5D-001–004`, los
+  bloques 2–9 y el full gate están completos. Production no está autorizada.
 - **WIP operacional:** `1/1 Work Unit`; `0/1 PBI`.
 - **Autoridad:** decisiones Owner TL-001–016/TLD-001–009 y TL-01–04 cerrados;
-  TL-05 tiene autoridad local para implementar sus bloques 2–9, sin promoción,
-  merge ni deploy.
+  TL-05 está `READY_FOR_PROMOTION`; push, PR, merge y deploy conservan
+  autoridad separada.
 
 ## Objetivo
 
@@ -85,14 +85,14 @@ PBI-026/PBI-028/PBI-038 están `Done` y no están `Released`. G1–G5 están
 |---|---|
 | Program | MVP Operating Roadmap |
 | Stage | MVP |
-| Phase | Tenant Lifecycle MVP — Branch Management V1 implementation |
+| Phase | Tenant Lifecycle MVP — Branch Management V1 promotion candidate |
 | Sprint | NONE; SPRINT-03 remains Closed |
 | Sprint status | No active Sprint |
 | Current PBI | NONE |
-| Active Work Unit | TL-05 — Branch Management V1 + Tenant Activation (`ACTIVE`) |
+| Active Work Unit | TL-05 — Branch Management V1 + Tenant Activation (`READY_FOR_PROMOTION`) |
 | Work Unit WIP | 1/1 |
 | Next PBI candidate | NONE; future TL Work Units are not PBIs and are not started |
-| Blocking gate | None for local implementation; promotion remains separately gated |
+| Blocking gate | None in the local candidate; remote promotion requires explicit Owner authorization |
 
 ## Fases aprobadas
 
@@ -264,9 +264,9 @@ estado autoriza release o deploy.
 
 ## Próxima revisión
 
-- **Disparador:** resolución Owner de `TL5D-001–004` y autorización explícita
-  para implementar TL-05.
+- **Disparador:** autorización Owner explícita para promover el candidato local
+  TL-05 a revisión remota.
 - **Estado conservado:** PBI-040 y PBI-041 `Done`, `Released: NO`; Current PBI
   `NONE`; Production no autorizada.
-- **Después:** ejecutar únicamente los bloques TL-05 autorizados; no iniciar
-  TL-06 automáticamente.
+- **Después:** promover un único candidato TL-05 conforme al workflow; no
+  iniciar TL-06 automáticamente.

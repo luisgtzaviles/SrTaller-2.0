@@ -8,7 +8,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-05-branch-management-readiness
 base_sha: 34029bd4c0a892aba1a202444603bfd9c3c05f96
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-21
 -->
@@ -20,10 +20,10 @@ Current PBI: NONE
 - **Milestone:** Tenant Lifecycle MVP.
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
-- **Overall status:** `IMPLEMENTATION IN PROGRESS`.
-- **Progress:** `8 / 9` implementation blocks complete.
-- **Current work:** canonical docs, verification topology and candidate freeze.
-- **Next block:** authoritative `verify:full` on the frozen candidate.
+- **Overall status:** `READY_FOR_PROMOTION`.
+- **Progress:** `9 / 9` implementation blocks complete.
+- **Current work:** local candidate frozen; awaiting explicit remote promotion authorization.
+- **Next block:** push one coherent candidate and open one Draft PR only after Owner authorization.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -86,17 +86,18 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 6 — Admin login/session shell.
 - [x] Block 7 — Branch onboarding and management UI.
 - [x] Block 8 — PostgreSQL concurrency, regression and browser QA.
-- [~] Block 9 — canonical docs, full verification and candidate freeze.
+- [x] Block 9 — canonical docs, full verification and candidate freeze.
 
 ## Current
 
 The separate Admin Session gate, responsive shell, first-Branch onboarding,
-list/create/edit and Level-2 lifecycle UX passed material local QA. Block 9 is active.
+list/create/edit and Level-2 lifecycle UX passed material local QA. The frozen
+candidate passed the authoritative local full gate.
 
 ## Next
 
-Reconcile canonical evidence and verification manifests, then freeze and run
-the single authoritative full gate.
+Await explicit Owner authorization to promote this exact Work Unit candidate
+to remote review. Do not start TL-06.
 
 ## Blockers
 
@@ -133,13 +134,14 @@ the single authoritative full gate.
 - [x] Admin UI contract tests `4 / 4`, typecheck and production build.
 - [x] Material Admin login, duplicate-name create, edit/reload, deactivate and reactivate proof.
 - [x] Desktop, 768 px, 640 px, light/dark and keyboard proof; no page-level horizontal overflow.
+- [x] Authoritative `verify:full`: stages 0–17 PASS, including TL-05 PostgreSQL `3 / 3`, 84 migrations and rerun `0 pending`.
 
 ## Promotion Gates
 
 - Existing authoritative promotion policy remains unchanged.
-- The current classifier requires `FULL` before promotion because the readiness
-  contract lives under `docs/architecture-readiness/`; it will run once on the
-  frozen implementation candidate and is not bypassed.
+- The classifier required `FULL` before promotion because the readiness
+  contract lives under `docs/architecture-readiness/`; the frozen candidate
+  passed that gate without bypasses or threshold changes.
 
 ## Remote Actions / Authorization
 

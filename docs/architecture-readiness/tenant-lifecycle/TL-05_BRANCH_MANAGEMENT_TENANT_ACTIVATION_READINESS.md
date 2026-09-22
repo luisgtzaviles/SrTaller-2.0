@@ -3,13 +3,13 @@
 ## Estado
 
 - **Work Unit:** TL-05 — Branch Management V1 + Tenant Activation.
-- **Iteración:** implementación local materializada; candidato en verificación
-  final.
+- **Iteración:** implementación local materializada y verificada; candidato
+  listo para promoción gobernada.
 - **Tipo / riesgo:** `PRODUCT` / `ARCHITECTURAL`.
 - **Dependencias satisfechas:** ADR-015, Tenant Lifecycle MVP y TL-02–04
   integrados y cerrados.
-- **Resultado:** bloques 2–8 materializados y probados; bloque 9 congela
-  documentación, evidencia y el gate completo antes de promoción.
+- **Resultado:** bloques 2–9 materializados; documentación, evidencia y gate
+  completo congelados antes de promoción.
 - **Fuera de alcance:** TL-06, Station enrollment, billing, planes, Super Admin,
   hard delete y cambios de producto no descritos aquí.
 
@@ -461,6 +461,8 @@ ADR nuevo.
 - Admin login/shell/onboarding/lista/edición/lifecycle pasaron proof Chrome en
   desktop, 768, 640, light/dark y teclado;
 - PostgreSQL TL-05 pasa `3/3`, 84 migraciones y rerun `0 pending`.
+- `verify:full` pasa stages 0–17, incluidos los compuestos PostgreSQL, runtime
+  Preview-like, backend/UI compilados, cleanup y fingerprint final.
 
 La evidencia local está en
 [`docs/quality/evidence/tl-05/`](../../quality/evidence/tl-05/README.md).
@@ -474,4 +476,4 @@ No queda una decisión Owner pendiente antes de implementar. Los nombres legacy
 son identificadores explícitos de fixtures de desarrollo y no afirmaciones
 físicas ni datos Avicell.
 
-**TL-05 IMPLEMENTATION: `FINAL VERIFICATION IN PROGRESS`.**
+**TL-05 IMPLEMENTATION: `READY_FOR_PROMOTION`.**

@@ -2,9 +2,9 @@
 
 ## Resultado
 
-Los bloques funcionales autorizados están materializados. La promoción local
-permanece pendiente del `verify:full` sobre el candidato documental final; no
-existe autorización remota y TL-06 permanece sin iniciar.
+Los bloques funcionales autorizados están materializados y el candidato local
+pasó el gate completo. No existe autorización remota y TL-06 permanece sin
+iniciar.
 
 ## Implementación
 
@@ -63,7 +63,13 @@ Operational Session.
 - migraciones: 84; segunda ejecución: `0 pending`;
 - `/livez`, `/readyz` y frontend local: `200`;
 - `git diff --check`: PASS;
-- `verify:full`: pendiente del candidato documental final.
+- `verify:full`: stages `0–17` PASS;
+- compuesto PostgreSQL: `5` suites, `17` tests, `0` skips críticos;
+- PBI-039/PBI-040/PBI-041 y TL-02/TL-03/TL-04/TL-05 materiales: PASS;
+- TL-05 PostgreSQL: `3/3`, migraciones `84`, rerun `0 pending`;
+- Preview-like PostgreSQL, backend compilado y UI compilada: PASS;
+- cleanup/fingerprint final: PASS;
+- warning aceptado: chunk principal Vite mayor a 500 kB; no es una regresión TL-05.
 
 Estos resultados no sustituyen CI remota, review independiente, merge,
 exact-main CI ni deploy.
