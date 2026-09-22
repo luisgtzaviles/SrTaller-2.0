@@ -19,6 +19,7 @@ import { CatalogFieldPolicyConfigurationPage } from './pages/CatalogFieldPolicyC
 import { PriceListPage } from './pages/PriceListPage.js';
 import { PublicRegistrationPage } from './pages/PublicRegistrationPage.js';
 import { BulkCatalogComposerPage } from './pages/BulkCatalogComposerPage.js';
+import { AdminApp } from './admin/AdminApp.js';
 import { SessionProvider } from './session/SessionProvider.js';
 import { hasOperationalCapability } from './session/session-capabilities.mjs';
 import type { OperationalCapability } from './session/session-api.js';
@@ -92,6 +93,9 @@ export function App(): React.JSX.Element {
   const location = useLocation();
   if (location.pathname === '/registro' || location.pathname === '/verificar') {
     return <PublicRegistrationPage />;
+  }
+  if (location.pathname === '/login' || location.pathname === '/admin' || location.pathname.startsWith('/admin/')) {
+    return <AdminApp />;
   }
   const routeState = location.state as Readonly<{
     backgroundLocation?: Location;

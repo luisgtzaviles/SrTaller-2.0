@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
 - **Overall status:** `IMPLEMENTATION IN PROGRESS`.
-- **Progress:** `5 / 9` implementation blocks complete.
-- **Current work:** Admin login/session shell.
-- **Next block:** Branch onboarding and management UI.
+- **Progress:** `7 / 9` implementation blocks complete.
+- **Current work:** PostgreSQL concurrency, regression and browser QA.
+- **Next block:** canonical docs, full verification and candidate freeze.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -83,21 +83,19 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Block 3 — transactional commands and Tenant activation.
 - [x] Block 4 — Admin authorization and cross-Tenant protection.
 - [x] Block 5 — Admin HTTP and operational-authority retirement.
-- [~] Block 6 — Admin login/session shell.
-- [ ] Block 7 — Branch onboarding and management UI.
-- [ ] Block 8 — PostgreSQL concurrency, regression and browser QA.
+- [x] Block 6 — Admin login/session shell.
+- [x] Block 7 — Branch onboarding and management UI.
+- [~] Block 8 — PostgreSQL concurrency, regression and browser QA.
 - [ ] Block 9 — canonical docs, full verification and candidate freeze.
 
 ## Current
 
-The six approved `/api/admin/branches` routes are materialized and the former
-Station/PIN timezone POST path is retired while read presentation remains.
-Block 6 is active.
+The separate Admin Session gate, responsive shell, first-Branch onboarding,
+list/create/edit and Level-2 lifecycle UX are materialized. Block 8 is active.
 
 ## Next
 
-Build the minimal Admin Session gate and shell without mixing Operational
-Session authority.
+Run material PostgreSQL, regression and Chrome proofs at desktop, 768 and 640.
 
 ## Blockers
 
@@ -127,6 +125,7 @@ Session authority.
 - [x] TL-05 PostgreSQL Branch command suite `3 / 3`.
 - [x] Concurrent two-Branch deactivation leaves exactly one active Branch.
 - [x] Focused Admin capability and Level-2 route contract tests `3 / 3`.
+- [x] Admin UI contract tests `4 / 4`, typecheck and production build.
 
 ## Promotion Gates
 
