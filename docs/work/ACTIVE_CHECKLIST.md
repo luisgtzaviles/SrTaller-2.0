@@ -20,12 +20,13 @@ Current PBI: NONE
 - **Milestone:** Tenant Lifecycle MVP.
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-05` is in readiness only.
-- **Overall status:** `OWNER DECISIONS REQUIRED`.
-- **Progress:** `8 / 10` readiness steps complete.
-- **Current work:** readiness audit and implementation contract complete.
-- **Next block:** Owner resolves `TL5D-001–004` and explicitly authorizes or
-  rejects implementation.
-- **Blockers:** four scoped Owner decisions; no technical/runtime blocker.
+- **Overall status:** `WAITING FOR LEGACY BRANCH MAPPING`.
+- **Progress:** `9 / 11` readiness steps complete.
+- **Current work:** `TL5D-001–003` recorded; legacy Branches inspected
+  read-only.
+- **Next block:** Owner provides the two truthful `displayName` mappings for
+  `TL5D-004`.
+- **Blockers:** `TL5D-004` only; no technical/runtime blocker.
 - **Last updated:** 2026-09-21.
 
 ## Objective
@@ -65,7 +66,7 @@ To execute one authorized objective with a transferable repository-native handof
 - Legacy Branch rows have no persisted name; no mapping may be invented.
 - Last-active-Branch enforcement must survive concurrent deactivation.
 - Operational Branch settings currently expose a conflicting mutation path.
-- Reactivation sensitivity is not yet explicitly approved.
+- Legacy Branch rows still require truthful Owner-provided display names.
 
 ## Plan
 
@@ -77,22 +78,22 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Define timezone, migration/backfill and audit contracts.
 - [x] Define minimal Admin UI/onboarding scope.
 - [x] Define implementation blocks and material test plan.
-- [~] Obtain Owner decisions `TL5D-001–004`.
+- [x] Record Owner decisions `TL5D-001–003`.
+- [~] Obtain legacy Branch mapping `TL5D-004`.
 - [ ] Receive explicit implementation authorization.
 
 ## Current
 
-Readiness complete; waiting for the four scoped Owner decisions before implementation can be authorized.
+Readiness contract complete; waiting only for the two legacy Branch names in
+`TL5D-004` before implementation can be authorized.
 
 ## Next
 
-Owner resolves `TL5D-001–004`; then authorize or reject the proposed implementation scope.
+Owner maps each legacy `branchId` to its truthful `displayName`; then authorize
+or reject the proposed implementation scope.
 
 ## Blockers
 
-- `TL5D-001`: duplicate Branch-name policy.
-- `TL5D-002`: explicit first-Branch timezone versus product default.
-- `TL5D-003`: reactivation sensitivity level.
 - `TL5D-004`: authoritative names for legacy Branch rows.
 
 ## Important Discoveries
@@ -102,6 +103,8 @@ Owner resolves `TL5D-001–004`; then authorize or reject the proposed implement
 - Starter Tenant Admin policy v1 already contains all three Branch capabilities.
 - Local PostgreSQL has 81 migrations, two active unnamed Branches and no effective Tenant Admin; it remains correctly `ONBOARDING`.
 - Current operational timezone mutation must not remain an alternate authority after TL-05.
+- Both legacy rows belong to Tenant `SR Taller`; Branch `...0101` has one
+  active linked Station and Branch `...0102` has none.
 
 ## Focused Verification
 

@@ -7,8 +7,9 @@
 - **Tipo / riesgo:** `DISCOVERY` / `ARCHITECTURAL`.
 - **Dependencias satisfechas:** ADR-015, Tenant Lifecycle MVP y TL-02–04
   integrados y cerrados.
-- **Resultado:** `OWNER DECISIONS REQUIRED`; `TL5D-001–004` deben resolverse
-  antes de autorizar implementación.
+- **Resultado:** `WAITING FOR LEGACY BRANCH MAPPING`; `TL5D-001–003` fueron
+  aprobadas y sólo `TL5D-004` permanece pendiente antes de autorizar
+  implementación.
 - **Fuera de alcance:** TL-06, Station enrollment, billing, planes, Super Admin,
   hard delete y cambios de producto no descritos aquí.
 
@@ -120,8 +121,8 @@ Reglas:
   autoridad desde el cliente.
 - No existen dirección, teléfono, horario, geocoding, jerarquía, transferencia
   ni delete en V1.
-- El nombre no es identidad ni autoridad. Su política de duplicados queda en
-  `TL5D-001`.
+- El nombre no es identidad ni autoridad. Los nombres duplicados están
+  permitidos; `branchId` permanece como identidad autoritativa.
 
 ## 4. Superficie de comandos Branch
 
@@ -152,7 +153,7 @@ El catálogo y `STARTER_TENANT_ADMIN_POLICY` v1 ya contienen exactamente:
 |---|---|---|
 | list/read | `branches.read` | Admin Session válida. |
 | create/update | `branches.manage` | Admin Session + CSRF/origin + commit guard. |
-| reactivate | `branches.manage` | Sensibilidad pendiente `TL5D-003`. |
+| reactivate | `branches.deactivate` | Level 2 + reauth reciente obligatoria. |
 | deactivate | `branches.deactivate` | Level 2 + reauth reciente obligatoria. |
 
 No se requiere bump de policy ni nuevas capabilities. No hay `isAdmin`, Role
@@ -244,7 +245,8 @@ relaciones permanecen intactas.
   contrato aprobado no los clasificó sensibles y no restauran confianza
   existente.
 - Reactivate puede volver elegibles Station Credentials preexistentes para un
-  contexto nuevo. Su clasificación requiere `TL5D-003`; se recomienda Level 2.
+  contexto nuevo. Es Level 2 y reutiliza `branches.deactivate`, la capability
+  lifecycle sensible existente, sin crear otra capability.
 
 No se crea otro esquema de password, PIN, approval, timeout o token.
 
@@ -253,10 +255,10 @@ No se crea otro esquema de password, PIN, approval, timeout o token.
 - La autoridad persistida es un identificador IANA validado por
   `parseBranchTimeZone`.
 - Nuevas Branches deben enviar una zona IANA explícita; el servidor no deriva
-  autoridad del browser, Node, PostgreSQL ni un offset. Esta dirección requiere
-  confirmación `TL5D-002` porque no existe default de producto aprobado.
-- Puede mostrarse una sugerencia UX local, pero el administrador confirma el
-  valor IANA antes de crear.
+  autoridad del browser, Node, PostgreSQL ni un offset.
+- Puede mostrarse una sugerencia UX local, pero el administrador debe
+  seleccionarla o confirmarla explícitamente antes de crear. No existe default
+  silencioso de producto.
 - Update incrementa `version` y `updatedAt`; no reescribe `created_at`, Repairs,
   Sessions, audit ni otros instantes.
 - Todos los instantes se almacenan/comparan en UTC. Presentación y límites de
@@ -340,8 +342,8 @@ backend; la operación existente sigue leyendo timezone para presentar fechas.
 
 ## 13. Bloques de implementación propuestos
 
-1. **Decisiones y contrato:** resolver `TL5D-001–004`, actualizar contrato
-   permanente y fijar sensitivity/mapping.
+1. **Decisiones y contrato:** incorporar `TL5D-001–003`, resolver el mapping
+   `TL5D-004` y fijar el contrato migratorio.
 2. **Dominio/schema:** ampliar Branch existente, journal/eventos, migration
    segura y mapping legacy sin alterar relaciones.
 3. **Puertos/transacción:** comandos owner `stations`, lock Tenant, optimistic
@@ -363,7 +365,7 @@ backend; la operación existente sigue leyendo timezone para presentar fechas.
 ### Creación y modelo
 
 - primera y siguientes Branches; IDs/timestamps server-side;
-- nombre vacío/whitespace/límite y duplicados según `TL5D-001`;
+- nombre vacío/whitespace/límite y duplicados permitidos;
 - timezone IANA válida, inválida, fixed offset y valor no explícito;
 - optimistic version, replay, digest conflict y response-loss retry.
 
@@ -410,17 +412,25 @@ backend; la operación existente sigue leyendo timezone para presentar fechas.
 - teclado, focus, errors, denied, light/dark, desktop/768/640, touch targets y
   sin horizontal overflow ni duplicación del Design System.
 
-## 15. Decisiones Owner requeridas
+## 15. Decisiones Owner
 
-| ID | Decisión mínima | Recomendación |
+| ID | Estado | Contrato |
 |---|---|---|
-| `TL5D-001` | ¿Nombres duplicados dentro del mismo Tenant se permiten en V1? | **Permitirlos.** El nombre es presentación, el UUID es identidad y no existe contrato de unicidad. La UI debe mostrar timezone/estado para desambiguar. |
-| `TL5D-002` | ¿La primera Branch exige selección explícita de timezone o existe un default de producto? | **Exigir IANA explícita.** La UI puede sugerir, nunca persistir una zona inferida sin confirmación. |
-| `TL5D-003` | ¿Reactivar una Branch es Level 1 o Level 2? | **Level 2.** Puede volver elegibles Station Credentials existentes; reutilizar reauth de 10 minutos. List/read/create/name/timezone quedan Level 1. |
-| `TL5D-004` | ¿Qué nombres autoritativos reciben las Branches legacy por ambiente/ID? | Proporcionar mapping explícito. No autorizar fallback genérico ni inferencia desde timezone/Station. |
+| `TL5D-001` | **APPROVED** | Nombres duplicados permitidos. `branchId` es identidad; `displayName` es sólo presentación y nunca autoridad, routing ni tenancy boundary. |
+| `TL5D-002` | **APPROVED** | Zona IANA explícitamente seleccionada/confirmada. Sugerencia UX permitida; default silencioso y fixed offsets prohibidos. El cambio no reescribe timestamps históricos. |
+| `TL5D-003` | **APPROVED** | Reactivación Level 2 con Admin Session, `branches.deactivate` y la ventana de password reauth de 10 minutos de TL-02. El primitivo vigente expira al alcanzar `600000 ms`; no se crea otro mecanismo. |
+| `TL5D-004` | **PENDING** | El Owner debe asignar un `displayName` verdadero a cada Branch legacy por su `branchId`. No se permite fallback, placeholder ni inferencia desde timezone, Station o fixtures. |
 
-No se detectó conflicto que requiera un ADR nuevo. Las cuatro decisiones son
-política funcional/migratoria acotada del Work Unit.
+La inspección local read-only delimitó el input pendiente:
+
+| Branch | Tenant | Timezone | Estado | Creada | Identificación material no nominal |
+|---|---|---|---|---|---|
+| `00000000-0000-4000-8000-000000000101` | `00000000-0000-4000-8000-000000000001` (`SR Taller`) | `America/Hermosillo` | ACTIVE | `2026-01-01T00:00:00Z` | Una Station activa actualmente vinculada: `00000000-0000-4000-8000-000000000401`; es la Branch operacional usada por fixtures locales. |
+| `00000000-0000-4000-8000-000000000102` | `00000000-0000-4000-8000-000000000001` (`SR Taller`) | `America/Tijuana` | ACTIVE | `2026-01-01T00:00:00Z` | Cero Stations vinculadas; no existe otra pista nominal autoritativa. |
+
+Los términos `Centro` y `Centenario` encontrados en ADRs son ejemplos de
+dominio, no mappings de estas filas. No se detectó conflicto que requiera un
+ADR nuevo.
 
 ## 16. ACTIVE_CHECKLIST
 
@@ -430,7 +440,8 @@ política funcional/migratoria acotada del Work Unit.
 - Modelo, comandos, transacción, mutex de última Branch, migración, eventos,
   bloques y pruebas definidos.
 - Producto, schema y datos permanecen sin cambios.
-- `TL5D-001–004` bloquean únicamente autorización de implementación.
+- `TL5D-001–003` aprobadas y registradas.
+- `TL5D-004` bloquea únicamente autorización de implementación.
 - TL-06 no está iniciado.
 
 ## 17. Readiness
@@ -438,7 +449,7 @@ política funcional/migratoria acotada del Work Unit.
 TL-05 es compatible con ADR-015 y puede extender los owners existentes sin un
 nuevo agregado, capability bundle o mecanismo de autenticación. El diseño
 protege activación, aislamiento y última Branch en una transacción material.
-Antes de implementar, el Owner debe cerrar nombres duplicados, default de
-timezone, sensibilidad de reactivation y mapping de nombres legacy.
+Antes de implementar, el Owner debe proporcionar únicamente el mapping de
+nombres legacy `TL5D-004`.
 
-**TL-05 READINESS: `OWNER DECISIONS REQUIRED`.**
+**TL-05 READINESS: `WAITING FOR LEGACY BRANCH MAPPING`.**
