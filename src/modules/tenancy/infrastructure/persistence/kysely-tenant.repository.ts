@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import type { DatabaseConnection } from '../../../../infrastructure/database/database-connection.js';
 import {
   useDatabasePersistenceExecutor,
@@ -203,6 +205,35 @@ class KyselyTenantRepository implements TenantRepositoryPort {
     } catch (error: unknown) {
       throw mapTenantError(error);
     }
+  }
+
+  async lockTenant(scope: TenantPersistenceScope): Promise<TenantRecord> {
+    const validatedScope = validateScope(scope);
+    try {
+      return await this.execute(async (executor: TenantExecutor) => {
+        const row = await executor.selectFrom('tenants').selectAll()
+          .where('tenant_id', '=', validatedScope.tenantId).forUpdate().executeTakeFirst();
+        if (!row) throw new TenantPersistenceError('TENANT_PERSISTENCE_NOT_FOUND');
+        return mapTenantRecord(row);
+      });
+    } catch (error: unknown) { throw mapTenantError(error); }
+  }
+
+  async activateTenant(scope: TenantPersistenceScope, input: Readonly<{ actorUserId: string; adminSessionId: string; correlationId: string; occurredAt: string }>): Promise<TenantRecord> {
+    const validatedScope = validateScope(scope);
+    if (!validInstant(input.occurredAt)) throw new TenantPersistenceError('TENANT_PERSISTENCE_FAILED');
+    try {
+      return await this.execute(async (executor: TenantExecutor) => {
+        const current = await executor.selectFrom('tenants').selectAll().where('tenant_id', '=', validatedScope.tenantId).forUpdate().executeTakeFirst();
+        if (!current) throw new TenantPersistenceError('TENANT_PERSISTENCE_NOT_FOUND');
+        if (current.lifecycle_status === 'ACTIVE') return mapTenantRecord(current);
+        const occurredAt = new Date(input.occurredAt);
+        const updated = await executor.updateTable('tenants').set({ lifecycle_status: 'ACTIVE', version: current.version + 1, updated_at: occurredAt })
+          .where('tenant_id', '=', validatedScope.tenantId).where('version', '=', current.version).returningAll().executeTakeFirstOrThrow();
+        await executor.insertInto('tenant_lifecycle_events').values({ event_id: randomUUID(), tenant_id: validatedScope.tenantId, actor_user_id: input.actorUserId, admin_session_id: input.adminSessionId, event_type: 'TENANT_ACTIVATED', correlation_id: input.correlationId, tenant_version: updated.version, occurred_at: occurredAt }).execute();
+        return mapTenantRecord(updated);
+      });
+    } catch (error: unknown) { throw mapTenantError(error); }
   }
 }
 

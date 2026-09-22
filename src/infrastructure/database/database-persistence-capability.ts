@@ -71,6 +71,9 @@ type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'st
     user_provisioning_bootstraps: DatabaseSchema['user_provisioning_bootstraps'];
     tenant_bootstrap_commands: DatabaseSchema['tenant_bootstrap_commands'];
     tenant_bootstrap_guards: DatabaseSchema['tenant_bootstrap_guards'];
+    branch_commands: DatabaseSchema['branch_commands'];
+    branch_audit_events: DatabaseSchema['branch_audit_events'];
+    tenant_lifecycle_events: DatabaseSchema['tenant_lifecycle_events'];
     user_lifecycle_commands: DatabaseSchema['user_lifecycle_commands'];
     user_profile_update_commands: DatabaseSchema['user_profile_update_commands'];
     user_create_commands: DatabaseSchema['user_create_commands'];
@@ -140,10 +143,10 @@ type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
     : Owner extends 'registration'
     ? Pick<DatabaseSchema, 'registration_attempts' | 'registration_verification_challenges' | 'registration_acceptance_documents' | 'registration_email_dispatches' | 'registration_public_action_limits' | 'registration_security_events'>
     : Owner extends 'tenancy'
-    ? Pick<DatabaseSchema, 'tenants' | 'tenant_bootstrap_commands' | 'tenant_bootstrap_guards'>
+    ? Pick<DatabaseSchema, 'tenants' | 'tenant_bootstrap_commands' | 'tenant_bootstrap_guards' | 'tenant_lifecycle_events'>
     : Owner extends 'users'
     ? Pick<DatabaseSchema, 'users' | 'user_preferences' | 'user_provisioning_bootstraps' | 'user_lifecycle_commands' | 'user_profile_update_commands' | 'user_create_commands'>
-    : Pick<DatabaseSchema, 'branches' | 'stations' | 'station_bindings' | 'station_credentials'>;
+    : Pick<DatabaseSchema, 'branches' | 'branch_commands' | 'branch_audit_events' | 'stations' | 'station_bindings' | 'station_credentials'>;
 
 export type InternalDatabasePersistenceExecutor<
   Owner extends InternalDatabasePersistenceOwner,

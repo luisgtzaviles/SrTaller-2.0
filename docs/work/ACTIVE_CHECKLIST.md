@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
 - **Overall status:** `IMPLEMENTATION IN PROGRESS`.
-- **Progress:** `1 / 9` implementation blocks complete.
-- **Current work:** Branch V1 schema, legacy mapping and persistence contracts.
-- **Next block:** authoritative Branch commands and Tenant activation.
+- **Progress:** `2 / 9` implementation blocks complete.
+- **Current work:** authoritative Branch commands and Tenant activation.
+- **Next block:** Admin authorization and cross-Tenant protection.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -79,8 +79,8 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Define minimal Admin UI/onboarding scope.
 - [x] Define implementation blocks and material test plan.
 - [x] Record `TL5D-001–004` and explicit implementation authorization.
-- [~] Block 2 — Branch V1 schema, migration and persistence.
-- [ ] Block 3 — transactional commands and Tenant activation.
+- [x] Block 2 — Branch V1 schema, migration and persistence.
+- [~] Block 3 — transactional commands and Tenant activation.
 - [ ] Block 4 — Admin authorization and cross-Tenant protection.
 - [ ] Block 5 — Admin HTTP and operational-authority retirement.
 - [ ] Block 6 — Admin login/session shell.
@@ -90,11 +90,13 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Current
 
-Owner decisions and implementation authority are complete. Block 2 is active.
+Branch V1 is materialized locally with the exact legacy mapping, append-only
+audit/journal schema and 83 migrations. Block 3 is active.
 
 ## Next
 
-Implement the additive Branch V1 migration and material persistence tests.
+Implement serializable Branch commands, Tenant activation and final-active
+Branch protection.
 
 ## Blockers
 
@@ -119,6 +121,8 @@ Implement the additive Branch V1 migration and material persistence tests.
 - [x] Architecture and repository structure checks.
 - [x] `git diff --check`.
 - [x] `work-unit:check --mode ACTIVE`.
+- [x] Branch V1 schema tests and typecheck.
+- [x] Local PostgreSQL migration apply plus second run `0 pending`.
 
 ## Promotion Gates
 

@@ -111,4 +111,6 @@ export interface TenantRepositoryPort {
   ): Promise<TenantRecord | null>;
   existsTenant(scope: TenantPersistenceScope): Promise<boolean>;
   readOperatingCurrency(scope: TenantPersistenceScope): Promise<string | null>;
+  lockTenant(scope: TenantPersistenceScope): Promise<TenantRecord>;
+  activateTenant(scope: TenantPersistenceScope, input: Readonly<{ actorUserId: string; adminSessionId: string; correlationId: string; occurredAt: string }>): Promise<TenantRecord>;
 }

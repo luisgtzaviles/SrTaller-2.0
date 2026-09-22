@@ -91,9 +91,9 @@ try {
   );
   for (const branch of rows.branches) {
     await client.query(
-      `INSERT INTO branches (tenant_id, branch_id, time_zone, active, created_at) VALUES ($1::uuid, $2::uuid, $3, $4, $5::timestamptz)
-       ON CONFLICT (tenant_id, branch_id) DO UPDATE SET time_zone = EXCLUDED.time_zone, active = EXCLUDED.active, created_at = EXCLUDED.created_at`,
-      [branch.tenantId, branch.branchId, branch.timeZone, branch.active, branch.createdAt],
+      `INSERT INTO branches (tenant_id, branch_id, display_name, time_zone, active, version, created_at, updated_at) VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, $7::timestamptz, $8::timestamptz)
+       ON CONFLICT (tenant_id, branch_id) DO UPDATE SET display_name = EXCLUDED.display_name, time_zone = EXCLUDED.time_zone, active = EXCLUDED.active, version = EXCLUDED.version, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at`,
+      [branch.tenantId, branch.branchId, branch.displayName, branch.timeZone, branch.active, branch.version, branch.createdAt, branch.updatedAt],
     );
   }
   for (const user of localUserRows()) {
