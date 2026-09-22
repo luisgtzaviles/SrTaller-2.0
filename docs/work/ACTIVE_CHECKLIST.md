@@ -21,9 +21,9 @@ Current PBI: NONE
 - **Sprint:** none selected.
 - **Current PBI:** none; Work Unit `TL-05` is implementing its authorized scope.
 - **Overall status:** `IMPLEMENTATION IN PROGRESS`.
-- **Progress:** `3 / 9` implementation blocks complete.
-- **Current work:** Admin authorization and cross-Tenant protection.
-- **Next block:** Admin HTTP and operational-authority retirement.
+- **Progress:** `4 / 9` implementation blocks complete.
+- **Current work:** Admin HTTP and operational-authority retirement.
+- **Next block:** Admin login/session shell.
 - **Blockers:** none.
 - **Last updated:** 2026-09-21.
 
@@ -81,8 +81,8 @@ To execute one authorized objective with a transferable repository-native handof
 - [x] Record `TL5D-001–004` and explicit implementation authorization.
 - [x] Block 2 — Branch V1 schema, migration and persistence.
 - [x] Block 3 — transactional commands and Tenant activation.
-- [~] Block 4 — Admin authorization and cross-Tenant protection.
-- [ ] Block 5 — Admin HTTP and operational-authority retirement.
+- [x] Block 4 — Admin authorization and cross-Tenant protection.
+- [~] Block 5 — Admin HTTP and operational-authority retirement.
 - [ ] Block 6 — Admin login/session shell.
 - [ ] Block 7 — Branch onboarding and management UI.
 - [ ] Block 8 — PostgreSQL concurrency, regression and browser QA.
@@ -90,14 +90,14 @@ To execute one authorized objective with a transferable repository-native handof
 
 ## Current
 
-Branch commands now run in serializable transactions with idempotent snapshots,
-monotonic Tenant activation and a proven last-active-Branch race guard. Block
-4 is active.
+Branch operations are bound to Admin Context, explicit capabilities and
+commit-time Tenant Admin authority; cross-Tenant reads fail closed. Block 5 is
+active.
 
 ## Next
 
-Bind every operation to Admin Context capabilities and prove Level-2 and
-cross-Tenant denials.
+Publish the approved Admin HTTP routes and retire the operational timezone
+write path.
 
 ## Blockers
 
@@ -126,6 +126,7 @@ cross-Tenant denials.
 - [x] Local PostgreSQL migration apply plus second run `0 pending`.
 - [x] TL-05 PostgreSQL Branch command suite `3 / 3`.
 - [x] Concurrent two-Branch deactivation leaves exactly one active Branch.
+- [x] Focused Admin capability and Level-2 route contract tests `3 / 3`.
 
 ## Promotion Gates
 
