@@ -72,6 +72,7 @@ export class UserPersistenceError extends Error {
 export interface UserMutationCommitGuard {
   confirmCurrent(transactionContext: object): Promise<boolean>;
   confirmContinuity?(transactionContext: object): Promise<boolean>;
+  recordAudit?(transactionContext: object, result: UserRecord): Promise<void>;
 }
 
 export interface UserRepositoryPort {

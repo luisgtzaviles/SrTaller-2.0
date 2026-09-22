@@ -169,7 +169,10 @@ implements AdministrationAuthorizationCommitGuardPort {
           .where('role.policy_version', '=', 1).where('role.status', '=', 'active')
           .where('identity.status', '=', 'active').where('identity.verified_at', 'is not', null)
           .where('credential.status', '=', 'active').where('credential.revoked_at', 'is', null)
-          .forShare(['assignment', 'role', 'identity', 'credential']).executeTakeFirst();
+          // The protected role is the tenant-scoped serialization key for every
+          // mutation that can remove effective Tenant Admin authority.
+          .forUpdate('role')
+          .forShare(['assignment', 'identity', 'credential']).executeTakeFirst();
         return record !== undefined;
       },
     );

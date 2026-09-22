@@ -90,6 +90,7 @@ export class AdminAuthorizationExecutorService implements AdminAuthorizationExec
         tenantId: session.tenantId as TenantId,
         sessionId: session.sessionId,
         userId: session.userId,
+        adminIdentityId: session.adminIdentityId,
         userDisplayName: session.displayName,
         capability: required.capability,
         reauthenticatedAt: session.reauthenticatedAt,

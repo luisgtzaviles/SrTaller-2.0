@@ -85,3 +85,9 @@ export type TenantBootstrapUserWriter =
 export const TENANT_BOOTSTRAP_USER_WRITER: unique symbol = Symbol(
   'srtaller.users.tenant-bootstrap-user-writer',
 );
+
+export type AdminInvitationUserCommitRuntime =
+  import('./application/ports/admin-invitation-user-commit.port.js').AdminInvitationUserCommitRuntime;
+export const ADMIN_INVITATION_USER_COMMIT_RUNTIME: unique symbol = Symbol(
+  'srtaller.users.admin-invitation-user-commit-runtime',
+);

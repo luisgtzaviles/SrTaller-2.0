@@ -49,6 +49,9 @@ export const expectedPostgresqlSkipInventory = Object.freeze([
   materialTest('test/tl05-branch-postgresql.test.mjs', 'TL-05 creates duplicate-named Branches, activates Tenant and preserves idempotent snapshots', 'tl05-postgresql'),
   materialTest('test/tl05-branch-postgresql.test.mjs', 'TL-05 does not activate without effective Tenant Admin and isolates Tenant scope', 'tl05-postgresql'),
   materialTest('test/tl05-branch-postgresql.test.mjs', 'TL-05 serializes simultaneous deactivation and preserves one active Branch', 'tl05-postgresql'),
+  materialTest('test/tl06-admin-users-roles-postgresql.test.mjs', 'TL-06 PostgreSQL executes invitation replay, supersession, acceptance and secret-safe audit', 'tl06-postgresql'),
+  materialTest('test/tl06-admin-users-roles-postgresql.test.mjs', 'TL-06 PostgreSQL fails closed across tenants, branches and stale issuer authority', 'tl06-postgresql'),
+  materialTest('test/tl06-admin-users-roles-postgresql.test.mjs', 'TL-06 serializes simultaneous Tenant Admin revocation and preserves one effective Admin', 'tl06-postgresql'),
 ]);
 
 function inspectGuardedTests(source, file) {
@@ -126,6 +129,7 @@ export async function inspectPostgresqlSkipInventory(root = process.cwd()) {
       tl03Postgresql: materialCount('tl03-postgresql'),
       tl04Postgresql: materialCount('tl04-postgresql'),
       tl05Postgresql: materialCount('tl05-postgresql'),
+      tl06Postgresql: materialCount('tl06-postgresql'),
     }),
   });
 }

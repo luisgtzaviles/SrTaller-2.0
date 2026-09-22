@@ -138,6 +138,7 @@ export interface AuthorizedAdminContext {
   readonly tenantId: TenantId;
   readonly sessionId: string;
   readonly userId: string;
+  readonly adminIdentityId: string;
   readonly userDisplayName: string;
   readonly capability: CapabilityCode;
   readonly reauthenticatedAt: string | null;

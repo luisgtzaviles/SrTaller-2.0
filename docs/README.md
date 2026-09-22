@@ -100,6 +100,8 @@ autoriza un cambio de producto.
 - [TL-04 — Public Registration + Email Verification Readiness](architecture-readiness/tenant-lifecycle/TL-04_PUBLIC_REGISTRATION_EMAIL_VERIFICATION_READINESS.md)
 - [TL-04 — Public Registration + Email Verification Evidence](quality/evidence/tl-04/README.md)
 - [TL-05 — Branch Management V1 + Tenant Activation Readiness](architecture-readiness/tenant-lifecycle/TL-05_BRANCH_MANAGEMENT_TENANT_ACTIVATION_READINESS.md)
+- [TL-06 — Tenant Administration Users/Roles Integration Readiness](architecture-readiness/tenant-lifecycle/TL-06_TENANT_ADMIN_USERS_ROLES_INTEGRATION_READINESS.md)
+- [TL-06 — Tenant Administration Users/Roles Integration Evidence](quality/evidence/tl-06/README.md)
 - [Cierre y priorización de bloqueantes arquitectónicos](architecture-readiness/blocker-closure/README.md)
 - [Baseline técnica de DEC-004](architecture-readiness/blocker-closure/DEC-004_BASELINE_TECNICA.md)
 - [Contexto del sistema](architecture/SYSTEM_CONTEXT.md)

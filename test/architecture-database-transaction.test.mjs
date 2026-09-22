@@ -49,6 +49,8 @@ test('transaction runner and internal capability retain exact registered ownersh
       'src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts',
       'src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts',
+      'src/modules/access/infrastructure/persistence/kysely-admin-invitation.repository.ts',
+      'src/modules/access/infrastructure/persistence/kysely-admin-lifecycle.repository.ts',
     ],
     forbiddenContextPackages: ['async_hooks', 'node:async_hooks'],
     forbiddenManualMethods: [

@@ -44,7 +44,7 @@ test('TL-02 persistence enforces tenant identity, secret shape and append-only a
     await pool.query(`insert into access_admin_security_events (tenant_id,event_id,user_id,admin_identity_id,session_id,event_type,result,reason_code,correlation_id,occurred_at) values ($1,$2,$3,$4,null,'ADMIN_LOGIN_SUCCEEDED','SUCCEEDED','CREDENTIAL_ACCEPTED',$5,$6)`, [tenantA, eventId, userA, identity, randomUUID(), now]);
     await assert.rejects(pool.query(`update access_admin_security_events set reason_code='MUTATED' where tenant_id=$1 and event_id=$2`, [tenantA, eventId]), (error) => error?.code === '23514');
     const columns = await pool.query(`select table_name from information_schema.tables where table_schema='public' and table_name like 'access_admin_%' order by table_name`);
-    assert.deepEqual(columns.rows.map(({ table_name }) => table_name), ['access_admin_auth_attempt_limits','access_admin_identities','access_admin_password_credentials','access_admin_recovery_challenges','access_admin_security_events','access_admin_sessions']);
+    assert.deepEqual(columns.rows.map(({ table_name }) => table_name), ['access_admin_auth_attempt_limits','access_admin_identities','access_admin_invitation_challenges','access_admin_invitation_commands','access_admin_invitation_dispatches','access_admin_invitation_grants','access_admin_invitations','access_admin_lifecycle_events','access_admin_password_credentials','access_admin_recovery_challenges','access_admin_security_events','access_admin_sessions']);
   } finally { await pool.end(); }
 });
 

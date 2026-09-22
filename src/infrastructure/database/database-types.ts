@@ -823,7 +823,7 @@ export interface AccessRoleTable {
 export interface AccessRoleCommandTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly client_request_id: ImmutableColumn<string>;
-  readonly command_type: ImmutableColumn<'create' | 'update' | 'replace_capabilities'>;
+  readonly command_type: ImmutableColumn<'create' | 'update' | 'replace_capabilities' | 'deactivate' | 'reactivate'>;
   readonly role_id: ImmutableColumn<string>;
   readonly request_fingerprint: ImmutableColumn<Uint8Array>;
   readonly result_role_key: ImmutableColumn<string>;
@@ -1067,6 +1067,97 @@ export interface AccessAdminSecurityEventTable {
   readonly event_type: ImmutableColumn<string>;
   readonly result: ImmutableColumn<'SUCCEEDED' | 'DENIED'>;
   readonly reason_code: ImmutableColumn<string>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly occurred_at: ImmutableColumn<Date>;
+}
+
+export interface AccessAdminInvitationTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly invitation_id: ImmutableColumn<string>;
+  readonly normalized_email: ImmutableColumn<string>;
+  readonly email_display: ImmutableColumn<string>;
+  readonly target_user_id: ImmutableColumn<string | null>;
+  readonly proposed_display_name: ImmutableColumn<string | null>;
+  readonly inviter_user_id: ImmutableColumn<string>;
+  readonly inviter_admin_identity_id: ImmutableColumn<string>;
+  readonly status: MutableColumn<'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED'>;
+  readonly version: DefaultedMutableColumn<number>;
+  readonly authority_revision: ImmutableColumn<number>;
+  readonly intended_grants_digest: ImmutableColumn<Uint8Array>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly accepted_at: MutableColumn<Date | null>;
+  readonly revoked_at: MutableColumn<Date | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface AccessAdminInvitationGrantTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly invitation_id: ImmutableColumn<string>;
+  readonly grant_index: ImmutableColumn<number>;
+  readonly role_id: ImmutableColumn<string>;
+  readonly role_version: ImmutableColumn<number>;
+  readonly assignment_scope: ImmutableColumn<'TENANT_WIDE' | 'BRANCH_RESTRICTED'>;
+  readonly branch_id: ImmutableColumn<string | null>;
+  readonly created_at: ImmutableColumn<Date>;
+}
+
+export interface AccessAdminInvitationChallengeTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly challenge_id: ImmutableColumn<string>;
+  readonly invitation_id: ImmutableColumn<string>;
+  readonly token_digest: ImmutableColumn<Uint8Array>;
+  readonly status: MutableColumn<'ACTIVE' | 'CONSUMED' | 'SUPERSEDED' | 'EXPIRED'>;
+  readonly version: DefaultedMutableColumn<number>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly consumed_at: MutableColumn<Date | null>;
+  readonly superseded_at: MutableColumn<Date | null>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface AccessAdminInvitationDispatchTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly delivery_id: ImmutableColumn<string>;
+  readonly invitation_id: ImmutableColumn<string>;
+  readonly challenge_id: ImmutableColumn<string>;
+  readonly template_key: ImmutableColumn<'admin-invitation'>;
+  readonly template_version: ImmutableColumn<1>;
+  readonly destination: ImmutableColumn<string>;
+  readonly status: MutableColumn<'PENDING' | 'DELIVERED' | 'FAILED'>;
+  readonly attempt_count: DefaultedMutableColumn<number>;
+  readonly provider_reference: MutableColumn<string | null>;
+  readonly reason_code: MutableColumn<string>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface AccessAdminInvitationCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly command_type: ImmutableColumn<'ISSUE' | 'RESEND' | 'REVOKE' | 'ACCEPT'>;
+  readonly invitation_id: ImmutableColumn<string>;
+  readonly request_fingerprint: ImmutableColumn<Uint8Array>;
+  readonly result_status: ImmutableColumn<'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED'>;
+  readonly result_version: ImmutableColumn<number>;
+  readonly applied_at: ImmutableColumn<Date>;
+}
+
+export interface AccessAdminLifecycleEventTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly event_id: ImmutableColumn<string>;
+  readonly actor_user_id: ImmutableColumn<string | null>;
+  readonly actor_admin_identity_id: ImmutableColumn<string | null>;
+  readonly session_id: ImmutableColumn<string | null>;
+  readonly target_user_id: ImmutableColumn<string | null>;
+  readonly role_id: ImmutableColumn<string | null>;
+  readonly assignment_id: ImmutableColumn<string | null>;
+  readonly invitation_id: ImmutableColumn<string | null>;
+  readonly branch_id: ImmutableColumn<string | null>;
+  readonly event_type: ImmutableColumn<string>;
+  readonly result: ImmutableColumn<'SUCCEEDED' | 'DENIED'>;
+  readonly reason_code: ImmutableColumn<string>;
+  readonly sensitivity_level: ImmutableColumn<1 | 2>;
   readonly correlation_id: ImmutableColumn<string>;
   readonly occurred_at: ImmutableColumn<Date>;
 }
@@ -1777,6 +1868,12 @@ export interface DatabaseSchema {
   readonly access_admin_auth_attempt_limits: AccessAdminAuthAttemptLimitTable;
   readonly access_admin_recovery_challenges: AccessAdminRecoveryChallengeTable;
   readonly access_admin_security_events: AccessAdminSecurityEventTable;
+  readonly access_admin_invitations: AccessAdminInvitationTable;
+  readonly access_admin_invitation_grants: AccessAdminInvitationGrantTable;
+  readonly access_admin_invitation_challenges: AccessAdminInvitationChallengeTable;
+  readonly access_admin_invitation_dispatches: AccessAdminInvitationDispatchTable;
+  readonly access_admin_invitation_commands: AccessAdminInvitationCommandTable;
+  readonly access_admin_lifecycle_events: AccessAdminLifecycleEventTable;
   readonly repairs: RepairTable;
   readonly repair_intakes: RepairIntakeTable;
   readonly repair_device_types: RepairDeviceTypeTable;

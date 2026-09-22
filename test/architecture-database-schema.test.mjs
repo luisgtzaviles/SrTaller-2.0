@@ -124,6 +124,12 @@ test('initial schema registry has exact owners, keys and physical scope', async 
     access_operational_sessions: { owner: 'access', kind: 'table' },
     access_admin_auth_attempt_limits: { owner: 'access', kind: 'table' },
     access_admin_identities: { owner: 'access', kind: 'table' },
+    access_admin_invitations: { owner: 'access', kind: 'table' },
+    access_admin_invitation_grants: { owner: 'access', kind: 'table' },
+    access_admin_invitation_challenges: { owner: 'access', kind: 'table' },
+    access_admin_invitation_dispatches: { owner: 'access', kind: 'table' },
+    access_admin_invitation_commands: { owner: 'access', kind: 'table' },
+    access_admin_lifecycle_events: { owner: 'access', kind: 'table' },
     access_admin_password_credentials: { owner: 'access', kind: 'table' },
     access_admin_recovery_challenges: { owner: 'access', kind: 'table' },
     access_admin_security_events: { owner: 'access', kind: 'table' },
@@ -255,6 +261,10 @@ test('productive migration root remains exact and governed', async () => {
       '20260921160000_stations_materialize_branch_management.ts',
       '20260921161000_tenancy_create_lifecycle_events.ts',
       '20260921162000_stations_extend_branch_command_snapshots.ts',
+      '20260921200000_access_create_admin_invitations.ts',
+      '20260921201000_access_enable_admin_role_lifecycle.ts',
+      '20260921202000_access_enforce_global_pending_invitation_email.ts',
+      '20260922090000_access_bound_admin_invitation_challenge_expiry.ts',
     ],
   );
   const migration = await readFile(migrationPath, 'utf8');

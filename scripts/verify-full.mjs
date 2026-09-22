@@ -54,6 +54,8 @@ const governedFilters = Object.freeze([
   'label=com.srtaller.tl02=postgresql',
   'label=com.srtaller.tl03=postgresql',
   'label=com.srtaller.tl04=postgresql',
+  'label=com.srtaller.tl05=postgresql',
+  'label=com.srtaller.tl06=postgresql',
   'label=com.srtaller.preview-runtime=postgresql',
   `label=${fullVerificationSmokeLabel}`,
 ]);
@@ -133,6 +135,7 @@ async function dryInventory() {
     'scripts/test-tl03-postgresql.mjs',
     'scripts/test-tl04-postgresql.mjs',
     'scripts/test-tl05-postgresql.mjs',
+    'scripts/test-tl06-postgresql.mjs',
     'scripts/test-preview-database-runtime-postgresql.mjs',
     'scripts/smoke-start.mjs',
     'scripts/smoke-ui.mjs',
@@ -295,23 +298,28 @@ if (process.argv.includes('--dry-run')) {
     },
     tl02Postgresql: async () => {
       const result = await runStreamingCommand(process.execPath, ['scripts/test-tl02-postgresql.mjs'], { timeoutMs: 5 * 60_000 });
-      if (!result.stdout.includes('TL-02 PostgreSQL PASS: 84 migrations, second run 0 pending')) throw new Error('TL-02 PostgreSQL evidence is incomplete');
+      if (!result.stdout.includes('TL-02 PostgreSQL PASS: 88 migrations, second run 0 pending')) throw new Error('TL-02 PostgreSQL evidence is incomplete');
       return Object.freeze({ tests: skipInventory.material.tl02Postgresql, skips: 0, cleanup: 'PASS' });
     },
     tl03Postgresql: async () => {
       const result = await runStreamingCommand(process.execPath, ['scripts/test-tl03-postgresql.mjs'], { timeoutMs: 5 * 60_000 });
-      if (!result.stdout.includes('TL-03 PostgreSQL PASS: 84 migrations, second run 0 pending')) throw new Error('TL-03 PostgreSQL evidence is incomplete');
+      if (!result.stdout.includes('TL-03 PostgreSQL PASS: 88 migrations, second run 0 pending')) throw new Error('TL-03 PostgreSQL evidence is incomplete');
       return Object.freeze({ tests: skipInventory.material.tl03Postgresql, skips: 0, cleanup: 'PASS' });
     },
     tl04Postgresql: async () => {
       const result = await runStreamingCommand(process.execPath, ['scripts/test-tl04-postgresql.mjs'], { timeoutMs: 5 * 60_000 });
-      if (!result.stdout.includes('TL-04 PostgreSQL PASS: 84 migrations, second run 0 pending')) throw new Error('TL-04 PostgreSQL evidence is incomplete');
+      if (!result.stdout.includes('TL-04 PostgreSQL PASS: 88 migrations, second run 0 pending')) throw new Error('TL-04 PostgreSQL evidence is incomplete');
       return Object.freeze({ tests: skipInventory.material.tl04Postgresql, skips: 0, cleanup: 'PASS' });
     },
     tl05Postgresql: async () => {
       const result = await runStreamingCommand(process.execPath, ['scripts/test-tl05-postgresql.mjs'], { timeoutMs: 5 * 60_000 });
-      if (!result.stdout.includes('TL-05 PostgreSQL PASS: 84 migrations, second run 0 pending')) throw new Error('TL-05 PostgreSQL evidence is incomplete');
+      if (!result.stdout.includes('TL-05 PostgreSQL PASS: 88 migrations, second run 0 pending')) throw new Error('TL-05 PostgreSQL evidence is incomplete');
       return Object.freeze({ tests: skipInventory.material.tl05Postgresql, skips: 0, cleanup: 'PASS' });
+    },
+    tl06Postgresql: async () => {
+      const result = await runStreamingCommand(process.execPath, ['scripts/test-tl06-postgresql.mjs'], { timeoutMs: 5 * 60_000 });
+      if (!result.stdout.includes('TL-06 PostgreSQL PASS: 88 migrations, second run 0 pending')) throw new Error('TL-06 PostgreSQL evidence is incomplete');
+      return Object.freeze({ tests: skipInventory.material.tl06Postgresql, skips: 0, cleanup: 'PASS' });
     },
     previewRuntime: async () => {
       const result = await runStreamingCommand(

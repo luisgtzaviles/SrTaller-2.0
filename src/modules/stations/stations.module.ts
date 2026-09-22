@@ -19,12 +19,14 @@ import type {
 import {
   BRANCH_SETTINGS_RUNTIME,
   BRANCH_ADMINISTRATION_RUNTIME,
+  ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
   TRUSTED_STATION_CONTEXT_RESOLVER,
 } from './index.js';
 import type {
   BranchSettingsRuntime,
   BranchAdministrationRuntime,
+  AdminInvitationBranchCommitValidator,
   TrustedStationAdmissionValidator,
   TrustedStationContextResolver,
 } from './index.js';
@@ -40,7 +42,9 @@ import { serializeStationCredentialCookie } from './infrastructure/http/station-
 import { TrustedStationRequestContextResolver } from './infrastructure/http/trusted-station-request-context.resolver.js';
 import { KyselyStationCredentialVerifier } from './infrastructure/persistence/kysely-station-credential.verifier.js';
 import { KyselyBranchAdministrationTransaction } from './infrastructure/persistence/kysely-branch-administration.transaction.js';
-import { createKyselyBranchRepository } from './infrastructure/persistence/kysely-branch.repository.js';
+import { createKyselyBranchRepository, createTransactionalKyselyBranchRepository } from './infrastructure/persistence/kysely-branch.repository.js';
+import { parseBranchId } from './application/ports/branch-repository.port.js';
+import { parseTenantId } from '../tenancy/index.js';
 import { LocalStationBootstrapController } from './presentation/local-station-bootstrap.controller.js';
 import type { KyselyBranchRepositoryFactory } from './infrastructure/persistence/kysely-branch.repository.js';
 import { BranchAdministrationService } from './application/branch-administration.service.js';
@@ -149,12 +153,30 @@ type StationsRuntimeComposition = Readonly<{
         composition: StationsRuntimeComposition,
       ): TrustedStationAdmissionValidator => composition.verifier,
     },
+    {
+      provide: ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR,
+      useFactory: (): AdminInvitationBranchCommitValidator => Object.freeze({
+        validateActive: async (
+          scope: Readonly<{ tenantId: string; branchId: string }>,
+          transactionContext: object,
+        ) => {
+          try {
+            const branch = await createTransactionalKyselyBranchRepository(transactionContext as never)
+              .findBranchById({ tenantId: parseTenantId(scope.tenantId), branchId: parseBranchId(scope.branchId) });
+            return branch?.status === 'ACTIVE';
+          } catch {
+            return false;
+          }
+        },
+      }),
+    },
   ],
   exports: [
     BRANCH_ADMINISTRATION_RUNTIME,
     BRANCH_SETTINGS_RUNTIME,
     TRUSTED_STATION_ADMISSION_VALIDATOR,
     TRUSTED_STATION_CONTEXT_RESOLVER,
+    ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR,
   ],
 })
 export class StationsModule {

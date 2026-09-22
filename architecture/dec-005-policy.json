@@ -61,6 +61,8 @@
     "repairs": ["RepairsModuleContract"],
     "registration": ["RegistrationModuleContract"],
     "stations": [
+      "ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR",
+      "AdminInvitationBranchCommitValidator",
       "BRANCH_ADMINISTRATION_RUNTIME",
       "BRANCH_SETTINGS_RUNTIME",
       "BranchAdministrationRuntime",
@@ -100,8 +102,10 @@
       "parseTenantId"
     ],
     "users": [
+      "ADMIN_INVITATION_USER_COMMIT_RUNTIME",
       "AUTHENTICATION_USER_ADMISSION_VALIDATOR",
       "AUTHENTICATION_USER_READER",
+      "AdminInvitationUserCommitRuntime",
       "TENANT_BOOTSTRAP_USER_WRITER",
       "AuthenticationUserAdmissionSnapshot",
       "AuthenticationUserAdmissionValidator",
@@ -313,6 +317,12 @@
         },
         "publicBindings": [
           {
+            "token": "ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR",
+            "contract": "AdminInvitationBranchCommitValidator",
+            "consumerImportSpecifier": "../stations/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
             "token": "BRANCH_ADMINISTRATION_RUNTIME",
             "contract": "BranchAdministrationRuntime",
             "consumerImportSpecifier": "../stations/index.js",
@@ -352,6 +362,12 @@
         },
         "publicBindings": [
           {
+            "token": "TENANT_LIFECYCLE_COMMIT_RUNTIME",
+            "contract": "TenantLifecycleCommitRuntime",
+            "consumerImportSpecifier": "../tenancy/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
             "token": "TENANT_BOOTSTRAP_PERSISTENCE",
             "contract": "TenantBootstrapPersistence",
             "consumerImportSpecifier": "../tenancy/index.js",
@@ -372,6 +388,12 @@
           "importSpecifier": "../users/users.module.js"
         },
         "publicBindings": [
+          {
+            "token": "ADMIN_INVITATION_USER_COMMIT_RUNTIME",
+            "contract": "AdminInvitationUserCommitRuntime",
+            "consumerImportSpecifier": "../users/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
           {
             "token": "AUTHENTICATION_USER_ADMISSION_VALIDATOR",
             "contract": "AuthenticationUserAdmissionValidator",
@@ -559,6 +581,8 @@
           "src/modules/catalog/catalog.module.ts",
           "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
           "src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-admin-invitation.repository.ts",
+          "src/modules/access/infrastructure/persistence/kysely-admin-lifecycle.repository.ts",
           "src/modules/customers/customers.module.ts",
           "src/modules/repairs/repairs.module.ts",
           "src/modules/stations/stations.module.ts",
@@ -685,6 +709,20 @@
       },
       {
         "file": "src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../../../infrastructure/runtime/index.js",
+        "kind": "contract-only"
+      },
+      {
+        "file": "src/modules/access/infrastructure/persistence/kysely-admin-invitation.repository.ts",
+        "token": "APPLICATION_DATABASE_CONNECTION",
+        "contract": "ApplicationDatabaseConnection",
+        "importSpecifier": "../../../../infrastructure/runtime/index.js",
+        "kind": "contract-only"
+      },
+      {
+        "file": "src/modules/access/infrastructure/persistence/kysely-admin-lifecycle.repository.ts",
         "token": "APPLICATION_DATABASE_CONNECTION",
         "contract": "ApplicationDatabaseConnection",
         "importSpecifier": "../../../../infrastructure/runtime/index.js",
@@ -822,6 +860,15 @@
           "file": "src/modules/access/access.module.ts",
           "className": "AccessModule",
           "importSpecifier": "./presentation/admin-session.controller.js"
+        }
+      },
+      "src/modules/access/presentation/admin-users-roles.controller.ts": {
+        "owner": "access",
+        "className": "AdminUsersRolesController",
+        "composition": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "./presentation/admin-users-roles.controller.js"
         }
       },
       "src/modules/access/presentation/user-preferences.controller.ts": {
@@ -978,7 +1025,11 @@
       "src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts",
       "src/infrastructure/database/migrations/20260921160000_stations_materialize_branch_management.ts",
       "src/infrastructure/database/migrations/20260921161000_tenancy_create_lifecycle_events.ts",
-      "src/infrastructure/database/migrations/20260921162000_stations_extend_branch_command_snapshots.ts"
+      "src/infrastructure/database/migrations/20260921162000_stations_extend_branch_command_snapshots.ts",
+      "src/infrastructure/database/migrations/20260921200000_access_create_admin_invitations.ts",
+      "src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts",
+      "src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts",
+      "src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1686,6 +1737,46 @@
           "references": [],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260921200000_access_create_admin_invitations.ts": {
+          "owner": "access",
+          "tables": [
+            "access_admin_identities",
+            "access_admin_invitation_challenges",
+            "access_admin_invitation_commands",
+            "access_admin_invitation_dispatches",
+            "access_admin_invitation_grants",
+            "access_admin_invitations",
+            "access_admin_lifecycle_events",
+            "access_roles"
+          ],
+          "references": ["branches", "tenants", "users"],
+          "functions": ["access_reject_admin_security_event_mutation"],
+          "triggers": [
+            "access_admin_lifecycle_events_reject_delete",
+            "access_admin_lifecycle_events_reject_update"
+          ]
+        },
+        "src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts": {
+          "owner": "access",
+          "tables": ["access_role_commands"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts": {
+          "owner": "access",
+          "tables": ["access_admin_invitations"],
+          "references": [],
+          "functions": [],
+          "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts": {
+          "owner": "access",
+          "tables": ["access_admin_invitation_challenges"],
+          "references": [],
+          "functions": [],
+          "triggers": []
         }
       }
     },
@@ -1788,6 +1879,12 @@
           "AccessAdminAuthAttemptLimitTable",
           "AccessAdminRecoveryChallengeTable",
           "AccessAdminSecurityEventTable",
+          "AccessAdminInvitationTable",
+          "AccessAdminInvitationGrantTable",
+          "AccessAdminInvitationChallengeTable",
+          "AccessAdminInvitationDispatchTable",
+          "AccessAdminInvitationCommandTable",
+          "AccessAdminLifecycleEventTable",
           "CustomerTable",
           "CustomerRow",
           "NewCustomer",
@@ -2399,6 +2496,12 @@
         "composition": "src/modules/users/users.module.ts",
         "status": "materialized-owner-adapter"
       },
+      "src/modules/users/infrastructure/persistence/kysely-admin-invitation-user.commit.ts": {
+        "owner": "users",
+        "port": "src/modules/users/application/ports/admin-invitation-user-commit.port.ts",
+        "composition": "src/modules/users/users.module.ts",
+        "status": "materialized-owner-adapter"
+      },
       "src/modules/users/infrastructure/persistence/kysely-user-preferences.repository.ts": {
         "owner": "users",
         "port": "src/modules/users/application/ports/user-preferences-repository.port.ts",
@@ -2438,6 +2541,18 @@
       "src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts": {
         "owner": "access",
         "port": "src/modules/access/application/ports/admin-auth-repository.port.ts",
+        "composition": "src/modules/access/access.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/access/infrastructure/persistence/kysely-admin-invitation.repository.ts": {
+        "owner": "access",
+        "port": "src/modules/access/application/ports/admin-invitation-repository.port.ts",
+        "composition": "src/modules/access/access.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/access/infrastructure/persistence/kysely-admin-lifecycle.repository.ts": {
+        "owner": "access",
+        "port": "src/modules/access/application/ports/admin-users-roles-runtime.port.ts",
         "composition": "src/modules/access/access.module.ts",
         "status": "materialized-owner-adapter"
       }
@@ -2790,6 +2905,30 @@
       "access_admin_sessions": {
         "owner": "access",
         "kind": "table"
+      },
+      "access_admin_invitations": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_invitation_grants": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_invitation_challenges": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_invitation_dispatches": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_invitation_commands": {
+        "owner": "access",
+        "kind": "table"
+      },
+      "access_admin_lifecycle_events": {
+        "owner": "access",
+        "kind": "table"
       }
     },
     "databaseExecutorTypes": {
@@ -2839,6 +2978,8 @@
         "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts"
         ,"src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts"
         ,"src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts"
+        ,"src/modules/access/infrastructure/persistence/kysely-admin-invitation.repository.ts"
+        ,"src/modules/access/infrastructure/persistence/kysely-admin-lifecycle.repository.ts"
       ],
       "forbiddenContextPackages": ["async_hooks", "node:async_hooks"],
       "forbiddenManualMethods": [
@@ -3037,10 +3178,13 @@
     "src/modules/access/application/access-input.ts",
     "src/modules/access/application/access-administration-operations.ts",
     "src/modules/access/application/access-self-preferences.operations.ts",
+    "src/modules/access/application/admin-users-roles.operations.ts",
     "src/modules/access/application/authenticated-self-executor.ts",
     "src/modules/access/application/pin-input.ts",
     "src/modules/access/application/ports/access-repository.port.ts",
     "src/modules/access/application/ports/admin-auth-repository.port.ts",
+    "src/modules/access/application/ports/admin-invitation-repository.port.ts",
+    "src/modules/access/application/ports/admin-users-roles-runtime.port.ts",
     "src/modules/access/application/ports/admin-password-hasher.port.ts",
     "src/modules/access/application/ports/admin-session-token.port.ts",
     "src/modules/access/application/ports/verified-registration-bootstrap-grant.port.ts",
@@ -3053,6 +3197,7 @@
     "src/modules/access/application/ports/session-token.port.ts",
     "src/modules/access/application/use-cases/authenticate-pin.use-case.ts",
     "src/modules/access/application/use-cases/admin-session.use-cases.ts",
+    "src/modules/access/application/use-cases/admin-invitation.use-cases.ts",
     "src/modules/access/application/use-cases/bootstrap-tenant.use-case.ts",
     "src/modules/access/infrastructure/persistence/kysely-tenant-bootstrap-access.writer.ts",
     "src/modules/access/application/use-cases/authenticate-pin-only.use-case.ts",
@@ -3069,6 +3214,7 @@
     "src/modules/access/application/use-cases/revoke-role-assignment.use-case.ts",
     "src/modules/access/domain/capability.ts",
     "src/modules/access/domain/admin-identity.ts",
+    "src/modules/access/domain/admin-invitation.ts",
     "src/modules/access/domain/admin-password.ts",
     "src/modules/access/domain/admin-recovery.ts",
     "src/modules/access/domain/admin-session.ts",
@@ -3083,6 +3229,8 @@
     "src/modules/access/infrastructure/persistence/kysely-operational-authorization-commit.guard.ts",
     "src/modules/access/infrastructure/persistence/kysely-operational-session.repository.ts",
     "src/modules/access/infrastructure/persistence/kysely-admin-auth.repository.ts",
+    "src/modules/access/infrastructure/persistence/kysely-admin-invitation.repository.ts",
+    "src/modules/access/infrastructure/persistence/kysely-admin-lifecycle.repository.ts",
     "src/modules/access/infrastructure/persistence/kysely-pin-credential.repository.ts",
     "src/modules/access/infrastructure/security/node-argon2-pin-hasher.ts",
     "src/modules/access/infrastructure/security/node-argon2-admin-password-hasher.ts",
@@ -3095,6 +3243,7 @@
     "src/modules/access/presentation/admin-branches.controller.ts",
     "src/modules/access/presentation/access-session.controller.ts",
     "src/modules/access/presentation/admin-session.controller.ts",
+    "src/modules/access/presentation/admin-users-roles.controller.ts",
     "src/modules/access/presentation/admin-authorization.executor.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/access/presentation/tenant-wide-authorization.executor.ts",
@@ -3185,6 +3334,7 @@
     "src/modules/tenancy/tenancy.module.ts"
     ,"src/modules/users/index.ts"
     ,"src/modules/users/application/ports/authentication-user-reader.port.ts"
+    ,"src/modules/users/application/ports/admin-invitation-user-commit.port.ts"
     ,"src/modules/users/application/ports/user-repository.port.ts"
     ,"src/modules/users/application/ports/tenant-bootstrap-user-writer.port.ts"
     ,"src/modules/users/application/ports/user-preferences-repository.port.ts"
@@ -3198,6 +3348,7 @@
     ,"src/modules/users/application/use-cases/user-preferences.use-cases.ts"
     ,"src/modules/users/domain/user.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-authentication-user.reader.ts"
+    ,"src/modules/users/infrastructure/persistence/kysely-admin-invitation-user.commit.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-user.repository.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-tenant-bootstrap-user.writer.ts"
     ,"src/modules/users/infrastructure/persistence/kysely-user-preferences.repository.ts"

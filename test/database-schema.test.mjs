@@ -29,7 +29,7 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
   const first = await inspectMigrationSource(source(migrationRoot));
   const second = await inspectMigrationSource(source(migrationRoot));
   assert.deepEqual(first.manifest, second.manifest);
-  assert.equal(first.manifest.migrations.length, 84);
+  assert.equal(first.manifest.migrations.length, 88);
   assert.deepEqual(
     first.manifest.migrations.map(
       ({ fileName, migrationName, order, owner }) => ({
@@ -545,6 +545,30 @@ test('productive migration manifest is deterministic and owner-scoped', async ()
         migrationName: '20260921162000_stations_extend_branch_command_snapshots',
         order: 83,
         owner: 'stations',
+      },
+      {
+        fileName: '20260921200000_access_create_admin_invitations.js',
+        migrationName: '20260921200000_access_create_admin_invitations',
+        order: 84,
+        owner: 'access',
+      },
+      {
+        fileName: '20260921201000_access_enable_admin_role_lifecycle.js',
+        migrationName: '20260921201000_access_enable_admin_role_lifecycle',
+        order: 85,
+        owner: 'access',
+      },
+      {
+        fileName: '20260921202000_access_enforce_global_pending_invitation_email.js',
+        migrationName: '20260921202000_access_enforce_global_pending_invitation_email',
+        order: 86,
+        owner: 'access',
+      },
+      {
+        fileName: '20260922090000_access_bound_admin_invitation_challenge_expiry.js',
+        migrationName: '20260922090000_access_bound_admin_invitation_challenge_expiry',
+        order: 87,
+        owner: 'access',
       },
     ],
   );

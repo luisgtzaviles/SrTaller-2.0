@@ -61,6 +61,16 @@ test('checker rejects arbitrary radius tokens and named colors', async () => wit
   assert.ok(failures.some((problem) => problem.includes('hardcoded named color')));
 }));
 
+test('checker reads a minified final radius declaration without consuming the next selector', async () => withFixture(async (root) => {
+  const path = resolve(root, 'apps/dev-preview-web/src/pages/pages.module.css');
+  await writeFile(path, `${await readFile(path, 'utf8')}\n.probe{border-radius:var(--radius-md)}.next{display:block}\n`);
+  const failures = await validateUiFoundation(root);
+  assert.equal(
+    failures.some((problem) => problem.includes('component radius')),
+    false,
+  );
+}));
+
 test('checker limits important declarations to the exact reduced-motion exception', async () => withFixture(async (root) => {
   const path = resolve(root, 'apps/dev-preview-web/src/styles/base.css');
   await writeFile(path, `${await readFile(path, 'utf8')}\n.probe { color: inherit !important; }\n`);

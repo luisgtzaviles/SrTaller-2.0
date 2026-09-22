@@ -327,6 +327,15 @@ jobs:
             --stage tl05-postgresql \
             -- node scripts/test-tl05-postgresql.mjs
 
+      - name: Run TL-06 PostgreSQL 18.4 contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-workflow-stage.mjs \
+            --metrics "${RUNNER_TEMP}/${SR_WORKFLOW_METRICS_FILE}" \
+            --stage tl06-postgresql \
+            -- node scripts/test-tl06-postgresql.mjs
+
       - name: Cleanup PostgreSQL persistence suites
         if: always()
         env:
