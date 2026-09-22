@@ -207,6 +207,7 @@ export function createFullVerificationSmokeHarness({
       SR_PIN_PEPPER: Buffer.alloc(32, 0x46).toString('base64url'),
       SR_ADMIN_PASSWORD_PEPPER: Buffer.alloc(32, 0x47).toString('base64url'),
       SR_REGISTRATION_ABUSE_PEPPER: Buffer.alloc(32, 0x48).toString('base64url'),
+      SR_RESEND_API_KEY: 're_synthetic_full_verification_key',
     };
   }
 
