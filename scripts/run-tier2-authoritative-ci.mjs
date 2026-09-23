@@ -16,7 +16,9 @@ import {
   compareTier2Legs,
   createTier2Attestation,
   estimateTier2Cost,
+  isRetryableTier2PreBootstrapTransportError,
   tier2ResourceLabels,
+  validateTier2RecoveryInvocation,
   validateTier2Invocation,
   validateTier2ServerProfile,
 } from './lib/tier2-authoritative-ci.mjs';
@@ -101,7 +103,7 @@ function resourcePath(resource) {
 
 async function deleteResource(resource) {
   const path = resourcePath(resource);
-  await api(path, { expected: [204, 404], method: 'DELETE' });
+  await api(path, { expected: [200, 204, 404], method: 'DELETE' });
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
     const response = await fetch(`${apiBase}${path}`, {
@@ -114,6 +116,54 @@ async function deleteResource(resource) {
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 1_000));
   }
   throw new Error(`Hetzner resource remained after deletion: ${resource.kind} ${resource.id}`);
+}
+
+async function sweepRunResources(outputDirectory, recoveryRunId) {
+  const controllerSha = requiredEnvironment('GITHUB_SHA');
+  const remote = (await git(['ls-remote', '--heads', 'origin', 'refs/heads/main'])).split(/\s+/u);
+  const liveMainSha = remote[0];
+  validateTier2RecoveryInvocation({
+    controllerSha,
+    environmentAuthorized: Boolean(process.env.HCLOUD_TOKEN),
+    eventName: requiredEnvironment('GITHUB_EVENT_NAME'),
+    liveMainSha,
+    recoveryRunId,
+    ref: requiredEnvironment('GITHUB_REF'),
+    repository: requiredEnvironment('GITHUB_REPOSITORY'),
+  });
+  const resources = (await managedResources()).filter(
+    ({ labels }) => labels?.['run-id'] === recoveryRunId,
+  );
+  if (resources.some(({ kind }) => kind === 'server')) {
+    throw new Error('Tier-2 explicit recovery refuses to delete a run with a remaining server');
+  }
+  const deleted = [];
+  for (const kind of ['firewall', 'placement_group', 'ssh_key']) {
+    for (const resource of resources.filter((candidate) => candidate.kind === kind)) {
+      await deleteResource(resource);
+      deleted.push({ id: resource.id, kind: resource.kind, name: resource.name });
+    }
+  }
+  const remaining = (await managedResources()).filter(
+    ({ labels }) => labels?.['run-id'] === recoveryRunId,
+  );
+  const evidence = {
+    contract: TIER2_CONTRACT,
+    controllerSha,
+    deleted,
+    inspected: classifyManagedResources(resources, Math.floor(Date.now() / 1_000)),
+    mode: 'EXPLICIT_NON_SERVER_RECOVERY',
+    recoveryRunId,
+    remaining: classifyManagedResources(remaining, Math.floor(Date.now() / 1_000)),
+    status: remaining.length === 0 ? 'PASS' : 'FAIL',
+  };
+  await mkdir(outputDirectory, { recursive: true });
+  await writeFile(
+    join(outputDirectory, 'TIER2_RUN_RECOVERY.json'),
+    `${JSON.stringify(evidence, null, 2)}\n`,
+    { mode: 0o600 },
+  );
+  if (remaining.length > 0) throw new Error('Tier-2 explicit recovery left managed resources');
 }
 
 async function sweepExpired(outputDirectory) {
@@ -195,6 +245,21 @@ function secretFreeEnvironment() {
   );
 }
 
+async function runPreBootstrapCommand(command, argumentsList, options) {
+  let lastError;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      return await runStreamingCommand(command, argumentsList, options);
+    } catch (error) {
+      lastError = error;
+      if (attempt === 2 || !isRetryableTier2PreBootstrapTransportError(error)) throw error;
+      process.stdout.write('Tier-2 pre-bootstrap transport recovery 1/1\n');
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, 5_000));
+    }
+  }
+  throw lastError;
+}
+
 async function executeLeg({
   ip,
   knownHosts,
@@ -206,7 +271,7 @@ async function executeLeg({
   testedSha,
 }) {
   await waitForSsh(privateKey, knownHosts, ip);
-  await runStreamingCommand(
+  await runPreBootstrapCommand(
     'ssh',
     sshArguments(privateKey, knownHosts, ip, [
       'install', '-d', '-m', '0700', '/opt/srtaller-control/ci', '/opt/srtaller-control/lib',
@@ -220,13 +285,13 @@ async function executeLeg({
     '-o', `UserKnownHostsFile=${knownHosts}`,
     '-o', 'StrictHostKeyChecking=accept-new',
   ];
-  await runStreamingCommand('scp', [
+  await runPreBootstrapCommand('scp', [
     ...scpBase,
     resolve(projectRoot, 'scripts/ci/tier2-bootstrap.sh'),
     resolve(projectRoot, 'scripts/ci/collect-tier2-runner-evidence.mjs'),
     `root@${ip}:/opt/srtaller-control/ci/`,
   ], { env: secretFreeEnvironment(), timeoutMs: 60_000 });
-  await runStreamingCommand('scp', [
+  await runPreBootstrapCommand('scp', [
     ...scpBase,
     resolve(projectRoot, 'scripts/lib/tier2-authoritative-ci.mjs'),
     `root@${ip}:/opt/srtaller-control/lib/`,
@@ -485,7 +550,10 @@ async function runCampaign(outputDirectory) {
 }
 
 const outputDirectory = resolve(argument('--output') ?? 'tier2-evidence');
-if (process.argv.includes('--sweep-expired')) {
+const recoveryRunId = argument('--sweep-run-id');
+if (recoveryRunId) {
+  await sweepRunResources(outputDirectory, recoveryRunId);
+} else if (process.argv.includes('--sweep-expired')) {
   await sweepExpired(outputDirectory);
 } else {
   await runCampaign(outputDirectory);

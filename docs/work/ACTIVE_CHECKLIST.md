@@ -4,13 +4,13 @@ Current PBI: NONE
 
 <!-- WORK_UNIT_METADATA
 work_unit: INFRA — Deterministic Authoritative CI Runner
-iteration: 3 - shadow-only dispatch remediation
+iteration: 4 - first material shadow recovery
 type: INFRASTRUCTURE_QUALITY
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
-branch: fix/tier2-shadow-only-dispatch
-base_sha: 49d12300179d990a51d92590035951d80001708d
-status: READY_FOR_PROMOTION
+branch: fix/tier2-material-shadow-recovery
+base_sha: d181933b31b86de601c5985ac38b2a438cac304f
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-23
 dependency_exception: INFRA_CI_BLOCKER
@@ -25,19 +25,19 @@ dependency_return: REQUIRED
 
 Materialize deterministic authoritative FULL execution on two independent,
 ephemeral, dedicated x86_64 CI VMs without weakening the existing verification
-contract. This iteration introduces an explicit SHADOW-only dispatch path so a
-material observation does not rerun hosted FULL and still grants SHADOW no
-promotion or closure authority.
+contract. This iteration remediates the two defects demonstrated by the first
+material SHADOW attempt without changing FULL, its gates or SHADOW authority.
 
 ## Why
 
 Hosted-runner resource variance produced opposing owner-scoped timeouts for the
 same TL-07 merge SHA. The product snapshot is integrated, but TL-07 remains in
 `PROMOTION` because its required exact-main proof is not deterministic enough
-to satisfy the unchanged 240-second contract. PR #75 removed the hosted-success
-dependency, but material-campaign preflight correctly found that every manual
-dispatch still forced hosted FULL alongside SHADOW, contradicting the bounded
-experiment authorization.
+to satisfy the unchanged 240-second contract. The first material campaign
+proved one complete deterministic leg but exposed a pre-FULL SSH transport
+race on the second leg and incorrect handling of an asynchronous Hetzner
+server-delete response. Both VMs were absent afterward; one non-billable
+firewall remained and must be explicitly removed before campaigns continue.
 
 ## In Scope
 
@@ -58,6 +58,10 @@ experiment authorization.
   access and a mandatory explicit tested subject SHA.
 - Machine-verifiable non-authoritative SHADOW metadata and negative promotion /
   closure regressions.
+- One bounded recovery for recognized pre-FULL SSH transport failures; no FULL
+  retry.
+- Exact-run cleanup for non-server residuals, restricted to trusted live main
+  and refusing any run that still contains a server.
 
 ## Out of Scope
 
@@ -108,32 +112,36 @@ experiment authorization.
 - [x] Diagnose the hosted FULL coupling before material provisioning.
 - [x] Implement and verify explicit SHADOW-only dispatch.
 - [x] Run canonical promotion verification on the implementation candidate.
-- [~] Promote the remediation through one governed Draft PR.
+- [x] Integrate shadow-only dispatch through governed PR #76.
+- [x] Run the first material SHADOW attempt and preserve its failed evidence.
+- [~] Remediate the demonstrated pre-FULL transport and cleanup defects.
+- [ ] Remove the exact residual non-server resource with protected recovery.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
 
 ## Current
 
-PR #75 is integrated at `49d12300179d990a51d92590035951d80001708d`.
-Its exact-main hosted run remained authoritative and failed closed. The first
-material campaign was not dispatched: preflight proved that the manual trigger
-would also rerun hosted run-1/run-2 and comparison. No VM was created and no
-cost was incurred. This iteration separates the explicit SHADOW experiment
-without changing normal authoritative semantics.
+The first material SHADOW attempt ran from trusted live `main` without hosted
+FULL. One dedicated leg passed FULL completely with owner-scoped 8/8 in
+142.026 seconds; the second leg failed before FULL on an SSH banner timeout.
+Both VMs were removed, while one firewall remained because the orchestrator
+rejected Hetzner's successful asynchronous `200` server-delete response and
+therefore attempted the dependent firewall too early. The campaign remains a
+FAIL and contributes zero successful legs to cutover readiness.
 
 ## Next
 
-Push the exact reviewed candidate and open one governed Draft PR, then require
-authoritative hosted CI and deliberate security/architecture review. Material
-Tier-2 execution remains a separate post-integration Owner authorization
-through explicit `mode=tier2-shadow`.
+Finish the focused remediation, run promotion verification, integrate it
+through one governed PR, explicitly remove the server-free residual firewall,
+then resume bounded material SHADOW observations.
 
 ## Blockers
 
-NONE for local remediation. The Infra Work Unit still cannot close because no
-material SHADOW observation exists and authoritative closure predicates remain
-unsatisfied. This change does not waive those predicates.
+The residual firewall must be removed after this recovery path is integrated.
+It is non-billable and provider inventory proves no VM remains. The Infra Work
+Unit still cannot close because no successful material SHADOW campaign exists
+and authoritative closure predicates remain unsatisfied.
 
 ## Important Discoveries
 
@@ -176,6 +184,16 @@ unsatisfied. This change does not waive those predicates.
   attestation document. The same branch now rejects local evidence and requires
   the single canonical, non-expired artifact downloaded from the exact
   successful GitHub Actions run before subject closure can proceed.
+- First material SHADOW attempt cost estimate was USD 0.0466. One CCX23 leg
+  passed FULL with owner-scoped 8/8 in 142.026 seconds; the other never started
+  FULL after a pre-bootstrap SSH banner timeout.
+- Provider inventory after the failed attempt proved zero managed servers and
+  exactly one residual firewall. The firewall is non-billable, but cleanup is
+  not complete until protected exact-run recovery proves zero residual
+  resources.
+- The cleanup bug is response-contract handling, not evidence of a VM leak:
+  Hetzner returned `200` for asynchronous server deletion while the runner
+  accepted only `204/404`.
 
 ## Focused Verification
 
@@ -200,6 +218,9 @@ unsatisfied. This change does not waive those predicates.
   owner-scoped 8/8 in 116.940 s, TL-07 3/3, 89 migrations, rerun 0 pending,
   smokes/fingerprint/cleanup PASS.
 - [ ] Shadow FULL evidence on two independent dedicated VMs.
+- [x] First material attempt evidence preserved as FAIL; one leg FULL PASS,
+  one leg pre-FULL transport failure, provider inventory zero servers.
+- [x] Material recovery regressions: 14/14 PASS.
 - [x] Promotion lifecycle check on the final implementation SHA: PASS.
 - [x] Shadow-only workflow/Tier-2/Work Unit regressions: 65/65 PASS.
 - [x] Base `verify` on the shadow-only implementation: PASS (1117 tests;
@@ -226,8 +247,10 @@ unsatisfied. This change does not waive those predicates.
 - Owner explicitly authorized creation of the project-scoped Hetzner token and
   encrypted storage as `HCLOUD_TOKEN`; the secret value was not documented or
   placed on disk/VMs.
-- Owner authorized this shadow-only remediation and remote promotion, but not a
-  material dispatch during development, cutover, Infra closure or TL-07 closure.
+- Owner's Master authorization permits bounded material campaigns,
+  demonstrated Infra remediation, ordinary governed PR integration, a cutover
+  candidate and the controlled TL-07 closure chain while every stated stop
+  condition remains fail-closed.
 - No product deploy, Preview/Production mutation, TL-08 start, force push,
   merge or timeout/gate weakening is authorized.
 - Stop for Owner decision at any explicit capability, security, budget or

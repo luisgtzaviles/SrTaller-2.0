@@ -20,6 +20,9 @@ const allowedDispatchModes = new Set([
   AUTHORITATIVE_DISPATCH_NORMAL_MODE,
   TIER2_SHADOW_DISPATCH_MODE,
 ]);
+const recoveryRunIdPattern = /^\d{1,20}-\d{1,10}$/u;
+const retryablePreBootstrapTransportPattern =
+  /connection timed out during banner exchange|connection timed out|connection reset by peer/u;
 
 function requireSha(value, label) {
   if (!shaPattern.test(value ?? '')) {
@@ -131,6 +134,49 @@ export function validateTier2Invocation({
     repository,
     testedSha,
   });
+}
+
+export function validateTier2RecoveryInvocation({
+  controllerSha,
+  environmentAuthorized,
+  eventName,
+  liveMainSha,
+  recoveryRunId,
+  ref,
+  repository,
+}) {
+  requireSha(controllerSha, 'controllerSha');
+  requireSha(liveMainSha, 'liveMainSha');
+  if (eventName !== 'workflow_dispatch') {
+    throw new Error('Tier-2 explicit recovery is restricted to workflow_dispatch');
+  }
+  if (repository !== TIER2_TRUSTED_REPOSITORY) {
+    throw new Error('Tier-2 explicit recovery is restricted to the trusted upstream repository');
+  }
+  if (ref !== 'refs/heads/main') {
+    throw new Error('Tier-2 explicit recovery is restricted to refs/heads/main');
+  }
+  if (controllerSha !== liveMainSha) {
+    throw new Error('Tier-2 recovery controller SHA must equal live remote main');
+  }
+  if (environmentAuthorized !== true) {
+    throw new Error('Tier-2 explicit recovery requires protected Environment authorization');
+  }
+  if (!recoveryRunIdPattern.test(recoveryRunId ?? '')) {
+    throw new Error('Tier-2 recovery run identity is invalid');
+  }
+  return Object.freeze({
+    controllerSha,
+    liveMainSha,
+    recoveryRunId,
+  });
+}
+
+export function isRetryableTier2PreBootstrapTransportError(error) {
+  return (
+    error?.code === 255 &&
+    retryablePreBootstrapTransportPattern.test(String(error.stderr ?? '').toLowerCase())
+  );
 }
 
 export function tier2ResourceLabels({ controllerSha, expiresAtEpoch, runId }) {
