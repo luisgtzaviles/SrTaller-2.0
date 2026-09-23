@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-07-station-inventory-enrollment-readiness
 base_sha: 74fe2b5fd5b66ee48428953f3e027f2815c839ca
-status: READY_FOR_PROMOTION
+status: BLOCKED
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
@@ -69,23 +69,27 @@ Materialize the approved TL-07 authority, lifecycle and administrative UX with f
 - [x] Implement Branch-scoped authorization and Admin HTTP surface.
 - [x] Implement `Dispositivos` Admin UI and secure one-time presentation.
 - [x] Prove PostgreSQL concurrency, tenancy, trust invalidation and regressions.
-- [x] Complete responsive/accessibility proof and canonical `verify:full`.
-- [x] Reconcile evidence/checklist and freeze a promotion-ready local candidate.
+- [!] Complete responsive/accessibility proof and canonical `verify:full`.
+- [ ] Reconcile evidence/checklist and freeze a promotion-ready local candidate.
 
 ## Current
 
-TL-07 implementation and local proof are complete. Inventory, enrollment
-authority, lifecycle commands, authorization, audit and Admin UI satisfy the
-approved contract without enabling redemption.
+TL-07 implementation and local product proof are complete. The one authorized
+canonical `verify:full` failed in the owner-scoped PostgreSQL campaign because
+the historical Operational Session fixture still crossed the TL-07 Station
+schema boundary incorrectly. That fixture is remediated and its focused
+PostgreSQL test passes; a fresh canonical full gate has not been authorized or
+executed on the remediated HEAD.
 
 ## Next
 
-Await explicit Owner authorization for remote promotion of this exact local
-candidate. Do not start TL-08.
+Await explicit Owner authorization for one fresh canonical `verify:full` on
+the remediated exact HEAD. Do not promote and do not start TL-08.
 
 ## Blockers
 
-None.
+Canonical `verify:full` has not passed on the remediated exact HEAD. The prior
+run is a real failed gate and cannot be reused or retried automatically.
 
 ## Important Discoveries
 
@@ -113,6 +117,11 @@ None.
   canceled one synthetic challenge, and did not mutate the existing Station.
 - Chrome desktop/768/640, light/dark, focus trap, Tab/Shift+Tab, Escape and
   restore focus pass without horizontal page overflow.
+- The historical PIN fixture and Operational Session fixture must seed only
+  columns present at their intentionally rolled-back schema. The Session
+  fixture now uses the single Owner-approved legacy Station mapping, preserves
+  the alternate credential as revoked, and creates its second Station only
+  after TL-07 is reapplied.
 
 ## Focused Verification
 
@@ -123,12 +132,15 @@ None.
 - [x] PostgreSQL concurrency and Alpha/Beta proof: TL-07 `3/3` PASS.
 - [x] UI desktop/768/640, keyboard/a11y and light/dark proof.
 - [x] Station/PIN/Operational Session regression suites.
-- [x] Canonical `verify:full` on the exact final HEAD.
+- [!] Canonical `verify:full`: the authorized run failed in Stage 4 at the
+  historical Operational Session fixture; its focused remediation now passes,
+  but no fresh full run has been authorized.
 
 ## Promotion Gates
 
-- Implementation, focused verification, material PostgreSQL, UI proof and
-  exact-HEAD `verify:full` pass; TL-07 is `READY_FOR_PROMOTION` locally.
+- Implementation, focused verification, material TL-07 PostgreSQL and UI proof
+  pass. Promotion remains blocked until canonical `verify:full` passes on the
+  remediated exact HEAD.
 
 ## Remote Actions / Authorization
 
