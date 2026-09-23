@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: fix/tier2-shadow-only-dispatch
 base_sha: 49d12300179d990a51d92590035951d80001708d
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-23
 dependency_exception: INFRA_CI_BLOCKER
@@ -107,8 +107,8 @@ experiment authorization.
 - [x] Prove SHADOW remains unable to satisfy promotion or Work Unit closure.
 - [x] Diagnose the hosted FULL coupling before material provisioning.
 - [x] Implement and verify explicit SHADOW-only dispatch.
-- [~] Run canonical promotion verification on the implementation candidate.
-- [ ] Promote the remediation through one governed Draft PR.
+- [x] Run canonical promotion verification on the implementation candidate.
+- [~] Promote the remediation through one governed Draft PR.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
@@ -124,10 +124,10 @@ without changing normal authoritative semantics.
 
 ## Next
 
-Complete focused workflow/security regressions, the required local promotion
-verification and deliberate review. If green, promote this remediation through
-one Draft PR. Material Tier-2 execution remains a separate post-integration
-Owner authorization through explicit `mode=tier2-shadow`.
+Push the exact reviewed candidate and open one governed Draft PR, then require
+authoritative hosted CI and deliberate security/architecture review. Material
+Tier-2 execution remains a separate post-integration Owner authorization
+through explicit `mode=tier2-shadow`.
 
 ## Blockers
 
@@ -204,7 +204,10 @@ unsatisfied. This change does not waive those predicates.
 - [x] Shadow-only workflow/Tier-2/Work Unit regressions: 65/65 PASS.
 - [x] Base `verify` on the shadow-only implementation: PASS (1117 tests;
   1070 pass; 47 governed PostgreSQL skips), including typecheck and build.
-- [ ] Canonical promotion verification on the final shadow-only candidate.
+- [x] Canonical Full Verification on shadow-only implementation commit
+  `c92a29352e102e29afb222c9bb8b945468841dcb`: stages 0–19 PASS,
+  owner-scoped 8/8 in 117.813 s, PBI-041 9/9, TL-07 3/3, 89 migrations,
+  rerun 0 pending, runtime/backend/UI smokes, fingerprint and cleanup PASS.
 
 ## Promotion Gates
 
