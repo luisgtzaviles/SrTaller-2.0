@@ -14,6 +14,7 @@ import {
   inspectWorkUnit,
   parseWorkUnitDocument,
   REQUIRED_WORK_UNIT_SECTIONS,
+  selectSubjectAttestationArtifact,
   workUnitClosureTag,
 } from '../scripts/lib/work-unit.mjs';
 
@@ -125,6 +126,45 @@ function subjectAttestation(controllerSha, testedSha, overrides = {}) {
     ...overrides,
   };
 }
+
+function subjectAttestationProvenance(overrides = {}) {
+  return {
+    artifactId: 789,
+    artifactName: 'authoritative-subject-attestation',
+    contract: 'GITHUB_ACTIONS_RUN_ARTIFACT_V1',
+    expired: false,
+    runId: '123456',
+    ...overrides,
+  };
+}
+
+test('subject attestation artifact selection requires one exact non-expired run artifact', () => {
+  const artifact = {
+    id: 789,
+    name: 'authoritative-subject-attestation',
+    expired: false,
+    workflow_run: { id: 123456 },
+  };
+  assert.deepEqual(selectSubjectAttestationArtifact([artifact], '123456'), {
+    artifactId: 789,
+    artifactName: 'authoritative-subject-attestation',
+    contract: 'GITHUB_ACTIONS_RUN_ARTIFACT_V1',
+    expired: false,
+    runId: '123456',
+  });
+  assert.throws(
+    () => selectSubjectAttestationArtifact([{ ...artifact, expired: true }], '123456'),
+    /invalid or expired/u,
+  );
+  assert.throws(
+    () => selectSubjectAttestationArtifact([{ ...artifact, workflow_run: { id: 1 } }], '123456'),
+    /another run/u,
+  );
+  assert.throws(
+    () => selectSubjectAttestationArtifact([artifact, { ...artifact, id: 790 }], '123456'),
+    /exactly one/u,
+  );
+});
 
 async function promoteAndMerge(repo, { status = 'READY_FOR_PROMOTION' } = {}) {
   await repo.git('switch', '--quiet', '-c', 'feature/work-unit');
@@ -589,6 +629,7 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       projectRoot: repo.root,
       authoritativeRun: run,
       attestation,
+      attestationProvenance: subjectAttestationProvenance(),
       subjectSha: repo.baseSha,
       confirmPredicate: true,
     }), /not the explicitly authorized dependency subject/u);
@@ -596,6 +637,7 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       projectRoot: repo.root,
       authoritativeRun: run,
       attestation: subjectAttestation(controllerSha, subjectSha, { testedSha: repo.baseSha }),
+      attestationProvenance: subjectAttestationProvenance(),
       subjectSha,
       confirmPredicate: true,
     }), /testedSha mismatch/u);
@@ -603,6 +645,7 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       projectRoot: repo.root,
       authoritativeRun: run,
       attestation: subjectAttestation(controllerSha, subjectSha, { controllerSha: repo.baseSha }),
+      attestationProvenance: subjectAttestationProvenance(),
       subjectSha,
       confirmPredicate: true,
     }), /controller SHA mismatch/u);
@@ -610,6 +653,7 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       projectRoot: repo.root,
       authoritativeRun: authoritativeSubjectRun(controllerSha, { workflowName: 'Untrusted workflow' }),
       attestation,
+      attestationProvenance: subjectAttestationProvenance(),
       subjectSha,
       confirmPredicate: true,
     }), /must come from Authoritative Linux CI/u);
@@ -617,6 +661,7 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       projectRoot: repo.root,
       authoritativeRun: authoritativeSubjectRun(controllerSha, { conclusion: 'failure' }),
       attestation,
+      attestationProvenance: subjectAttestationProvenance(),
       subjectSha,
       confirmPredicate: true,
     }), /not successfully completed/u);
@@ -624,9 +669,17 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       projectRoot: repo.root,
       authoritativeRun: authoritativeSubjectRun(controllerSha, { gateConclusion: 'skipped' }),
       attestation,
+      attestationProvenance: subjectAttestationProvenance(),
       subjectSha,
       confirmPredicate: true,
     }), /promotion gate is not successful/u);
+    await assert.rejects(closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: run,
+      attestation,
+      subjectSha,
+      confirmPredicate: true,
+    }), /lacks exact GitHub Actions artifact provenance/u);
 
     const subjectMetadata = parseWorkUnitDocument(await repo.git(
       'show',
@@ -638,6 +691,7 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       projectRoot: repo.root,
       authoritativeRun: run,
       attestation,
+      attestationProvenance: subjectAttestationProvenance(),
       subjectSha,
       confirmPredicate: true,
     }), /already targets .* not/u);
@@ -647,6 +701,7 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       projectRoot: repo.root,
       authoritativeRun: run,
       attestation,
+      attestationProvenance: subjectAttestationProvenance(),
       subjectSha,
       confirmPredicate: true,
     });
@@ -716,6 +771,7 @@ test('subject-SHA closure rejects an explicitly named subject outside live main 
       projectRoot: repo.root,
       authoritativeRun: authoritativeSubjectRun(controllerSha),
       attestation: subjectAttestation(controllerSha, unintegratedSubjectSha),
+      attestationProvenance: subjectAttestationProvenance(),
       subjectSha: unintegratedSubjectSha,
       confirmPredicate: true,
     }), /not an ancestor integrated into live main/u);

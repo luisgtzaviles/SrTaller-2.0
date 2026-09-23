@@ -327,6 +327,9 @@ sido integrada y cerrada. Acepta exclusivamente el subject declarado por
 `INFRA_CI_BLOCKER`, exige que sea un merge ordinario ancestro de live `main` y
 valida una atestación `SR_TALLER_AUTHORITATIVE_SUBJECT_V1` que liga workflow,
 run, controller SHA, tested SHA y `Authoritative promotion gate` exitoso.
+La herramienta de cierre descarga esa atestación exclusivamente como el
+artefacto canónico no expirado del run exacto de GitHub Actions; un JSON local
+proporcionado por el operador no es evidencia válida.
 
 El tag determinista se deriva de la metadata del Work Unit subject y apunta a
 su merge, no al controller posterior. Un SHA histórico arbitrario, workflow o

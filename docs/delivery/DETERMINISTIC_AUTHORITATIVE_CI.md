@@ -164,6 +164,15 @@ successful `Authoritative Linux CI` workflow-dispatch run to:
 - run identity; and
 - successful promotion gate.
 
+The closure command does not accept a caller-supplied local attestation. It
+queries the exact GitHub Actions run, requires one non-expired artifact named
+`authoritative-subject-attestation`, downloads it directly with `gh`, and
+accepts only the single regular file
+`AUTHORITATIVE_SUBJECT_ATTESTATION.json`. The artifact's GitHub run identity
+must match the successful run used for closure. Until a trusted integrated
+workflow emits that artifact after the required authoritative gates, subject
+closure fails closed.
+
 Mismatch, missing/failed evidence, wrong workflow/event/controller, unauthorized
 ancestor or wrong closure-tag target fails closed. For the authorized TL-07
 recovery, its deterministic closure tag must target

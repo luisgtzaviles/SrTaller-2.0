@@ -72,6 +72,9 @@ to satisfy the unchanged 240-second contract.
   infrastructure exposure if it crossed into an ephemeral test VM.
 - A broad historical-SHA mechanism could counterfeit closure unless bound to
   the named dependency, current controller, workflow, run and exact subject.
+- A caller-supplied local attestation could counterfeit subject verification;
+  closure therefore requires the canonical non-expired artifact downloaded
+  from the exact successful GitHub Actions run.
 - Cleanup failure can leave billable/orphaned compute or credentials exposed.
 - Current account capabilities, current Hetzner profile/pricing or the USD 25
   monthly guard may prevent the approved design from being materialized.
@@ -144,11 +147,17 @@ the cloud credential.
   Environment independently admits only `main`, and the promotion aggregate
   remains on the current hosted FULL until bounded shadow evidence supports a
   reviewed cutover.
+- Pre-push security review found that the subject-closure API accepted a local
+  attestation document. The same branch now rejects local evidence and requires
+  the single canonical, non-expired artifact downloaded from the exact
+  successful GitHub Actions run before subject closure can proceed.
 
 ## Focused Verification
 
 - [x] Work Unit lifecycle unit tests: 17/17 PASS after Blocks 1–2, including
   explicit non-ancestor subject and wrong closure-tag target rejection.
+- [x] Subject-attestation provenance remediation: Work Unit tests 18/18 PASS,
+  including wrong-run, expired and duplicate artifact rejection.
 - [x] GitHub ruleset/merge-settings/Environment API readback matches Blocks 3–4.
 - [x] Tier-2 focused unit/security regressions: 8/8 PASS.
 - [x] Architecture/checker regression on final candidate: PASS.

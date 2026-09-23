@@ -11,6 +11,8 @@ const INFRA_DEPENDENCY_EXCEPTION = 'INFRA_CI_BLOCKER';
 const INFRA_DEPENDENCY_WORK_UNIT = 'INFRA — Deterministic Authoritative CI Runner';
 const INFRA_DEPENDENCY_TYPE = 'INFRASTRUCTURE_QUALITY';
 const SUBJECT_ATTESTATION_CONTRACT = 'SR_TALLER_AUTHORITATIVE_SUBJECT_V1';
+const SUBJECT_ATTESTATION_ARTIFACT = 'authoritative-subject-attestation';
+const SUBJECT_ATTESTATION_PROVENANCE = 'GITHUB_ACTIONS_RUN_ARTIFACT_V1';
 const AUTHORITATIVE_WORKFLOW = 'Authoritative Linux CI';
 const AUTHORITATIVE_WORKFLOW_PATH = '.github/workflows/authoritative-linux-ci.yml';
 
@@ -555,7 +557,37 @@ function assertAuthoritativeRun(authoritativeRun, head) {
   }
 }
 
-function assertSubjectAuthoritativeRun(authoritativeRun, attestation, controllerSha, testedSha) {
+export function selectSubjectAttestationArtifact(artifacts, runId) {
+  if (!Array.isArray(artifacts)) {
+    throw new Error('GitHub Actions artifact inventory is required');
+  }
+  const matches = artifacts.filter(({ name }) => name === SUBJECT_ATTESTATION_ARTIFACT);
+  if (matches.length !== 1) {
+    throw new Error('exactly one authoritative subject attestation artifact is required');
+  }
+  const artifact = matches[0];
+  if (!Number.isSafeInteger(artifact.id) || artifact.id <= 0 || artifact.expired === true) {
+    throw new Error('authoritative subject attestation artifact is invalid or expired');
+  }
+  if (String(artifact.workflow_run?.id) !== String(runId)) {
+    throw new Error('authoritative subject attestation artifact belongs to another run');
+  }
+  return Object.freeze({
+    artifactId: artifact.id,
+    artifactName: SUBJECT_ATTESTATION_ARTIFACT,
+    contract: SUBJECT_ATTESTATION_PROVENANCE,
+    expired: false,
+    runId: String(runId),
+  });
+}
+
+function assertSubjectAuthoritativeRun(
+  authoritativeRun,
+  attestation,
+  attestationProvenance,
+  controllerSha,
+  testedSha,
+) {
   assertSuccessfulPromotionRun(authoritativeRun);
   if (authoritativeRun.headSha !== controllerSha || authoritativeRun.headBranch !== 'main') {
     throw new Error('subject verification must be controlled by the current trusted main SHA');
@@ -565,6 +597,14 @@ function assertSubjectAuthoritativeRun(authoritativeRun, attestation, controller
   }
   if (!attestation || typeof attestation !== 'object') {
     throw new Error('subject verification attestation is required');
+  }
+  if (attestationProvenance?.contract !== SUBJECT_ATTESTATION_PROVENANCE ||
+      attestationProvenance.artifactName !== SUBJECT_ATTESTATION_ARTIFACT ||
+      !Number.isSafeInteger(attestationProvenance.artifactId) ||
+      attestationProvenance.artifactId <= 0 ||
+      attestationProvenance.expired !== false ||
+      String(attestationProvenance.runId) !== String(authoritativeRun.databaseId)) {
+    throw new Error('subject verification attestation lacks exact GitHub Actions artifact provenance');
   }
   if (attestation.schemaVersion !== 1 || attestation.contract !== SUBJECT_ATTESTATION_CONTRACT) {
     throw new Error('subject verification attestation contract is invalid');
@@ -707,6 +747,7 @@ export async function closeIntegratedSubjectWorkUnit({
   checklistPath = WORK_UNIT_CHECKLIST,
   authoritativeRun,
   attestation,
+  attestationProvenance,
   subjectSha,
   confirmPredicate = false,
   push = true,
@@ -773,7 +814,13 @@ export async function closeIntegratedSubjectWorkUnit({
   if (landing.findings.length > 0) {
     throw new Error(landing.findings.map(({ code, message }) => `${code}: ${message}`).join('\n'));
   }
-  assertSubjectAuthoritativeRun(authoritativeRun, attestation, head, subjectSha);
+  assertSubjectAuthoritativeRun(
+    authoritativeRun,
+    attestation,
+    attestationProvenance,
+    head,
+    subjectSha,
+  );
 
   return publishClosureTag({
     projectRoot,
