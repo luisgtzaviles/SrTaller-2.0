@@ -11,8 +11,10 @@ import {
   productiveMigration,
 } from './lib/postgresql-ci-evidence.mjs';
 import {
+  formatPostgresqlChildDiagnostic,
   formatPostgresqlChildFailureDiagnostic,
   formatPostgresqlHarnessFailureDiagnostic,
+  parsePostgresqlChildDiagnosticMarker,
   parsePostgresqlChildFailureMarker,
   parsePostgresqlHarnessFailureMarker,
 } from './lib/postgresql-test-output.mjs';
@@ -70,17 +72,22 @@ async function command(commandName, argumentsList, options = {}) {
         ? error.stderr
         : '';
     const childFailure = parsePostgresqlChildFailureMarker(stderr);
+    const childDiagnostic = parsePostgresqlChildDiagnosticMarker(stderr);
     const harnessFailure = parsePostgresqlHarnessFailureMarker(stderr);
-    const diagnostic =
+    const diagnostics = [
+      childDiagnostic === null
+        ? null
+        : formatPostgresqlChildDiagnostic(childDiagnostic),
       childFailure !== null && harnessFailure === null
         ? formatPostgresqlChildFailureDiagnostic(childFailure)
         : harnessFailure !== null && childFailure === null
           ? formatPostgresqlHarnessFailureDiagnostic(harnessFailure)
-          : null;
+          : null,
+    ].filter((value) => value !== null);
     throw new Error(
       `PostgreSQL CI operation failed: ${
         argumentsList[0] ?? commandName
-      }${diagnostic === null ? '' : `; ${diagnostic}`}`,
+      }${diagnostics.length === 0 ? '' : `; ${diagnostics.join('; ')}`}`,
     );
   }
 }

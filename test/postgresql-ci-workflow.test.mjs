@@ -248,7 +248,7 @@ test('owner-scoped PostgreSQL runner retains the exact material adapter inventor
   assert.doesNotMatch(ownerScopedRunner, /Promise\.allSettled/u);
   assert.match(
     ownerScopedRunner,
-    /for \(const file of executionOrder\)[\s\S]*executions\[index\] = await runFileOnce\(file, campaign\)/u,
+    /for \(const \[position, file\] of executionOrder\.entries\(\)\)[\s\S]*executions\[index\] = await runFileOnce\(file, campaign, position \+ 1\)/u,
   );
   assert.match(
     ownerScopedRunner,

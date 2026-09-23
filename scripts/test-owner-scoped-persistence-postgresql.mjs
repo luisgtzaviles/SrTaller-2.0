@@ -4,6 +4,7 @@ import { promisify } from 'node:util';
 
 import {
   assertPostgresqlTestSummary,
+  createPostgresqlChildDiagnosticMarker,
   createPostgresqlChildFailureMarker,
   createPostgresqlHarnessFailureMarker,
   ownerScopedPostgresqlTestFiles,
@@ -381,7 +382,7 @@ async function startCampaign() {
   }
 }
 
-async function runFileOnce(file, campaign) {
+async function runFileOnce(file, campaign, ordinal) {
   const startedAt = Date.now();
   const database = `srtaller_adapters_${randomBytes(6).toString('hex')}`;
   const timings = {
@@ -427,6 +428,10 @@ async function runFileOnce(file, campaign) {
         ),
       ));
     } catch (error) {
+      process.stderr.write(`${createPostgresqlChildDiagnosticMarker(error, {
+        ordinal,
+        suite: file,
+      })}\n`);
       process.stderr.write(`${createPostgresqlChildFailureMarker(error)}\n`);
       throw new Error(
         `PostgreSQL adapter critical test failed: ${file} in ${campaign.container}/${database}`,
@@ -497,9 +502,9 @@ async function runOnce(campaign, runIndex) {
     ? [...ownerScopedPostgresqlTestFiles]
     : [...ownerScopedPostgresqlTestFiles].reverse();
 
-  for (const file of executionOrder) {
+  for (const [position, file] of executionOrder.entries()) {
     const index = ownerScopedPostgresqlTestFiles.indexOf(file);
-    executions[index] = await runFileOnce(file, campaign);
+    executions[index] = await runFileOnce(file, campaign, position + 1);
   }
 
   const fileResults = executions.map(({ result }) => result);
