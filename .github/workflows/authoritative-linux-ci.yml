@@ -13,6 +13,11 @@ on:
         description: Exact integrated subject SHA; blank verifies current main
         required: false
         type: string
+      run_tier2_shadow:
+        description: Run the non-authoritative Tier-2 shadow campaign from trusted live main
+        default: false
+        required: false
+        type: boolean
 
 permissions:
   contents: read
@@ -534,12 +539,12 @@ jobs:
     name: Tier-2 deterministic shadow
     needs:
       - classify-change
-      - compare-authoritative-gates
     if: >-
       needs.classify-change.outputs.docs_only != 'true' &&
-      needs.compare-authoritative-gates.result == 'success' &&
+      github.repository == 'luisgtzaviles/SrTaller-2.0' &&
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      github.event_name == 'workflow_dispatch' &&
+      inputs.run_tier2_shadow == true
     runs-on: ubuntu-24.04
     timeout-minutes: 100
     environment: authoritative-ci
@@ -562,6 +567,7 @@ jobs:
       - name: Execute two-leg ephemeral Tier-2 shadow
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          SR_TIER2_SHADOW_REQUESTED: "true"
           TESTED_SHA: ${{ inputs.tested_sha || needs.classify-change.outputs.candidate_sha }}
         shell: bash
         run: |

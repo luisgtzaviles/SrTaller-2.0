@@ -124,14 +124,24 @@ Raw secrets, tokens, customer data and persistent machine identity are excluded.
 Resources require TTL/orphan markers; orphan detection or failed deletion fails
 the infrastructure result.
 
-The first integrated form is deliberately `SHADOW`: it runs only for `push` or
-`workflow_dispatch` on protected `refs/heads/main`, after the existing hosted
-FULL comparison succeeds. Pull requests and forks cannot select the protected
-Environment, and the job condition independently excludes those events. The
-current promotion aggregate does not depend on the shadow job; no cutover is
-claimed before bounded observations exist.
+The first integrated form is deliberately `SHADOW`. A material campaign is
+requested explicitly through `workflow_dispatch` on protected live
+`refs/heads/main`; an ordinary push does not spend infrastructure budget by
+itself. Pull requests, forks and `pull_request_target` cannot select the
+protected Environment, and the job condition independently excludes those
+events and any repository other than the trusted upstream.
 
-The shadow artifact contains each leg's Full Verification summary, material
+Shadow eligibility is independent of the hosted FULL result. Hosted run-1,
+run-2, comparison and `Authoritative promotion gate` may be red while an
+explicitly authorized shadow campaign executes, because measuring that
+hosted-runner failure mode is the purpose of the shadow. This independence
+does not change authority: the hosted path remains fail-closed, the promotion
+aggregate does not depend on or accept the shadow job, and no Work Unit closure
+can consume shadow evidence. No cutover is claimed before bounded observations
+and a separately reviewed authorization exist.
+
+Every campaign artifact declares `mode: SHADOW` and `authoritative: false` in
+machine-verifiable metadata. The shadow artifact contains each leg's Full Verification summary, material
 PostgreSQL manifest, eight sanitized owner-scoped child timings, machine and
 toolchain facts, semantic comparison, subject/controller/run binding, cost
 projection and deletion proof. Volatile smoke database/container/port names

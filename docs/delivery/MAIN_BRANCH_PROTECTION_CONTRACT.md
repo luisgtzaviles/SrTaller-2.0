@@ -73,6 +73,9 @@ administrator bypass and contains only the isolated CI-project credential named
 `HCLOUD_TOKEN`. The credential value is never repository evidence. The initial
 Tier-2 integration is shadow-only and does not alter this required-check
 semantics until bounded observations support a separately reviewed cutover.
+Its explicitly dispatched observation may run independently of hosted FULL
+success, but it is absent from the aggregate's prerequisites and cannot satisfy
+promotion or Work Unit closure.
 
 ## Review policy
 

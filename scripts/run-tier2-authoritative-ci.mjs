@@ -10,6 +10,7 @@ import {
   TIER2_LOCATION,
   TIER2_PROVIDER,
   TIER2_SERVER_TYPE,
+  TIER2_SHADOW_MODE,
   TIER2_TTL_MINUTES,
   classifyManagedResources,
   compareTier2Legs,
@@ -299,9 +300,12 @@ async function runCampaign(outputDirectory) {
   validateTier2Invocation({
     controllerSha,
     dependencySubjectSha: checklist.metadata.dependency_subject_sha,
+    environmentAuthorized: Boolean(process.env.HCLOUD_TOKEN),
     eventName,
     liveMainSha,
     ref,
+    repository,
+    requested: process.env.SR_TIER2_SHADOW_REQUESTED === 'true',
     testedSha,
   });
   await git(['merge-base', '--is-ancestor', testedSha, liveMainSha]);
@@ -418,10 +422,12 @@ async function runCampaign(outputDirectory) {
     });
     campaign = {
       attestation,
+      authoritative: false,
       bootstrapVersion: TIER2_BOOTSTRAP_VERSION,
       comparison,
       contract: TIER2_CONTRACT,
       eventName,
+      mode: TIER2_SHADOW_MODE,
       ref,
       status: 'PASS',
     };
@@ -459,8 +465,10 @@ async function runCampaign(outputDirectory) {
   await mkdir(outputDirectory, { recursive: true });
   const finalEvidence = {
     ...(campaign ?? {
+      authoritative: false,
       contract: TIER2_CONTRACT,
       failure: campaignError?.message ?? 'Tier-2 campaign failed',
+      mode: TIER2_SHADOW_MODE,
       status: 'FAIL',
     }),
     cleanup,
