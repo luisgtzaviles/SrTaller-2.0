@@ -1,14 +1,14 @@
 # Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
-work_unit: TL-06 — Tenant Administration Users/Roles Integration
-iteration: 3 - Main Reconciliation and Remote Revalidation
-type: PRODUCT
-risk: ARCHITECTURAL
-shadow_risk: ARCHITECTURAL
-branch: feature/tl-06-admin-users-roles-readiness
-base_sha: 81b57994c69ed3584776ff080253f9a772e6425b
-status: PROMOTION
+work_unit: QUALITY — Preserve Owner-Scoped Child Failure Diagnostics
+iteration: 1 - Authorized implementation
+type: QUALITY
+risk: HIGH
+shadow_risk: NORMAL
+branch: chore/quality-owner-scoped-child-diagnostics
+base_sha: 74fe2b5fd5b66ee48428953f3e027f2815c839ca
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
@@ -17,136 +17,115 @@ Current PBI: NONE
 
 ## Objective
 
-Deliver the minimum Tenant Administration Users/Roles capability for verified
-invitations, explicit administrative authority delegation, context separation
-and last-effective-admin safety.
+Preserve bounded, sanitized child-process diagnostics for failures in the
+owner-scoped PostgreSQL campaign without changing its pass/fail contract.
 
 ## Why
 
-Complete the authorized Tenant Lifecycle administrative identity boundary
-without coupling Admin Context to Station/PIN or weakening tenant isolation.
+The prior TL-07 campaign failure identified only the child suite and exit code;
+the runner discarded the assertion and PostgreSQL context needed to classify
+the failure safely.
 
 ## In Scope
 
-- Verified-email invitations and invitee-owned password establishment.
-- Tenant-managed Roles and multiple assignments from Admin Context.
-- Admin-only, operational-only and combined User modes.
-- Transaction-safe last-effective-Tenant-Admin protection.
-- Level-2 reauthentication for sensitive authority/lifecycle mutations.
-- Cross-tenant isolation, durable sanitized audit and reusable email delivery.
-- Reconciliation with the integrated owner-scoped PostgreSQL harness.
+- Structured child stdout/stderr diagnostics with explicit bounds.
+- Suite ordinal, exit code, signal and timeout classification.
+- Sanitization of credentials, tokens, PINs, cookies, peppers and connection
+  strings before diagnostics are retained.
+- Parent failure propagation and deterministic cleanup preservation.
+- Focused regression tests and policy/evidence documentation.
 
 ## Out of Scope
 
-- TL-07, Station enrollment, Super Admin, billing and Production email setup.
-- Changes to the 240-second owner-scoped budget, retries or suite parallelism.
-- Merge of PR #69, deploy and unrelated cleanup.
+- TL-07 product behavior or fixture changes.
+- Suite order, suite inventory, retries, parallelism or timeout changes.
+- PostgreSQL semantics, migrations, deployment, TL-08 and infrastructure.
+- Push, PR and merge until promotion is separately authorized.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
-- [`ADR-012`](../decisions/proposed/ADR-012-tenant-roles-capabilities-and-contextual-authorization.md)
-- [`ADR-015`](../decisions/proposed/ADR-015-tenant-administrative-control-plane.md)
-- [`Tenant Lifecycle MVP`](../architecture/TENANT_LIFECYCLE_MVP.md)
-- [`TL-06 Readiness`](../architecture-readiness/tenant-lifecycle/TL-06_TENANT_ADMIN_USERS_ROLES_INTEGRATION_READINESS.md)
+- [`QUALITY_STRATEGY.md`](../quality/QUALITY_STRATEGY.md)
+- [`DEFINITION_OF_DONE.md`](../delivery/DEFINITION_OF_DONE.md)
 
 ## Risks
 
-- Concurrent authority removal could leave a Tenant without an effective Admin.
-- Invitation replay, expiry or stale issuer authority could elevate a recipient.
-- Reusing Operational guards could couple Admin Context to Station/PIN.
-- IDs or email lookup could leak or mutate another Tenant.
-- Reconciliation could accidentally restore the obsolete per-suite PostgreSQL
-  container lifecycle or weaken the material eight-suite campaign.
+- Diagnostic output could leak sensitive values if redaction is incomplete.
+- Oversized child output could flood CI without deterministic limits.
+- Error reporting must not catch, downgrade or delay fail-closed cleanup.
+- TL-07 remains blocked until a new authorized exact-candidate full run passes.
 
 ## Plan
 
-- [x] Complete readiness and Owner decisions.
-- [x] Implement invitation persistence, email dispatch and atomic acceptance.
-- [x] Implement Admin Users/Roles APIs and UI.
-- [x] Implement last-effective-admin and Level-2 protections.
-- [x] Prove tenant isolation, concurrency and responsive accessibility.
-- [x] Complete the original focused and full candidate verification.
-- [x] Remediate invitation expiry/resend lifecycle on the preserved branch.
-- [x] Preserve the reviewed TL-06 checkpoint during the external Quality work.
-- [x] Confirm the Quality Work Unit is closed and current `main` is authoritative.
-- [~] Merge current `main` ordinarily and audit the combined state.
-- [ ] Run focused TL-06 and integrated PostgreSQL verification.
-- [ ] Run one canonical `verify:full` on the reconciled exact HEAD.
-- [ ] Push normally, require fresh PR #69 CI and review the exact final HEAD.
+- [x] Preserve TL-07 at `8b75ba6724257044896b4c4ae26c09ef616c4d42`.
+- [x] Audit the existing child-process failure path and bounded diagnosis.
+- [x] Define structured, sanitized and bounded diagnostic contract.
+- [x] Implement child diagnostics without changing failure semantics.
+- [x] Add assertion, signal, timeout, truncation and redaction regressions.
+- [x] Run focused quality, architecture and verification gates.
+- [x] Run one canonical `verify:full` on this exact Quality HEAD if required.
+- [ ] Reconcile readiness and stop before remote promotion unless authorized.
 
 ## Current
 
-TL-06 has resumed on its preserved branch. Its previous remote promotion found
-the invitation expiry/resend lifecycle defect, which is fixed at the preserved
-checkpoint. The external owner-scoped PostgreSQL Quality dependency is now
-integrated and closed; current `main` is being merged ordinarily into TL-06.
+The diagnostic marker and parser are implemented. Existing child-failure
+identity remains fail-closed; the new bounded diagnostic accompanies it and is
+included by the PostgreSQL CI wrapper when a child fails.
 
 ## Next
 
-Complete the checklist conflict resolution, audit the combined product and
-harness contracts, then execute focused TL-06 verification.
+The proportional local gates and canonical full verification pass on this
+Quality candidate. The Work Unit is ready for remote promotion review; push,
+PR, merge and deploy remain separately unauthorized.
 
 ## Blockers
 
-None. PR #69 remains open and unmerged while the reconciled candidate is
-revalidated.
+No local verification blocker remains. TL-07 remains frozen and must not be
+promoted from the previous unresolved campaign result.
 
 ## Important Discoveries
 
-- A single User supports admin-only, operational-only and combined identities.
-- The legacy Users/Roles surface is Operational Context and is not the TL-06
-  authorization boundary.
-- The protected `tenant_admin` Role rejects content edits; assignments remain
-  subject to the serialized last-effective-admin invariant.
-- TL-04 email provider infrastructure is reused while invitation persistence
-  remains Access-owned.
-- Expired invitations transition durably to `EXPIRED`, release pending-email
-  uniqueness, expire the active challenge and cannot have their original
-  deadline extended by resend.
-- The integrated Quality harness uses one governed PostgreSQL container, eight
-  exact serial suites and a fresh random database with deterministic drop and
-  absence verification per suite.
+- The prior runner preserved only failed test identity, exit code, signal and
+  timeout; child stdout/stderr were not retained in the parent marker.
+- The new marker retains bounded head/tail streams plus a filtered failure
+  summary, while redacting secret-like values before serialization.
+- The existing eight-suite serial inventory, fresh-database lifecycle and
+  240-second outer budget remain unchanged.
 
 ## Focused Verification
 
-- [x] Original TL-06 domain/application/UI and material PostgreSQL proof.
-- [x] Invitation lifecycle remediation focused proof.
-- [ ] Reconciled invitation, identity, User-mode, Role and last-admin suites.
-- [ ] Reconciled Level-2, tenancy, email and audit suites.
-- [ ] TL-06 PostgreSQL 3/3 with current migrations and zero pending on rerun.
-- [ ] Owner-scoped PostgreSQL campaign 8/8 under the unchanged budget.
-- [ ] Typecheck, build, architecture, links, secret scan and `git diff --check`.
-- [ ] Canonical `verify:full` on one exact reconciled HEAD.
+- [x] Child diagnostics unit/regression tests: assertion, signal, timeout,
+  truncation, redaction and propagation.
+- [x] Existing PostgreSQL workflow contract tests.
+- [x] Typecheck/build as required by the Quality promotion classifier.
+- [x] Architecture, Work Unit checker, links, secret scan and `git diff --check`.
+- [x] Canonical `verify:full` on the exact final Quality HEAD if required.
 
 ## Promotion Gates
 
-- [x] Existing PR #69 and prior remote promotion are preserved.
-- [x] External Quality dependency integrated and closed on `main`.
-- [~] Ordinary `main` reconciliation in progress.
-- [ ] Local focused and full gates on the reconciled candidate.
-- [ ] Fresh authoritative run-1, run-2, comparison and promotion gate.
-- [ ] Exact-HEAD security/architectural review without material findings.
-- [ ] Merge/exact-main closure — not authorized.
+- [x] TL-07 product implementation unchanged and preserved on its branch.
+- [x] Eight-suite inventory, 240-second budget and failure semantics unchanged.
+- [x] Focused and proportional local verification.
+- [x] `READY_FOR_PROMOTION` snapshot and promotion checker.
+- [ ] PR/CI/review/merge — not authorized in this Work Unit step.
 
 ## Remote Actions / Authorization
 
-- Normal push to the existing TL-06 branch and reuse of Draft PR #69 are
-  authorized after local verification.
-- Merge, deploy, TL-07 and force push remain unauthorized.
+- Owner authorized this local Quality Work Unit only.
+- Push, PR, merge, deploy, TL-07 promotion and TL-08 remain unauthorized.
+- Preserve `apps/dev-preview-web/src/.DS_Store`.
 
 ## Handoff Notes
 
-- Preserve the invitation-lifecycle remediation at the reviewed checkpoint.
-- Preserve `apps/dev-preview-web/src/.DS_Store` as unrelated Owner material.
-- Do not reopen Quality merely because a passing owner-scoped run is near its
-  unchanged 240-second contract.
+After this Quality Work Unit is integrated and closed, resume TL-07 from its
+preserved branch, merge current `main` normally, run focused continuity checks,
+then execute one canonical `verify:full` to classify the original campaign
+failure using the new diagnostics.
 
 ## Closure Predicate
 
-The reconciled TL-06 branch preserves all authorized product and invitation
-semantics; focused and canonical full verification pass on one exact HEAD;
-fresh PR #69 run-1/run-2 materially execute owner-scoped 8/8 and TL-06 3/3,
-comparison and promotion gate pass; security/architectural review has no
-material findings; merge and exact-main closure remain separately authorized.
+Quality is `READY_FOR_PROMOTION` only when the diagnostic contract, focused
+regressions, required local gates and exact diff pass on one clean candidate;
+the eight-suite inventory, fail-closed propagation, cleanup and 240-second
+budget remain unchanged; and TL-07/TL-08 remain outside this Work Unit.

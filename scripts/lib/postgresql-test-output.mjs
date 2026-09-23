@@ -16,6 +16,10 @@ export const pbi039PostgresqlTestFiles = Object.freeze([
 
 const childFailureMarker = 'SR_POSTGRESQL_CHILD_FAILURE=';
 const childFailureOperation = 'owner-scoped-adapters-node-test';
+const childDiagnosticMarker = 'SR_POSTGRESQL_CHILD_DIAGNOSTIC=';
+const childDiagnosticOperation = 'owner-scoped-adapters-node-test-diagnostic';
+const childDiagnosticStreamLimit = 4_096;
+const childDiagnosticMarkerLimit = 16_384;
 const harnessFailureMarker = 'SR_POSTGRESQL_HARNESS_FAILURE=';
 export const ownerScopedPostgresqlHarnessOperations = Object.freeze([
   'owner-scoped-adapters-docker-exec',
@@ -80,6 +84,82 @@ function validExitCode(value) {
 
 function validSignal(value) {
   return value === null || allowedSignals.has(value);
+}
+
+function validTimeoutReason(value) {
+  return value === null || value === 'execFile-timeout';
+}
+
+function boundedDiagnosticText(value) {
+  const text = typeof value === 'string' ? value : '';
+  if (text.length <= childDiagnosticStreamLimit) return text;
+  const marker = '\n...[diagnostic output truncated]...\n';
+  const available = childDiagnosticStreamLimit - marker.length;
+  const headLength = Math.ceil(available / 2);
+  return `${text.slice(0, headLength)}${marker}${text.slice(-(
+    available - headLength
+  ))}`;
+}
+
+function redactDiagnosticText(value) {
+  return (typeof value === 'string' ? value : '')
+    .replace(
+      /\b(?:postgres(?:ql)?|mysql|redis):\/\/[^\s"'`]+/giu,
+      '[redacted-connection]',
+    )
+    .replace(
+      /\b(?:bearer)\s+[A-Za-z0-9._~+/=-]+/giu,
+      'Bearer [redacted]',
+    )
+    .replace(
+      /(\b(?:password|passwd|secret|token|pin|cookie|authorization|csrf|pepper|enrollment(?:[_ -]secret)?))\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;}]+)/giu,
+      '$1=[redacted]',
+    )
+    .replace(
+      /\bSR_[A-Z0-9_]*(?:PASSWORD|TOKEN|SECRET|PEPPER)[^=\s]*=[^\s]+/giu,
+      '[redacted-env]',
+    );
+}
+
+function diagnosticSummary(stdout, stderr) {
+  const lines = `${stdout}\n${stderr}`
+    .split(/\r?\n/u)
+    .map((line) => line.trim())
+    .filter(
+      (line) =>
+        line !== '' &&
+        /(?:^not ok\b|AssertionError|(?:^|\s)Error:|SQLSTATE|\b(?:code|exit|signal|timeout)\s*[:=])/iu.test(line),
+    );
+  return boundedDiagnosticText([...new Set(lines)].join('\n'));
+}
+
+function validDiagnosticPayload(payload) {
+  return (
+    payload !== null &&
+    typeof payload === 'object' &&
+    !Array.isArray(payload) &&
+    Object.keys(payload).sort().join(',') ===
+      'exitCode,operation,ordinal,schemaVersion,signal,stderr,stderrTruncated,stdout,stdoutTruncated,suite,summary,timeout,timeoutReason' &&
+    payload.schemaVersion === 1 &&
+    payload.operation === childDiagnosticOperation &&
+    ownerScopedPostgresqlTestFiles.includes(payload.suite) &&
+    Number.isInteger(payload.ordinal) &&
+    payload.ordinal >= 1 &&
+    payload.ordinal <= ownerScopedPostgresqlTestFiles.length &&
+    validExitCode(payload.exitCode) &&
+    validSignal(payload.signal) &&
+    typeof payload.timeout === 'boolean' &&
+    validTimeoutReason(payload.timeoutReason) &&
+    (payload.timeout ? payload.timeoutReason !== null : payload.timeoutReason === null) &&
+    typeof payload.stdout === 'string' &&
+    typeof payload.stderr === 'string' &&
+    typeof payload.summary === 'string' &&
+    typeof payload.stdoutTruncated === 'boolean' &&
+    typeof payload.stderrTruncated === 'boolean' &&
+    payload.stdout.length <= childDiagnosticStreamLimit &&
+    payload.stderr.length <= childDiagnosticStreamLimit &&
+    payload.summary.length <= childDiagnosticStreamLimit
+  );
 }
 
 function validFailurePayload(payload) {
@@ -197,6 +277,101 @@ export function formatPostgresqlChildFailureDiagnostic(payload) {
     `exitCode=${payload.exitCode ?? 'unknown'}`,
     `signal=${payload.signal ?? 'none'}`,
     `timeout=${payload.timeout ? 'yes' : 'no'}`,
+  ].join('; ');
+}
+
+export function createPostgresqlChildDiagnosticMarker(
+  error,
+  { ordinal, suite },
+) {
+  const rawStdout =
+    error !== null &&
+    typeof error === 'object' &&
+    typeof error.stdout === 'string'
+      ? error.stdout
+      : '';
+  const rawStderr =
+    error !== null &&
+    typeof error === 'object' &&
+    typeof error.stderr === 'string'
+      ? error.stderr
+      : '';
+  const redactedStdout = redactDiagnosticText(rawStdout);
+  const redactedStderr = redactDiagnosticText(rawStderr);
+  const stdout = boundedDiagnosticText(redactedStdout);
+  const stderr = boundedDiagnosticText(redactedStderr);
+  const payload = {
+    schemaVersion: 1,
+    operation: childDiagnosticOperation,
+    suite,
+    ordinal,
+    exitCode:
+      error !== null &&
+      typeof error === 'object' &&
+      validExitCode(error.code)
+        ? error.code
+        : null,
+    signal:
+      error !== null &&
+      typeof error === 'object' &&
+      validSignal(error.signal)
+        ? error.signal
+        : null,
+    timeout:
+      error !== null &&
+      typeof error === 'object' &&
+      error.killed === true,
+    timeoutReason:
+      error !== null &&
+      typeof error === 'object' &&
+      error.killed === true
+        ? 'execFile-timeout'
+        : null,
+    stdout,
+    stderr,
+    summary: diagnosticSummary(redactedStdout, redactedStderr),
+    stdoutTruncated: rawStdout.length > childDiagnosticStreamLimit,
+    stderrTruncated: rawStderr.length > childDiagnosticStreamLimit,
+  };
+  if (!validDiagnosticPayload(payload)) {
+    throw new Error('PostgreSQL child diagnostic identity is not governed');
+  }
+  const marker = `${childDiagnosticMarker}${JSON.stringify(payload)}`;
+  if (marker.length > childDiagnosticMarkerLimit) {
+    throw new Error('PostgreSQL child diagnostic marker exceeds its bound');
+  }
+  return marker;
+}
+
+export function parsePostgresqlChildDiagnosticMarker(stderr) {
+  if (typeof stderr !== 'string') return null;
+  const markers = stderr
+    .split(/\r?\n/u)
+    .filter((line) => line.startsWith(childDiagnosticMarker));
+  if (markers.length !== 1 || markers[0].length > childDiagnosticMarkerLimit) {
+    return null;
+  }
+  let payload;
+  try {
+    payload = JSON.parse(markers[0].slice(childDiagnosticMarker.length));
+  } catch {
+    return null;
+  }
+  return validDiagnosticPayload(payload) ? Object.freeze({ ...payload }) : null;
+}
+
+export function formatPostgresqlChildDiagnostic(payload) {
+  if (!validDiagnosticPayload(payload)) return null;
+  return [
+    `suite=${payload.suite}`,
+    `ordinal=${payload.ordinal}`,
+    `exitCode=${payload.exitCode ?? 'unknown'}`,
+    `signal=${payload.signal ?? 'none'}`,
+    `timeout=${payload.timeout ? 'yes' : 'no'}`,
+    `timeoutReason=${payload.timeoutReason ?? 'none'}`,
+    `summary=${payload.summary || 'none'}`,
+    `stdout=${payload.stdout || 'none'}`,
+    `stderr=${payload.stderr || 'none'}`,
   ].join('; ');
 }
 

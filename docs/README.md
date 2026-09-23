@@ -192,6 +192,7 @@ separado y requiere autorización propia.
 ## Calidad
 
 - [Estrategia de calidad](quality/QUALITY_STRATEGY.md)
+- [Owner-scoped child failure diagnostics](quality/evidence/owner-scoped-child-diagnostics/README.md)
 - [Estrategia de pruebas](quality/TESTING_STRATEGY.md)
 - [Pruebas de aislamiento multitenant](quality/MULTITENANT_ISOLATION_TESTING.md)
 - [Pruebas de seguridad](quality/SECURITY_TESTING.md)
