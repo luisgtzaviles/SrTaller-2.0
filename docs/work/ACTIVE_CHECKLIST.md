@@ -4,13 +4,13 @@ Current PBI: NONE
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-07 — Station Inventory + Enrollment Authority
-iteration: 4 - CI variability Quality reconciliation
+iteration: 5 - final remote promotion
 type: PRODUCT
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-07-station-inventory-enrollment-readiness
 base_sha: 74fe2b5fd5b66ee48428953f3e027f2815c839ca
-status: ACTIVE
+status: PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
@@ -75,26 +75,26 @@ fail-closed tenancy and trust semantics.
 - [x] Preserve TL-07 while the bounded CI-variability diagnosis was completed.
 - [x] Integrate and close both owner-scoped Quality dependencies.
 - [x] Merge authoritative `main` into the preserved TL-07 branch ordinarily.
-- [~] Execute the exact verification path required by the current Harness.
-- [ ] Push the reconciled branch and complete authoritative PR review.
+- [x] Execute the exact verification path required by the current Harness.
+- [~] Push the reconciled branch and complete authoritative PR review.
 
 ## Current
 
 TL-07 product history is preserved and authoritative `main` has been merged
-ordinarily. The only incoming main delta was the closed documentary Quality
-evidence for `CI_HOST_RESOURCE_VARIABILITY`; no product, runtime, PostgreSQL,
-harness, timeout, gate or retry-policy change entered the branch.
+ordinarily. The canonical full verification passed once on reconciliation
+merge `a6845e8e204e471db59abbe7396a6b5aaf698dd8`: stages 0–19, owner-scoped
+`8/8`, TL-07 PostgreSQL `3/3`, 89 migrations, rerun `0 pending`, runtime
+smokes, fingerprint and cleanup all passed.
 
 ## Next
 
-Run the single canonical full verification required for this architectural
-product PR, reconcile the exact docs-only readiness delta, then update existing
-Draft PR #72 through an ordinary push.
+Validate and commit this exact docs-only readiness reconciliation, then update
+existing Draft PR #72 through an ordinary push and observe authoritative CI.
 
 ## Blockers
 
 No semantic product/security conflict exists. Promotion remains contingent on
-the required exact verification and authoritative remote CI results.
+authoritative remote CI and final security/architectural review results.
 
 ## Important Discoveries
 
@@ -124,8 +124,10 @@ the required exact verification and authoritative remote CI results.
 - [x] Prior Access Session PostgreSQL historical fixture: `1/1` PASS.
 - [x] Local product/full candidate `8b877a8c6999b9954d376c46bf64930ce67fa108`: stages 0–19 PASS.
 - [x] Historical PR #72 attempt 2: owner-scoped `8/8`, TL-07 PostgreSQL `3/3`, comparison and promotion gate PASS.
-- [ ] One canonical `verify:full` on the newly reconciled product candidate.
-- [ ] Final docs-only readiness delta, Work Unit checker and `git diff --check`.
+- [x] One canonical `verify:full` on reconciliation merge `a6845e8e204e471db59abbe7396a6b5aaf698dd8`: stages 0–19 PASS.
+- [x] Owner-scoped campaign in that run: `8/8` PASS, 115.010s campaign / 118.654s wrapper, below 240s.
+- [x] TL-07 PostgreSQL in that run: `3/3` PASS; 89 migrations; second run `0 pending`.
+- [~] Final docs-only readiness delta, Work Unit checker and `git diff --check`.
 
 ## Promotion Gates
 
@@ -133,7 +135,7 @@ the required exact verification and authoritative remote CI results.
 - [x] Historical-schema fixture remediations preserved.
 - [x] Owner-scoped Quality dependencies integrated and closed.
 - [x] Timeout, suite inventory, serial isolation and fail-closed semantics unchanged.
-- [ ] Required local verification PASS on the reconciled candidate.
+- [x] Required local verification PASS on the reconciled candidate.
 - [ ] Existing PR #72 updated and authoritative CI/review PASS.
 - [ ] Owner merge authorization remains separate.
 
