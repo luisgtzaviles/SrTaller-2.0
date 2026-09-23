@@ -2,13 +2,13 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: QUALITY — Diagnose Owner-Scoped CI Runtime Variability
-iteration: 2 - Owner-accepted diagnosis
+iteration: 3 - Remote review
 type: QUALITY
 risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: chore/quality-owner-scoped-ci-variability
 base_sha: 9bd8bfcf106ba69be66202eedee115a2eea19739
-status: READY_FOR_PROMOTION
+status: PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
@@ -71,12 +71,14 @@ resume promotion.
 The Owner accepts `CI_HOST_RESOURCE_VARIABILITY` as the bounded diagnosis.
 The same-head slow leg expands all material child processes proportionally;
 no TL-07, PostgreSQL, migration, assertion, cleanup or specific-suite defect is
-shown. No runtime remediation or general retry policy was implemented.
+shown. No runtime remediation or general retry policy was implemented. The
+documentary candidate is in remote review; GitHub is authoritative for its PR
+and CI state.
 
 ## Next
 
-Promote this documentary/evidence candidate only after separate Owner
-authorization. TL-07 may then resume through its own separately authorized
+Await the separate Owner merge decision for this documentary/evidence
+candidate. TL-07 may then resume through its own separately authorized
 promotion path. A bounded progress-marker improvement remains a future Quality
 candidate and is not part of this Work Unit.
 
@@ -124,13 +126,17 @@ PR #72 remains untouched until its own promotion is separately resumed.
 - [x] No timeout, retry, suite, assertion or gate change is proposed.
 - [x] Exact-HEAD docs-only promotion verification PASS.
 - [x] TL-07 remains a dependent, frozen Draft candidate and is not merged.
-- [ ] Push, PR, authoritative CI, review, merge and governed closure require
-  separate authority.
+- [x] Ordinary push, one Draft PR, authoritative CI and focused review were
+  authorized for remote promotion.
+- [ ] Merge and governed closure require separate Owner authority.
 
 ## Remote Actions / Authorization
 
-- Read-only GitHub/CI inspection was authorized and completed.
-- No push, new PR, merge, deploy or CI rerun is authorized in this step.
+- Ordinary push, one Draft PR, authoritative CI inspection and focused review
+  were authorized for this promotion step.
+- GitHub remains the authority for current PR and CI facts; they are not copied
+  into this checklist as a status ledger.
+- Merge, deploy, TL-07 modification and TL-08 remain unauthorized.
 - PR #72 remains open and Draft; TL-07 was not modified or pushed.
 
 ## Handoff Notes
