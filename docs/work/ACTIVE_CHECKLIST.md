@@ -8,7 +8,7 @@ risk: HIGH
 shadow_risk: NORMAL
 branch: chore/quality-owner-scoped-child-diagnostics
 base_sha: 74fe2b5fd5b66ee48428953f3e027f2815c839ca
-status: PROMOTION
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
@@ -64,7 +64,7 @@ the failure safely.
 - [x] Implement child diagnostics without changing failure semantics.
 - [x] Add assertion, signal, timeout, truncation and redaction regressions.
 - [x] Run focused quality, architecture and verification gates.
-- [~] Run one canonical `verify:full` on this exact Quality HEAD if required.
+- [x] Run one canonical `verify:full` on this exact Quality HEAD if required.
 - [ ] Reconcile readiness and stop before remote promotion unless authorized.
 
 ## Current
@@ -75,15 +75,14 @@ included by the PostgreSQL CI wrapper when a child fails.
 
 ## Next
 
-The proportional local gates pass. Run the canonical full verification on this
-exact Quality candidate; classify the Work Unit as `READY_FOR_PROMOTION` only
-if that governed gate also passes.
+The proportional local gates and canonical full verification pass on this
+Quality candidate. The Work Unit is ready for remote promotion review; push,
+PR, merge and deploy remain separately unauthorized.
 
 ## Blockers
 
-The canonical full verification is pending for this new Quality HEAD; TL-07
-remains frozen and must not be promoted from the previous unresolved campaign
-result.
+No local verification blocker remains. TL-07 remains frozen and must not be
+promoted from the previous unresolved campaign result.
 
 ## Important Discoveries
 
@@ -101,14 +100,14 @@ result.
 - [x] Existing PostgreSQL workflow contract tests.
 - [x] Typecheck/build as required by the Quality promotion classifier.
 - [x] Architecture, Work Unit checker, links, secret scan and `git diff --check`.
-- [~] Canonical `verify:full` on the exact final Quality HEAD if required.
+- [x] Canonical `verify:full` on the exact final Quality HEAD if required.
 
 ## Promotion Gates
 
 - [x] TL-07 product implementation unchanged and preserved on its branch.
 - [x] Eight-suite inventory, 240-second budget and failure semantics unchanged.
 - [x] Focused and proportional local verification.
-- [~] `READY_FOR_PROMOTION` snapshot and promotion checker.
+- [x] `READY_FOR_PROMOTION` snapshot and promotion checker.
 - [ ] PR/CI/review/merge — not authorized in this Work Unit step.
 
 ## Remote Actions / Authorization
