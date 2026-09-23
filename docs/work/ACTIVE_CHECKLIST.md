@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: fix/tier2-capacity-cleanup
 base_sha: 0133d65339f2534d67764c2d770c655a6fb89214
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-23
 dependency_exception: INFRA_CI_BLOCKER
@@ -125,33 +125,35 @@ residual and independent inventory is empty.
 - [x] Remove both exact residual non-server resources with protected recovery.
 - [x] Preserve the second material attempt as failed capacity evidence.
 - [x] Remediate insufficient CCX23 capacity and eventual firewall release.
-- [~] Apply the Owner-authorized bounded 360-second owner-scoped timeout and
-  obtain a fresh normal two-leg authoritative campaign on the new PR HEAD.
+- [x] Apply and locally verify the Owner-authorized bounded 360-second
+  owner-scoped timeout without changing suite content or PASS semantics.
+- [~] Obtain a fresh normal two-leg authoritative campaign on the new PR HEAD.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
 
 ## Current
 
-PR #78 preserved run-1 PASS with a 232.704-second owner-scoped campaign and
-235.049-second wrapper, while run-2 terminated exactly at the former
-240-second outer limit. The Owner classified this as host-resource variability
-and authorized a new commit raising only the complete owner-scoped wrapper to
-360 seconds. The candidate continues to select CCX43 and retain bounded
-firewall cleanup. Historical failures remain failed evidence.
+The 360-second owner-scoped remediation is implemented and passed one canonical
+local `verify:full` on exact implementation commit `266b610`: all stages 0–19,
+owner-scoped 8/8, TL-07 3/3, 89 migrations, runtime smokes, fingerprint and
+cleanup passed. PR #78 still preserves its prior failed run as historical
+evidence and has not yet run the required fresh normal two-leg campaign on the
+new final HEAD.
 
 ## Next
 
-Run focused and canonical local verification on the new timeout-remediation
-commit, push it normally to PR #78, and require a fresh complete two-leg
-authoritative campaign before merge or material CCX43 observations.
+Publish the reconciled exact candidate to PR #78 and require a fresh complete
+two-leg authoritative campaign, deterministic comparison and promotion gate
+before merge or material CCX43 observations.
 
 ## Blockers
 
 PR #78 remains blocked until the new exact HEAD passes both normal hosted legs,
-comparison and promotion gate. The Infra Work Unit also cannot close because no
-successful material SHADOW campaign exists. There are currently no managed
-Hetzner resources.
+comparison and promotion gate. This is a new-candidate execution, not a retry of
+run `35849314937`. The Infra Work Unit also cannot close because no successful
+material SHADOW campaign exists. There are currently no managed Hetzner
+resources.
 
 ## Important Discoveries
 
@@ -274,8 +276,16 @@ Hetzner resources.
   owner-scoped 8/8 in 103.799 s, PBI-041 9/9 with 16.875 s publish,
   TL-07 3/3, 89 migrations, rerun 0 pending, runtime/backend/UI smokes,
   fingerprint and cleanup PASS.
-- [ ] Timeout-remediation focused regressions and canonical local verification
-  on its exact implementation commit.
+- [x] Timeout-remediation focused regressions: 37/37 PASS; architecture and
+  `git diff --check` PASS.
+- [x] Base `verify` on timeout-remediation implementation commit `266b610`:
+  PASS (1120 tests; 1073 pass; 47 governed PostgreSQL skips), including
+  typecheck and build.
+- [x] Canonical Full Verification on timeout-remediation implementation commit
+  `266b610463fd3764e041e65da22b82696483e492`: stages 0–19 PASS,
+  owner-scoped 8/8 with campaign 114.410 s and wrapper 117.916 s, TL-07 3/3,
+  89 migrations, rerun 0 pending, runtime/backend/UI smokes, fingerprint and
+  cleanup PASS.
 - [ ] Fresh normal PR #78 run-1, run-2, comparison and promotion gate on the
   new final HEAD; the failed historical run remains evidence, not a retry.
 - [x] Promotion lifecycle check on the final implementation SHA: PASS.
