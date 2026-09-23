@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: chore/deterministic-authoritative-ci-runner
 base_sha: 0e6193e4afa6ebe35accdac7b58e69fa992d9c43
-status: ACTIVE
+status: BLOCKED
 closure_mode: DERIVED
 last_updated: 2026-09-22
 dependency_exception: INFRA_CI_BLOCKER
@@ -81,9 +81,9 @@ to satisfy the unchanged 240-second contract.
 - [x] Revalidate TL-07 merge SHA, Git/GitHub baseline and current Harness.
 - [x] Implement the governed dependency exception with negative regressions.
 - [x] Implement the subject-SHA closure contract with fail-closed regressions.
-- [~] Apply and verify the minimum mechanical `main` protection.
-- [ ] Create and protect the `authoritative-ci` Environment.
-- [ ] Establish the isolated Hetzner CI project and minimum-scope token.
+- [x] Apply and verify the minimum mechanical `main` protection.
+- [x] Create and protect the `authoritative-ci` Environment.
+- [!] Establish the isolated Hetzner CI project and minimum-scope token.
 - [ ] Implement the versioned runner bootstrap/image contract.
 - [ ] Implement trusted ephemeral provisioning and deletion proof.
 - [ ] Integrate unchanged FULL execution and sanitized evidence.
@@ -94,23 +94,25 @@ to satisfy the unchanged 240-second contract.
 
 ## Current
 
-The exceptional Work Unit is explicit and machine-verifiable. Local Harness
-changes preserve ordinary WIP behavior while allowing only this named
-Infrastructure/Quality dependency over the preserved TL-07 `PROMOTION`
-snapshot. Subject closure now requires a closed Infra controller, an explicitly
-authorized ancestor SHA and matching successful attestation.
+GitHub now has an active no-bypass `main-governed-promotion` ruleset requiring
+ordinary PR integration, conversation resolution, strict
+`Authoritative promotion gate` from GitHub Actions and no force push/deletion.
+Only merge commits remain enabled. The `authoritative-ci` Environment accepts
+only `main`, contains no secrets and disables administrator bypass.
 
 ## Next
 
-Complete focused regression/documentation validation, then apply the authorized
-minimum `main` protection and protected Environment before any cloud credential
-is made usable.
+Owner authenticates the existing Hetzner account in the prepared browser tab
+or supplies a secure equivalent administrative path. Then create a separate CI
+project, issue a minimum-scope project token and store it only in the protected
+`authoritative-ci` Environment.
 
 ## Blockers
 
-No blocker has been declared yet. Cloud provisioning remains fail-closed until
-current Hetzner profile/pricing, isolated project access and minimum-scope
-credentials are materially available.
+BLOCKED at Block 5. The Hetzner browser is at the login screen; no `hcloud`
+binary/context, environment token or matching Keychain item exists. No project,
+token, server or billable resource was created. Current official pricing also
+must be confirmed in the authenticated Console before selecting the profile.
 
 ## Important Discoveries
 
@@ -122,10 +124,20 @@ credentials are materially available.
   `apps/dev-preview-web/src/.DS_Store`.
 - Exact-main closure remains the default. Subject closure is limited to the
   dependency named in this checklist and cannot accept an arbitrary ancestor.
+- GitHub ruleset `main-governed-promotion` is active with zero bypass actors;
+  its required check is pinned to GitHub Actions app id `15368`.
+- Environment `authoritative-ci` uses a custom `main` branch policy,
+  `can_admins_bypass: false` and currently has no secrets.
+- Official 2026 Hetzner pricing lists CCX23 at USD 0.1626/hour or USD
+  101.49/month in European regions, excluding VAT/IPv4. Ephemeral hourly use
+  may fit the USD 25 guard, but shadow measurements and authenticated current
+  availability are still required.
 
 ## Focused Verification
 
-- [x] Work Unit lifecycle unit tests: 16/16 PASS after Blocks 1–2.
+- [x] Work Unit lifecycle unit tests: 17/17 PASS after Blocks 1–2, including
+  explicit non-ancestor subject and wrong closure-tag target rejection.
+- [x] GitHub ruleset/merge-settings/Environment API readback matches Blocks 3–4.
 - [ ] Architecture/checker regression.
 - [ ] Workflow/security regressions for trusted trigger and attestation.
 - [ ] Shadow FULL evidence on two independent dedicated VMs.
@@ -149,6 +161,7 @@ credentials are materially available.
   merge or timeout/gate weakening is authorized.
 - Stop for Owner decision at any explicit capability, security, budget or
   stability condition in the authorization.
+- No Hetzner credential was read, created, stored or activated.
 
 ## Handoff Notes
 

@@ -628,6 +628,21 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       confirmPredicate: true,
     }), /promotion gate is not successful/u);
 
+    const subjectMetadata = parseWorkUnitDocument(await repo.git(
+      'show',
+      `${subjectSha}:docs/work/ACTIVE_CHECKLIST.md`,
+    ).then(({ stdout }) => stdout)).metadata;
+    const subjectClosureTag = workUnitClosureTag(subjectMetadata);
+    await repo.git('tag', '-a', subjectClosureTag, '-m', 'wrong target', repo.baseSha);
+    await assert.rejects(closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: run,
+      attestation,
+      subjectSha,
+      confirmPredicate: true,
+    }), /already targets .* not/u);
+    await repo.git('tag', '-d', subjectClosureTag);
+
     const closure = await closeIntegratedSubjectWorkUnit({
       projectRoot: repo.root,
       authoritativeRun: run,
@@ -641,6 +656,69 @@ test('subject-SHA closure is fail-closed and targets only the explicitly preserv
       (await repo.git('rev-parse', `${closure.ref}^{commit}`)).stdout.trim(),
       subjectSha,
     );
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('subject-SHA closure rejects an explicitly named subject outside live main history', async () => {
+  const repo = await repository();
+  try {
+    await repo.git('switch', '--quiet', '-c', 'feature/tl-07');
+    await writeFile(
+      join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md'),
+      checklist({ branch: 'feature/tl-07', baseSha: repo.baseSha, status: 'PROMOTION' }),
+    );
+    await repo.git('add', '.');
+    await repo.git('commit', '--quiet', '-m', 'tl07 promotion snapshot');
+    await repo.git('switch', '--quiet', 'main');
+    await repo.git('merge', '--quiet', '--no-ff', 'feature/tl-07', '-m', 'merge tl07');
+    const integratedSubjectSha = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
+    await repo.git('push', '--quiet', 'origin', 'main');
+
+    await repo.git('switch', '--quiet', '-c', 'side/unauthorized-subject', repo.baseSha);
+    await writeFile(join(repo.root, 'side.txt'), 'outside live main history\n');
+    await repo.git('add', '.');
+    await repo.git('commit', '--quiet', '-m', 'unintegrated subject');
+    const unintegratedSubjectSha = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
+
+    await repo.git('switch', '--quiet', 'main');
+    await repo.git('switch', '--quiet', '-c', 'chore/deterministic-authoritative-ci-runner');
+    await initializeWorkUnit({
+      projectRoot: repo.root,
+      name: 'INFRA — Deterministic Authoritative CI Runner',
+      branch: 'chore/deterministic-authoritative-ci-runner',
+      objective: 'Restore deterministic authoritative CI for the preserved TL-07 dependency.',
+      risk: 'ARCHITECTURAL',
+      shadowRisk: 'ARCHITECTURAL',
+      type: 'INFRASTRUCTURE_QUALITY',
+      dependencyException: 'INFRA_CI_BLOCKER',
+      lastUpdated: '2026-09-22',
+    });
+    const checklistPath = join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md');
+    const readySource = (await readFile(checklistPath, 'utf8'))
+      .replace(`dependency_subject_sha: ${integratedSubjectSha}`, `dependency_subject_sha: ${unintegratedSubjectSha}`)
+      .replace('status: ACTIVE', 'status: READY_FOR_PROMOTION');
+    await writeFile(checklistPath, readySource);
+    await repo.git('add', '.');
+    await repo.git('commit', '--quiet', '-m', 'infra ready with forged subject');
+    await repo.git('switch', '--quiet', 'main');
+    await repo.git('merge', '--quiet', '--no-ff', 'chore/deterministic-authoritative-ci-runner', '-m', 'merge infra');
+    const controllerSha = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
+    await repo.git('push', '--quiet', 'origin', 'main');
+    await closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeRun(controllerSha),
+      confirmPredicate: true,
+    });
+
+    await assert.rejects(closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeSubjectRun(controllerSha),
+      attestation: subjectAttestation(controllerSha, unintegratedSubjectSha),
+      subjectSha: unintegratedSubjectSha,
+      confirmPredicate: true,
+    }), /not an ancestor integrated into live main/u);
   } finally {
     await rm(repo.container, { recursive: true, force: true });
   }
