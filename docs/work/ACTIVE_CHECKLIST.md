@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: fix/tier2-material-shadow-recovery
 base_sha: d181933b31b86de601c5985ac38b2a438cac304f
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-23
 dependency_exception: INFRA_CI_BLOCKER
@@ -114,7 +114,8 @@ firewall remained and must be explicitly removed before campaigns continue.
 - [x] Run canonical promotion verification on the implementation candidate.
 - [x] Integrate shadow-only dispatch through governed PR #76.
 - [x] Run the first material SHADOW attempt and preserve its failed evidence.
-- [~] Remediate the demonstrated pre-FULL transport and cleanup defects.
+- [x] Remediate the demonstrated pre-FULL transport and cleanup defects.
+- [~] Promote the material recovery through one governed PR.
 - [ ] Remove the exact residual non-server resource with protected recovery.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
@@ -122,19 +123,18 @@ firewall remained and must be explicitly removed before campaigns continue.
 
 ## Current
 
-The first material SHADOW attempt ran from trusted live `main` without hosted
-FULL. One dedicated leg passed FULL completely with owner-scoped 8/8 in
-142.026 seconds; the second leg failed before FULL on an SSH banner timeout.
-Both VMs were removed, while one firewall remained because the orchestrator
-rejected Hetzner's successful asynchronous `200` server-delete response and
-therefore attempted the dependent firewall too early. The campaign remains a
-FAIL and contributes zero successful legs to cutover readiness.
+The demonstrated defects now have a focused, fully verified recovery
+candidate. It accepts asynchronous delete responses but still requires exact
+`404` proof, provides one bounded pre-FULL SSH transport recovery, and adds a
+protected exact-run cleanup that refuses any run with a remaining server. The
+first campaign remains a FAIL and contributes zero successful legs to cutover
+readiness.
 
 ## Next
 
-Finish the focused remediation, run promotion verification, integrate it
-through one governed PR, explicitly remove the server-free residual firewall,
-then resume bounded material SHADOW observations.
+Promote and integrate this exact recovery candidate through one governed PR,
+explicitly remove the server-free residual firewall, then resume bounded
+material SHADOW observations.
 
 ## Blockers
 
@@ -221,6 +221,12 @@ and authoritative closure predicates remain unsatisfied.
 - [x] First material attempt evidence preserved as FAIL; one leg FULL PASS,
   one leg pre-FULL transport failure, provider inventory zero servers.
 - [x] Material recovery regressions: 14/14 PASS.
+- [x] Base `verify` on recovery implementation: PASS (1119 tests; 1072 pass;
+  47 governed PostgreSQL skips).
+- [x] Canonical Full Verification on recovery implementation commit
+  `ed1ddda83e474dc8e9d8195f480bd5f7770ae5a9`: stages 0–19 PASS,
+  owner-scoped 8/8 in 124.602 s, PBI-041 9/9, TL-07 3/3, 89 migrations,
+  rerun 0 pending, runtime/backend/UI smokes, fingerprint and cleanup PASS.
 - [x] Promotion lifecycle check on the final implementation SHA: PASS.
 - [x] Shadow-only workflow/Tier-2/Work Unit regressions: 65/65 PASS.
 - [x] Base `verify` on the shadow-only implementation: PASS (1117 tests;
