@@ -4,12 +4,12 @@ Current PBI: NONE
 
 <!-- WORK_UNIT_METADATA
 work_unit: INFRA — Deterministic Authoritative CI Runner
-iteration: 2 - shadow eligibility deadlock remediation
+iteration: 3 - shadow-only dispatch remediation
 type: INFRASTRUCTURE_QUALITY
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
-branch: fix/tier2-shadow-deadlock
-base_sha: 1e579e3c90dab88d89d1f39c3806090b782dc876
+branch: fix/tier2-shadow-only-dispatch
+base_sha: 49d12300179d990a51d92590035951d80001708d
 status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-23
@@ -25,18 +25,19 @@ dependency_return: REQUIRED
 
 Materialize deterministic authoritative FULL execution on two independent,
 ephemeral, dedicated x86_64 CI VMs without weakening the existing verification
-contract. This iteration removes the hosted-success prerequisite from the
-explicit Tier-2 SHADOW observation without granting SHADOW any promotion or
-closure authority.
+contract. This iteration introduces an explicit SHADOW-only dispatch path so a
+material observation does not rerun hosted FULL and still grants SHADOW no
+promotion or closure authority.
 
 ## Why
 
 Hosted-runner resource variance produced opposing owner-scoped timeouts for the
 same TL-07 merge SHA. The product snapshot is integrated, but TL-07 remains in
 `PROMOTION` because its required exact-main proof is not deterministic enough
-to satisfy the unchanged 240-second contract. PR #74 integrated the trusted
-Tier-2 controller, but its exact-main hosted run timed out before the shadow job
-became eligible, exposing a bootstrap deadlock in the workflow dependency.
+to satisfy the unchanged 240-second contract. PR #75 removed the hosted-success
+dependency, but material-campaign preflight correctly found that every manual
+dispatch still forced hosted FULL alongside SHADOW, contradicting the bounded
+experiment authorization.
 
 ## In Scope
 
@@ -51,6 +52,10 @@ became eligible, exposing a bootstrap deadlock in the workflow dependency.
   `0e6193e4afa6ebe35accdac7b58e69fa992d9c43`.
 - Independent, explicitly dispatched SHADOW eligibility on protected live
   `main`, including when hosted FULL is red.
+- Explicit `normal` and `tier2-shadow` dispatch modes with no implicit mode
+  inference.
+- Credential-free trusted-context validation before protected Environment
+  access and a mandatory explicit tested subject SHA.
 - Machine-verifiable non-authoritative SHADOW metadata and negative promotion /
   closure regressions.
 
@@ -100,7 +105,9 @@ became eligible, exposing a bootstrap deadlock in the workflow dependency.
 - [x] Implement orphan/TTL safety.
 - [x] Remove the hosted-success dependency from trusted SHADOW eligibility.
 - [x] Prove SHADOW remains unable to satisfy promotion or Work Unit closure.
-- [x] Run focused and exact-HEAD promotion verification.
+- [x] Diagnose the hosted FULL coupling before material provisioning.
+- [x] Implement and verify explicit SHADOW-only dispatch.
+- [x] Run canonical promotion verification on the implementation candidate.
 - [~] Promote the remediation through one governed Draft PR.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
@@ -108,29 +115,25 @@ became eligible, exposing a bootstrap deadlock in the workflow dependency.
 
 ## Current
 
-PR #74 is integrated at `1e579e3c90dab88d89d1f39c3806090b782dc876`.
-Its exact-main hosted run preserved fail-closed behavior: run-1 passed, run-2
-hit the unchanged 240-second owner-scoped limit, comparison was skipped and the
-promotion gate failed. Because SHADOW depended on hosted comparison success,
-it was also skipped. This iteration changes only that eligibility dependency
-and reinforces non-authoritative metadata and regressions.
+PR #75 is integrated at `49d12300179d990a51d92590035951d80001708d`.
+Its exact-main hosted run remained authoritative and failed closed. The first
+material campaign was not dispatched: preflight proved that the manual trigger
+would also rerun hosted run-1/run-2 and comparison. No VM was created and no
+cost was incurred. This iteration separates the explicit SHADOW experiment
+without changing normal authoritative semantics.
 
 ## Next
 
-The semantic remediation is locally promotion-ready and Draft PR #75 is open.
-Focused regressions and the canonical Full Verification passed on the final
-security-remediated implementation SHA
-`a8bca1ee881d44bd587b7d78f66c7a02a780e4ee`. This readiness reconciliation is
-documentation-only; remote authoritative CI on the eventual exact PR HEAD is
-pending. Material Tier-2 execution remains a separate post-integration Owner
-authorization through explicit `workflow_dispatch`.
+Push the exact reviewed candidate and open one governed Draft PR, then require
+authoritative hosted CI and deliberate security/architecture review. Material
+Tier-2 execution remains a separate post-integration Owner authorization
+through explicit `mode=tier2-shadow`.
 
 ## Blockers
 
-NONE for remote promotion of this remediation. The Infra Work Unit still cannot
-close because exact-main hosted CI for PR #74 is red and no material SHADOW
-observation exists. This remediation does not waive that predicate; it only
-makes the separately authorized SHADOW observation possible.
+NONE for local remediation. The Infra Work Unit still cannot close because no
+material SHADOW observation exists and authoritative closure predicates remain
+unsatisfied. This change does not waive those predicates.
 
 ## Important Discoveries
 
@@ -162,6 +165,10 @@ makes the separately authorized SHADOW observation possible.
   SHADOW ineligible even though hosted variability is the phenomenon SHADOW
   must measure. Owner authorized independent SHADOW eligibility without any
   authority change.
+- Material-campaign preflight after PR #75 exposed a second coupling: manual
+  dispatch always forced hosted FULL even though SHADOW no longer depended on
+  its result. Owner authorized an explicit SHADOW-only mode; the campaign was
+  not dispatched, no infrastructure was created and cost remained zero.
 - Security review of the remediation removed an upstream-repository default
   from the validator so a missing caller identity fails closed like a fork;
   the SHADOW job also retains read-only repository permissions.
@@ -194,6 +201,13 @@ makes the separately authorized SHADOW observation possible.
   smokes/fingerprint/cleanup PASS.
 - [ ] Shadow FULL evidence on two independent dedicated VMs.
 - [x] Promotion lifecycle check on the final implementation SHA: PASS.
+- [x] Shadow-only workflow/Tier-2/Work Unit regressions: 65/65 PASS.
+- [x] Base `verify` on the shadow-only implementation: PASS (1117 tests;
+  1070 pass; 47 governed PostgreSQL skips), including typecheck and build.
+- [x] Canonical Full Verification on shadow-only implementation commit
+  `c92a29352e102e29afb222c9bb8b945468841dcb`: stages 0–19 PASS,
+  owner-scoped 8/8 in 117.813 s, PBI-041 9/9, TL-07 3/3, 89 migrations,
+  rerun 0 pending, runtime/backend/UI smokes, fingerprint and cleanup PASS.
 
 ## Promotion Gates
 
@@ -212,8 +226,8 @@ makes the separately authorized SHADOW observation possible.
 - Owner explicitly authorized creation of the project-scoped Hetzner token and
   encrypted storage as `HCLOUD_TOKEN`; the secret value was not documented or
   placed on disk/VMs.
-- Owner authorized this semantic remediation and remote promotion, but not the
-  first material SHADOW campaign, cutover, Infra closure or TL-07 closure.
+- Owner authorized this shadow-only remediation and remote promotion, but not a
+  material dispatch during development, cutover, Infra closure or TL-07 closure.
 - No product deploy, Preview/Production mutation, TL-08 start, force push,
   merge or timeout/gate weakening is authorized.
 - Stop for Owner decision at any explicit capability, security, budget or

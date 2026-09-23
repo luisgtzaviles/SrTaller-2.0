@@ -68,6 +68,13 @@ classification plus both conditional verification paths.
 The aggregate adds no reduced path and does not replace the underlying jobs or
 artifacts. Its stable name is the future branch-protection interface.
 
+An explicitly dispatched `mode=tier2-shadow` run is not a promotion run. Its
+hosted FULL legs and comparison are ineligible and `Authoritative promotion
+gate` is skipped as not applicable. The Tier-2 job remains independently
+observable as PASS/FAIL, but neither its run conclusion nor its SHADOW artifact
+can satisfy the required check or a Work Unit closure. Pull requests, pushes
+and `workflow_dispatch mode=normal` retain the authoritative behavior above.
+
 The protected `authoritative-ci` Environment admits only `main`, disables
 administrator bypass and contains only the isolated CI-project credential named
 `HCLOUD_TOKEN`. The credential value is never repository evidence. The initial
@@ -76,6 +83,11 @@ semantics until bounded observations support a separately reviewed cutover.
 Its explicitly dispatched observation may run independently of hosted FULL
 success, but it is absent from the aggregate's prerequisites and cannot satisfy
 promotion or Work Unit closure.
+
+Before Environment access, a credential-free context job checks the exact
+upstream repository, protected live-main controller, explicit subject allowlist
+and ancestry. The protected orchestrator validates the same boundary again
+before provisioning.
 
 ## Review policy
 

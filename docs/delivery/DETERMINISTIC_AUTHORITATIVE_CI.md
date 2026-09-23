@@ -124,21 +124,34 @@ Raw secrets, tokens, customer data and persistent machine identity are excluded.
 Resources require TTL/orphan markers; orphan detection or failed deletion fails
 the infrastructure result.
 
-The first integrated form is deliberately `SHADOW`. A material campaign is
-requested explicitly through `workflow_dispatch` on protected live
-`refs/heads/main`; an ordinary push does not spend infrastructure budget by
-itself. Pull requests, forks and `pull_request_target` cannot select the
-protected Environment, and the job condition independently excludes those
-events and any repository other than the trusted upstream.
+The first integrated form is deliberately `SHADOW`. `workflow_dispatch` has
+two explicit, fail-closed modes:
 
-Shadow eligibility is independent of the hosted FULL result. Hosted run-1,
-run-2, comparison and `Authoritative promotion gate` may be red while an
-explicitly authorized shadow campaign executes, because measuring that
-hosted-runner failure mode is the purpose of the shadow. This independence
-does not change authority: the hosted path remains fail-closed, the promotion
-aggregate does not depend on or accept the shadow job, and no Work Unit closure
-can consume shadow evidence. No cutover is claimed before bounded observations
-and a separately reviewed authorization exist.
+- `normal` preserves the existing hosted authoritative classification, two
+  FULL legs, comparison and `Authoritative promotion gate` semantics; and
+- `tier2-shadow` runs only the lightweight trusted-context control plane and
+  the protected Tier-2 experiment. It requires an explicit tested subject SHA
+  and does not make the hosted FULL jobs or comparison eligible.
+
+A material campaign is requested only through `mode=tier2-shadow` on protected
+live `refs/heads/main`; an ordinary push, pull request or normal dispatch does
+not spend infrastructure budget. Pull requests, forks and
+`pull_request_target` cannot select the protected Environment. The lightweight
+context gate verifies exact upstream repository, `main` ref, live controller
+SHA, subject allowlist and ancestry before the cloud credential becomes
+available. The protected orchestrator repeats those checks before contacting
+Hetzner.
+
+Shadow eligibility is independent of the hosted FULL result. In
+`tier2-shadow` mode, hosted run-1, run-2 and hosted comparison are skipped and
+`Authoritative promotion gate` is explicitly not applicable. The shadow job's
+own failure remains visible as a failed experiment, including provisioning,
+bootstrap, FULL, evidence or deletion failure, but it is never product
+promotion evidence. This independence does not change authority: normal hosted
+paths remain fail-closed, the promotion aggregate does not depend on or accept
+the shadow job, and no Work Unit closure can consume shadow evidence. No
+cutover is claimed before bounded observations and a separately reviewed
+authorization exist.
 
 Every campaign artifact declares `mode: SHADOW` and `authoritative: false` in
 machine-verifiable metadata. The shadow artifact contains each leg's Full Verification summary, material
@@ -147,6 +160,29 @@ toolchain facts, semantic comparison, subject/controller/run binding, cost
 projection and deletion proof. Volatile smoke database/container/port names
 are excluded from semantic comparison. The raw bounded verification log is
 used only to extract timings and is deleted before artifact upload.
+
+The shadow subject and a future subject-SHA closure are different contracts.
+An Infra material observation normally tests the then-current trusted
+controller SHA after the shadow-only workflow has been integrated. The
+separately preserved TL-07 closure subject remains
+`0e6193e4afa6ebe35accdac7b58e69fa992d9c43`; selecting it for a future
+authoritative subject proof does not make a SHADOW artifact authoritative.
+
+The allowed shadow state machine is:
+
+```text
+protected live main
+  -> explicit mode=tier2-shadow + tested_sha
+  -> lightweight trusted-context PASS
+  -> two independent ephemeral VMs
+  -> one unchanged FULL leg per VM
+  -> sanitized SHADOW evidence
+  -> proven destruction
+  -> SHADOW PASS or FAIL
+  -> Owner evidence review
+```
+
+It produces no promotion, closure, cutover or effective `IDLE` state.
 
 ## Governed dependency exception
 
