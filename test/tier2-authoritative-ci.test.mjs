@@ -124,6 +124,10 @@ test('shadow eligibility is independent of hosted FULL results but remains expli
 
 test('shadow eligibility fails closed for fork, non-main, untrusted controller, and missing Environment authorization', () => {
   assert.throws(
+    () => validateTier2Invocation(trustedInvocation({ repository: undefined })),
+    /trusted upstream repository/u,
+  );
+  assert.throws(
     () => validateTier2Invocation(trustedInvocation({ repository: 'fork/SrTaller-2.0' })),
     /trusted upstream repository/u,
   );
@@ -270,6 +274,7 @@ test('workflow and bootstrap mechanically preserve the public-repository trust b
   assert.doesNotMatch(tier2Job, /compare-authoritative-gates/u);
   assert.doesNotMatch(tier2Job, /pull_request_target/u);
   assert.match(tier2Job, /environment: authoritative-ci/u);
+  assert.match(tier2Job, /permissions:\s*\n\s*contents: read/u);
   assert.match(tier2Job, /HCLOUD_TOKEN: \$\{\{ secrets\.HCLOUD_TOKEN \}\}/u);
   assert.match(tier2Job, /actions\/checkout@[0-9a-f]{40}/u);
   assert.match(tier2Job, /actions\/setup-node@[0-9a-f]{40}/u);

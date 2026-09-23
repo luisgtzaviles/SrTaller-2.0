@@ -161,6 +161,9 @@ makes the separately authorized SHADOW observation possible.
   SHADOW ineligible even though hosted variability is the phenomenon SHADOW
   must measure. Owner authorized independent SHADOW eligibility without any
   authority change.
+- Security review of the remediation removed an upstream-repository default
+  from the validator so a missing caller identity fails closed like a fork;
+  the SHADOW job also retains read-only repository permissions.
 - Pre-push security review found that the subject-closure API accepted a local
   attestation document. The same branch now rejects local evidence and requires
   the single canonical, non-expired artifact downloaded from the exact

@@ -40,7 +40,7 @@ export function validateTier2Invocation({
   eventName,
   liveMainSha,
   ref,
-  repository = TIER2_TRUSTED_REPOSITORY,
+  repository,
   requested,
   testedSha,
 }) {
