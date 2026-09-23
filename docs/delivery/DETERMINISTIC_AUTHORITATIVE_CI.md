@@ -7,7 +7,8 @@
 - **Scope:** trusted control plane, ephemeral Tier-2 FULL execution, evidence,
   cleanup and the narrowly authorized TL-07 subject-SHA closure.
 - **Not authorized:** product deploy, persistent public-repository runner,
-  timeout/gate relaxation, generic retry policy or arbitrary historical closure.
+  further timeout/gate relaxation beyond the explicitly approved owner-scoped
+  360-second boundary, generic retry policy or arbitrary historical closure.
 
 ## Architecture
 
@@ -48,7 +49,7 @@ retry-to-green policy.
 
 The initial target per leg was dedicated-class x86_64 compute with four
 dedicated vCPU and 16 GB RAM. Material evidence proved that profile could not
-provide stable useful margin under the unchanged 240-second owner-scoped
+provide stable useful margin under the former 240-second owner-scoped
 contract. The selected remediation profile is therefore dedicated-class
 x86_64 compute with 16 dedicated vCPU, 64 GB RAM, sufficient NVMe storage for
 Docker/build/test work, and Ubuntu 24.04/glibc. Exact provider profile and price
@@ -126,9 +127,19 @@ not provision servers or execute repository code on them.
 ## FULL and evidence
 
 Each independent VM preserves the existing FULL contract: owner-scoped eight
-suites in serial with fresh database isolation, the 240,000 ms hard budget,
-all applicable TL material suites, build/runtime/UI smokes, fingerprint and
-cleanup. Product verification is not rewritten for infrastructure convenience.
+suites in serial with fresh database isolation, the explicit 360,000 ms outer
+owner-scoped budget, the unchanged 150,000 ms per-child budget, all applicable
+TL material suites, build/runtime/UI smokes, fingerprint and cleanup. The
+other four PostgreSQL composite suites retain their 240,000 ms outer budget.
+Product verification is not rewritten for infrastructure convenience.
+
+The Owner authorized the bounded outer-budget change after PR #78 supplied a
+same-candidate observation of 232.704 seconds for the campaign, 235.049
+seconds for its wrapper and a second hosted leg terminated exactly at 240
+seconds. The 360-second boundary changes only execution tolerance for the
+complete owner-scoped wrapper. It does not change assertions, fixtures, suite
+inventory, serial execution, fresh-database isolation, cleanup, PASS criteria,
+comparison, retries or promotion authority.
 
 Sanitized evidence stored outside the VM binds:
 
@@ -210,9 +221,11 @@ failed before complete child diagnostics. Its cleanup also reproduced a
 firewall `422` after both servers were absent; protected exact-run recovery
 removed that sole non-billable residual and provider inventory returned empty.
 The attempt remains failed evidence and contributes no accepted campaign or
-leg. Together, the material timings prove insufficient stable margin on CCX23
-and justify the bounded CCX43 capacity remediation without changing FULL,
-suite inventory, serial execution or the 240-second gate.
+leg. Together, the material timings proved insufficient stable margin on CCX23
+and justified the bounded CCX43 capacity remediation without changing FULL,
+suite inventory, serial execution or the then-current 240-second gate. The
+later PR #78 evidence and Owner decision define the separate 360-second outer
+budget change documented above.
 
 The shadow subject and a future subject-SHA closure are different contracts.
 An Infra material observation normally tests the then-current trusted
@@ -297,8 +310,9 @@ the required check, moving a closure ref or pushing directly to `main`.
 ## Cutover and reconsideration
 
 Tier 2 remains shadow until bounded observations prove two independent hosts,
-exact-subject equivalence, full material coverage, useful stable margin below
-240 seconds and complete deletion. Only then may a reviewed integration
+exact-subject equivalence, full material coverage, useful stable margin within
+the current 360-second owner-scoped boundary and complete deletion. Only then
+may a reviewed integration
 candidate route authoritative FULL to Tier 2. Reconsider the design if current
 account capabilities cannot enforce the trust boundary, pricing exceeds the
 guard, or shadow runs do not provide stable useful margin.

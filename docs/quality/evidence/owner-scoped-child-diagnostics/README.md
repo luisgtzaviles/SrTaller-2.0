@@ -7,6 +7,12 @@ PostgreSQL child process fails. It does not change product behavior, SQL,
 migrations, suite order, suite inventory, retries, parallelism or the existing
 240-second campaign budget.
 
+This document records the 240-second contract in force when the diagnostic
+change was integrated. A later Owner decision, supported by PR #78 evidence,
+authorizes 360 seconds only for the owner-scoped outer wrapper. The 150-second
+child budget, diagnostics, suite inventory and fail-closed behavior remain
+unchanged.
+
 ## Contract
 
 The existing fail-closed `SR_POSTGRESQL_CHILD_FAILURE` marker remains intact.

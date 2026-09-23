@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: fix/tier2-capacity-cleanup
 base_sha: 0133d65339f2534d67764c2d770c655a6fb89214
-status: READY_FOR_PROMOTION
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-23
 dependency_exception: INFRA_CI_BLOCKER
@@ -33,8 +33,8 @@ FULL, its gates or SHADOW authority.
 
 Hosted-runner resource variance produced opposing owner-scoped timeouts for the
 same TL-07 merge SHA. The product snapshot is integrated, but TL-07 remains in
-`PROMOTION` because its required exact-main proof is not deterministic enough
-to satisfy the unchanged 240-second contract. The first material campaign
+`PROMOTION` because its required exact-main proof was not deterministic enough
+to satisfy the former 240-second contract. The first material campaign
 proved one complete deterministic leg but exposed pre-FULL transport and
 cleanup defects. Their integrated remediation allowed both FULL legs to run in
 the second campaign, which then proved CCX23 lacks stable capacity: one leg
@@ -65,12 +65,15 @@ residual and independent inventory is empty.
   retry.
 - Exact-run cleanup for non-server residuals, restricted to trusted live main
   and refusing any run that still contains a server.
+- The Owner-authorized 360-second outer timeout only for the owner-scoped
+  wrapper; all eight suites, the 150-second child timeout and the other four
+  composite-suite 240-second timeouts remain unchanged.
 
 ## Out of Scope
 
 - Product behavior, TL-08, Preview/Production/Dokploy/Cloudflare and real data.
-- Timeout increase, retries-to-green, parallel owner-scoped suites, reduced
-  suite inventory or silent GitHub-hosted FULL fallback.
+- Any further timeout increase, retries-to-green, parallel owner-scoped suites,
+  reduced suite inventory or silent GitHub-hosted FULL fallback.
 - Persistent runner registration in the public product repository.
 - Repository visibility changes and unrelated cleanup.
 
@@ -122,29 +125,33 @@ residual and independent inventory is empty.
 - [x] Remove both exact residual non-server resources with protected recovery.
 - [x] Preserve the second material attempt as failed capacity evidence.
 - [x] Remediate insufficient CCX23 capacity and eventual firewall release.
+- [~] Apply the Owner-authorized bounded 360-second owner-scoped timeout and
+  obtain a fresh normal two-leg authoritative campaign on the new PR HEAD.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
 
 ## Current
 
-The exact capacity/cleanup implementation commit passed canonical local FULL.
-It selects CCX43 dedicated capacity and adds a bounded firewall-delete retry
-only for the demonstrated eventual dependency release. Both failed campaigns
-remain historical FAIL evidence and contribute zero successful campaigns or
-accepted legs to cutover readiness.
+PR #78 preserved run-1 PASS with a 232.704-second owner-scoped campaign and
+235.049-second wrapper, while run-2 terminated exactly at the former
+240-second outer limit. The Owner classified this as host-resource variability
+and authorized a new commit raising only the complete owner-scoped wrapper to
+360 seconds. The candidate continues to select CCX43 and retain bounded
+firewall cleanup. Historical failures remain failed evidence.
 
 ## Next
 
-Promote the exact capacity/cleanup candidate through one governed PR, observe
-its exact-main hosted gate, then resume bounded material SHADOW observations on
-the exact integrated CCX43 profile.
+Run focused and canonical local verification on the new timeout-remediation
+commit, push it normally to PR #78, and require a fresh complete two-leg
+authoritative campaign before merge or material CCX43 observations.
 
 ## Blockers
 
-The Infra Work Unit still cannot close because no successful material SHADOW
-campaign exists and authoritative closure predicates remain unsatisfied. There
-are currently no managed Hetzner resources.
+PR #78 remains blocked until the new exact HEAD passes both normal hosted legs,
+comparison and promotion gate. The Infra Work Unit also cannot close because no
+successful material SHADOW campaign exists. There are currently no managed
+Hetzner resources.
 
 ## Important Discoveries
 
@@ -212,6 +219,14 @@ are currently no managed Hetzner resources.
   64 GB RAM, at least 360 GB SSD and USD 0.5216/hour per VM before IPv4/tax.
   This remains within the USD 10 session cap while prioritizing deterministic
   margin over premature cost optimization.
+- PR #78 run `35849314937` classified FULL on exact HEAD `c12a97f`. Run-1
+  passed owner-scoped 8/8 with campaign 232.704 s and wrapper 235.049 s;
+  run-2 failed at the exact 240-second outer boundary, comparison skipped and
+  promotion gate failed. It was not retried and no Tier-2 VM was created.
+- The Owner subsequently authorized 360 seconds only for the owner-scoped
+  outer wrapper. Assertions, fixtures, eight-suite inventory, serial execution,
+  fresh databases, cleanup, child budget, comparison and PASS semantics remain
+  unchanged.
 
 ## Focused Verification
 
@@ -259,6 +274,10 @@ are currently no managed Hetzner resources.
   owner-scoped 8/8 in 103.799 s, PBI-041 9/9 with 16.875 s publish,
   TL-07 3/3, 89 migrations, rerun 0 pending, runtime/backend/UI smokes,
   fingerprint and cleanup PASS.
+- [ ] Timeout-remediation focused regressions and canonical local verification
+  on its exact implementation commit.
+- [ ] Fresh normal PR #78 run-1, run-2, comparison and promotion gate on the
+  new final HEAD; the failed historical run remains evidence, not a retry.
 - [x] Promotion lifecycle check on the final implementation SHA: PASS.
 - [x] Shadow-only workflow/Tier-2/Work Unit regressions: 65/65 PASS.
 - [x] Base `verify` on the shadow-only implementation: PASS (1117 tests;
@@ -273,7 +292,8 @@ are currently no managed Hetzner resources.
 - Dependency exception is narrow, explicit and regression-protected.
 - Subject attestation binds current trusted controller and authorized subject.
 - Mechanical main/Environment protection precedes cloud-secret activation.
-- Two independent ephemeral legs preserve the unchanged FULL/240-second gates.
+- Two independent ephemeral legs preserve FULL with the explicit 360-second
+  owner-scoped wrapper budget and all other functional gates unchanged.
 - Shadow evidence demonstrates stable useful margin and complete deletion.
 - Infra integration and exact-main governance precede TL-07 subject proof.
 - Owner merge authority remains separate.
@@ -289,10 +309,10 @@ are currently no managed Hetzner resources.
   demonstrated Infra remediation, ordinary governed PR integration, a cutover
   candidate and the controlled TL-07 closure chain while every stated stop
   condition remains fail-closed.
-- No product deploy, Preview/Production mutation, TL-08 start, force push or
-  timeout/gate weakening is authorized. Ordinary governed Infra merges remain
-  authorized by the Owner's Master authorization while all stop conditions
-  remain fail-closed.
+- No product deploy, Preview/Production mutation, TL-08 start, force push,
+  further timeout change or gate weakening is authorized. The exact 360-second
+  owner-scoped remediation and ordinary governed Infra merges remain authorized
+  while all stop conditions remain fail-closed.
 - Stop for Owner decision at any explicit capability, security, budget or
   stability condition in the authorization.
 - No persistent/billable VM, volume, load balancer or network was created.
