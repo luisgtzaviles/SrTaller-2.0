@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-07-station-inventory-enrollment-readiness
 base_sha: 74fe2b5fd5b66ee48428953f3e027f2815c839ca
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
@@ -71,26 +71,26 @@ fail-closed tenancy and trust semantics.
 - [x] Classify the later contextual-authorization campaign failure as unresolved environmental/Quality evidence.
 - [x] Preserve TL-07 while bounded isolated diagnosis could not reproduce that failure.
 - [x] Integrate and close the Quality dependency for bounded sanitized child diagnostics.
-- [~] Reconcile current `main` into the preserved TL-07 branch by ordinary merge.
-- [ ] Run focused continuity verification on the combined state.
-- [ ] Run exactly one canonical `verify:full` on the reconciled exact candidate.
-- [ ] Reconcile evidence/checklist and freeze a promotion-ready local candidate.
+- [x] Reconcile current `main` into the preserved TL-07 branch by ordinary merge.
+- [x] Run focused continuity verification on the combined state.
+- [x] Run exactly one canonical `verify:full` on the reconciled exact candidate.
+- [x] Reconcile evidence/checklist and freeze a promotion-ready local candidate.
 
 ## Current
 
-TL-07 has resumed from its preserved checkpoint. Current authoritative `main`
-is being merged normally into the same branch so TL-07 consumes the closed
-owner-scoped child-diagnostics Quality dependency without rewriting history.
+TL-07 is fully implemented and reconciled with authoritative `main` through an
+ordinary merge. Focused continuity checks and the single authorized canonical
+`verify:full` passed on the reconciled product candidate without retry.
 
 ## Next
 
-Audit the combined state, run focused continuity checks and, only if they pass,
-run one canonical `verify:full` on the exact reconciled candidate.
+Await explicit Owner authorization for remote promotion. Push, PR, merge,
+deploy and TL-08 remain separate and unauthorized.
 
 ## Blockers
 
-No external dependency remains. Promotion stays unavailable until the focused
-checks and the single authorized canonical full verification pass.
+None for local promotion readiness. Remote promotion and every later gate
+still require their own explicit authorization and material result.
 
 ## Important Discoveries
 
@@ -109,8 +109,8 @@ checks and the single authorized canonical full verification pass.
 - The Quality dependency did not change the eight-suite inventory, serial
   execution, fresh database per suite, outer 240-second budget or fail-closed
   result semantics.
-- The repository defines 89 migrations on the preserved TL-07 checkpoint; the
-  reconciled migration count and rerun state must be revalidated.
+- The reconciled repository defines 89 migrations and the material migration
+  rerun reports `0 pending`.
 - `apps/dev-preview-web/src/.DS_Store` remains an unrelated Owner artifact and
   must remain untracked.
 
@@ -120,21 +120,21 @@ checks and the single authorized canonical full verification pass.
 - [x] Prior TL-07 PostgreSQL material proof: `3/3` PASS.
 - [x] Prior Access PIN PostgreSQL historical fixture: `1/1` PASS.
 - [x] Prior Access Session PostgreSQL historical fixture: `1/1` PASS.
-- [ ] Reconciled Station/domain/Admin HTTP/UI and trusted-context regressions.
-- [ ] Reconciled Access PIN and Access Session PostgreSQL proof.
-- [ ] Reconciled TL-07 PostgreSQL `3/3`, migrations current and rerun `0 pending`.
-- [ ] Child-diagnostics regressions, eight-suite inventory and unchanged budget.
-- [ ] Typecheck, build, architecture, Work Unit checker and `git diff --check`.
-- [ ] Exactly one canonical `verify:full` on the final reconciled candidate.
+- [x] Reconciled Station/domain/Admin HTTP/UI and trusted-context regressions.
+- [x] Reconciled Access PIN and Access Session PostgreSQL proof.
+- [x] Reconciled TL-07 PostgreSQL `3/3`, migrations current and rerun `0 pending`.
+- [x] Child-diagnostics regressions, eight-suite inventory and unchanged budget.
+- [x] Typecheck, build, architecture, Work Unit checker and `git diff --check`.
+- [x] Exactly one canonical `verify:full` on the reconciled product candidate.
 
 ## Promotion Gates
 
 - [x] Approved TL-07 product scope implemented without TL-08 redemption.
 - [x] Historical-schema fixture remediations preserved.
 - [x] Owner-scoped child diagnostics integrated through closed Quality Work Unit.
-- [ ] Focused continuity verification PASS on the combined state.
-- [ ] Canonical `verify:full` PASS on one exact candidate.
-- [ ] `READY_FOR_PROMOTION` snapshot and clean tracked tree.
+- [x] Focused continuity verification PASS on the combined state.
+- [x] Canonical `verify:full` PASS on one exact candidate.
+- [x] `READY_FOR_PROMOTION` snapshot and clean tracked tree.
 - [ ] Push, PR, CI and review remain separately unauthorized.
 
 ## Remote Actions / Authorization
