@@ -8,8 +8,8 @@ export const TIER2_TRUSTED_REPOSITORY = 'luisgtzaviles/SrTaller-2.0';
 export const TIER2_BOOTSTRAP_VERSION = 'ubuntu-24.04-x86_64-v1';
 export const TIER2_PROVIDER = 'hetzner-cloud';
 export const TIER2_LOCATION = 'hel1';
-export const TIER2_SERVER_TYPE = 'ccx23';
-export const TIER2_HOURLY_USD = 0.1626;
+export const TIER2_SERVER_TYPE = 'ccx43';
+export const TIER2_HOURLY_USD = 0.5216;
 export const TIER2_MONTHLY_GUARD_USD = 25;
 export const TIER2_TTL_MINUTES = 90;
 export const TL07_SUBJECT_SHA = '0e6193e4afa6ebe35accdac7b58e69fa992d9c43';
@@ -179,6 +179,10 @@ export function isRetryableTier2PreBootstrapTransportError(error) {
   );
 }
 
+export function isRetryableTier2DeleteStatus(resourceKind, status) {
+  return resourceKind === 'firewall' && status === 422;
+}
+
 export function tier2ResourceLabels({ controllerSha, expiresAtEpoch, runId }) {
   requireSha(controllerSha, 'controllerSha');
   requireString(runId, 'runId');
@@ -198,9 +202,9 @@ export function validateTier2ServerProfile(server, placementGroupId) {
     server?.server_type?.name !== TIER2_SERVER_TYPE ||
     server.server_type.architecture !== 'x86' ||
     server.server_type.cpu_type !== 'dedicated' ||
-    server.server_type.cores !== 4 ||
-    server.server_type.memory !== 16 ||
-    server.server_type.disk < 160 ||
+    server.server_type.cores !== 16 ||
+    server.server_type.memory !== 64 ||
+    server.server_type.disk < 360 ||
     server.location?.name !== TIER2_LOCATION ||
     server.image?.name !== 'ubuntu-24.04' ||
     server.placement_group?.id !== placementGroupId

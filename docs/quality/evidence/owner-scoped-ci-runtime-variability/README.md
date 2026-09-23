@@ -160,3 +160,18 @@ Quality change could stream a sanitized suite-start/progress marker without
 moving the budget or changing pass/fail semantics, but that is not the cause
 of the runtime variance, is not required to resume TL-07 and is not implemented
 in this review.
+
+## Subsequent bounded timeout decision
+
+The earlier decision above is preserved as the conclusion reached from the PR
+#72 evidence set. PR #78 later produced additional same-candidate evidence:
+run-1 completed all eight owner-scoped suites with a 232.704-second campaign
+and 235.049-second complete wrapper, while run-2 was terminated exactly at the
+240-second outer boundary. No assertion, PostgreSQL correctness, cleanup or
+product defect was demonstrated.
+
+Based on that new evidence, the Owner explicitly authorized a 360-second outer
+timeout only for the owner-scoped wrapper. The decision does not authorize a
+retry policy, warning conversion, suite/assertion/fixture reduction,
+parallelism, changed cleanup or changed PASS criteria. The 150-second child
+budget and the other PostgreSQL composite suite budgets remain unchanged.

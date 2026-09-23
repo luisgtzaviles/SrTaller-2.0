@@ -4,12 +4,12 @@ Current PBI: NONE
 
 <!-- WORK_UNIT_METADATA
 work_unit: INFRA — Deterministic Authoritative CI Runner
-iteration: 4 - first material shadow recovery
+iteration: 5 - deterministic capacity and cleanup
 type: INFRASTRUCTURE_QUALITY
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
-branch: fix/tier2-material-shadow-recovery
-base_sha: d181933b31b86de601c5985ac38b2a438cac304f
+branch: fix/tier2-capacity-cleanup
+base_sha: 0133d65339f2534d67764c2d770c655a6fb89214
 status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-23
@@ -25,19 +25,22 @@ dependency_return: REQUIRED
 
 Materialize deterministic authoritative FULL execution on two independent,
 ephemeral, dedicated x86_64 CI VMs without weakening the existing verification
-contract. This iteration remediates the two defects demonstrated by the first
-material SHADOW attempt without changing FULL, its gates or SHADOW authority.
+contract. This iteration remediates the capacity and eventual firewall-release
+defects demonstrated by the second material SHADOW attempt without changing
+FULL, its gates or SHADOW authority.
 
 ## Why
 
 Hosted-runner resource variance produced opposing owner-scoped timeouts for the
 same TL-07 merge SHA. The product snapshot is integrated, but TL-07 remains in
-`PROMOTION` because its required exact-main proof is not deterministic enough
-to satisfy the unchanged 240-second contract. The first material campaign
-proved one complete deterministic leg but exposed a pre-FULL SSH transport
-race on the second leg and incorrect handling of an asynchronous Hetzner
-server-delete response. Both VMs were absent afterward; one non-billable
-firewall remained and must be explicitly removed before campaigns continue.
+`PROMOTION` because its required exact-main proof was not deterministic enough
+to satisfy the former 240-second contract. The first material campaign
+proved one complete deterministic leg but exposed pre-FULL transport and
+cleanup defects. Their integrated remediation allowed both FULL legs to run in
+the second campaign, which then proved CCX23 lacks stable capacity: one leg
+timed out beyond 240 seconds and the other passed at 228.103 seconds. Both VMs
+were removed; protected recovery removed the sole non-billable firewall
+residual and independent inventory is empty.
 
 ## In Scope
 
@@ -62,12 +65,15 @@ firewall remained and must be explicitly removed before campaigns continue.
   retry.
 - Exact-run cleanup for non-server residuals, restricted to trusted live main
   and refusing any run that still contains a server.
+- The Owner-authorized 360-second outer timeout only for the owner-scoped
+  wrapper; all eight suites, the 150-second child timeout and the other four
+  composite-suite 240-second timeouts remain unchanged.
 
 ## Out of Scope
 
 - Product behavior, TL-08, Preview/Production/Dokploy/Cloudflare and real data.
-- Timeout increase, retries-to-green, parallel owner-scoped suites, reduced
-  suite inventory or silent GitHub-hosted FULL fallback.
+- Any further timeout increase, retries-to-green, parallel owner-scoped suites,
+  reduced suite inventory or silent GitHub-hosted FULL fallback.
 - Persistent runner registration in the public product repository.
 - Repository visibility changes and unrelated cleanup.
 
@@ -115,33 +121,39 @@ firewall remained and must be explicitly removed before campaigns continue.
 - [x] Integrate shadow-only dispatch through governed PR #76.
 - [x] Run the first material SHADOW attempt and preserve its failed evidence.
 - [x] Remediate the demonstrated pre-FULL transport and cleanup defects.
-- [~] Promote the material recovery through one governed PR.
-- [ ] Remove the exact residual non-server resource with protected recovery.
+- [x] Promote and integrate the material recovery through governed PR #77.
+- [x] Remove both exact residual non-server resources with protected recovery.
+- [x] Preserve the second material attempt as failed capacity evidence.
+- [x] Remediate insufficient CCX23 capacity and eventual firewall release.
+- [x] Apply and locally verify the Owner-authorized bounded 360-second
+  owner-scoped timeout without changing suite content or PASS semantics.
+- [~] Obtain a fresh normal two-leg authoritative campaign on the new PR HEAD.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
 
 ## Current
 
-The demonstrated defects now have a focused, fully verified recovery
-candidate. It accepts asynchronous delete responses but still requires exact
-`404` proof, provides one bounded pre-FULL SSH transport recovery, and adds a
-protected exact-run cleanup that refuses any run with a remaining server. The
-first campaign remains a FAIL and contributes zero successful legs to cutover
-readiness.
+The 360-second owner-scoped remediation is implemented and passed one canonical
+local `verify:full` on exact implementation commit `266b610`: all stages 0–19,
+owner-scoped 8/8, TL-07 3/3, 89 migrations, runtime smokes, fingerprint and
+cleanup passed. PR #78 still preserves its prior failed run as historical
+evidence and has not yet run the required fresh normal two-leg campaign on the
+new final HEAD.
 
 ## Next
 
-Promote and integrate this exact recovery candidate through one governed PR,
-explicitly remove the server-free residual firewall, then resume bounded
-material SHADOW observations.
+Publish the reconciled exact candidate to PR #78 and require a fresh complete
+two-leg authoritative campaign, deterministic comparison and promotion gate
+before merge or material CCX43 observations.
 
 ## Blockers
 
-The residual firewall must be removed after this recovery path is integrated.
-It is non-billable and provider inventory proves no VM remains. The Infra Work
-Unit still cannot close because no successful material SHADOW campaign exists
-and authoritative closure predicates remain unsatisfied.
+PR #78 remains blocked until the new exact HEAD passes both normal hosted legs,
+comparison and promotion gate. This is a new-candidate execution, not a retry of
+run `35849314937`. The Infra Work Unit also cannot close because no successful
+material SHADOW campaign exists. There are currently no managed Hetzner
+resources.
 
 ## Important Discoveries
 
@@ -194,6 +206,29 @@ and authoritative closure predicates remain unsatisfied.
 - The cleanup bug is response-contract handling, not evidence of a VM leak:
   Hetzner returned `200` for asynchronous server deletion while the runner
   accepted only `204/404`.
+- PR #77 integrated the transport and explicit-recovery remediation at merge
+  SHA `0133d65339f2534d67764c2d770c655a6fb89214`. Its PR CI passed; exact-main
+  hosted run `35845443267` preserved a run-2 owner-scoped 240-second timeout
+  and was not retried.
+- Protected recoveries `35846441443` and `35847832344` removed the exact
+  firewall residuals from the first and second material attempts. Independent
+  inventory `35846501183` proved zero managed resources between campaigns.
+- Second material SHADOW run `35846558175` tested controller/subject
+  `0133d65339f2534d67764c2d770c655a6fb89214`. One CCX23 leg completed 8/8 in
+  228.103 seconds; the other exceeded 240 seconds. Campaign cost estimate was
+  USD 0.0554 and the failed attempt contributes zero accepted legs.
+- The selected remediation profile is CCX43 in `hel1`: 16 dedicated x86 vCPU,
+  64 GB RAM, at least 360 GB SSD and USD 0.5216/hour per VM before IPv4/tax.
+  This remains within the USD 10 session cap while prioritizing deterministic
+  margin over premature cost optimization.
+- PR #78 run `35849314937` classified FULL on exact HEAD `c12a97f`. Run-1
+  passed owner-scoped 8/8 with campaign 232.704 s and wrapper 235.049 s;
+  run-2 failed at the exact 240-second outer boundary, comparison skipped and
+  promotion gate failed. It was not retried and no Tier-2 VM was created.
+- The Owner subsequently authorized 360 seconds only for the owner-scoped
+  outer wrapper. Assertions, fixtures, eight-suite inventory, serial execution,
+  fresh databases, cleanup, child budget, comparison and PASS semantics remain
+  unchanged.
 
 ## Focused Verification
 
@@ -227,6 +262,32 @@ and authoritative closure predicates remain unsatisfied.
   `ed1ddda83e474dc8e9d8195f480bd5f7770ae5a9`: stages 0–19 PASS,
   owner-scoped 8/8 in 124.602 s, PBI-041 9/9, TL-07 3/3, 89 migrations,
   rerun 0 pending, runtime/backend/UI smokes, fingerprint and cleanup PASS.
+- [x] PR #77 CI on exact HEAD `88646e65f57f120543c3337d1a5cb1298713c5fb`:
+  hosted run-1/run-2, owner-scoped 8/8 both, comparison and promotion gate PASS.
+- [x] Second material attempt evidence preserved as FAIL; run-2 FULL PASS with
+  owner-scoped 8/8 in 228.103 s, run-1 owner-scoped timeout, exact residual
+  recovery PASS and final provider inventory empty.
+- [x] Capacity/cleanup focused regressions: Tier-2 15/15,
+  Work Unit/workflow/Tier-2 53/53, architecture and `git diff --check` PASS.
+- [x] Base `verify` on capacity/cleanup implementation: PASS (1120 tests;
+  1073 pass; 47 governed PostgreSQL skips), including typecheck and build.
+- [x] Canonical Full Verification on capacity/cleanup implementation commit
+  `f1099378d1fde7ba254bafcd798fac2601e80b4e`: stages 0–19 PASS,
+  owner-scoped 8/8 in 103.799 s, PBI-041 9/9 with 16.875 s publish,
+  TL-07 3/3, 89 migrations, rerun 0 pending, runtime/backend/UI smokes,
+  fingerprint and cleanup PASS.
+- [x] Timeout-remediation focused regressions: 37/37 PASS; architecture and
+  `git diff --check` PASS.
+- [x] Base `verify` on timeout-remediation implementation commit `266b610`:
+  PASS (1120 tests; 1073 pass; 47 governed PostgreSQL skips), including
+  typecheck and build.
+- [x] Canonical Full Verification on timeout-remediation implementation commit
+  `266b610463fd3764e041e65da22b82696483e492`: stages 0–19 PASS,
+  owner-scoped 8/8 with campaign 114.410 s and wrapper 117.916 s, TL-07 3/3,
+  89 migrations, rerun 0 pending, runtime/backend/UI smokes, fingerprint and
+  cleanup PASS.
+- [ ] Fresh normal PR #78 run-1, run-2, comparison and promotion gate on the
+  new final HEAD; the failed historical run remains evidence, not a retry.
 - [x] Promotion lifecycle check on the final implementation SHA: PASS.
 - [x] Shadow-only workflow/Tier-2/Work Unit regressions: 65/65 PASS.
 - [x] Base `verify` on the shadow-only implementation: PASS (1117 tests;
@@ -241,7 +302,8 @@ and authoritative closure predicates remain unsatisfied.
 - Dependency exception is narrow, explicit and regression-protected.
 - Subject attestation binds current trusted controller and authorized subject.
 - Mechanical main/Environment protection precedes cloud-secret activation.
-- Two independent ephemeral legs preserve the unchanged FULL/240-second gates.
+- Two independent ephemeral legs preserve FULL with the explicit 360-second
+  owner-scoped wrapper budget and all other functional gates unchanged.
 - Shadow evidence demonstrates stable useful margin and complete deletion.
 - Infra integration and exact-main governance precede TL-07 subject proof.
 - Owner merge authority remains separate.
@@ -258,7 +320,9 @@ and authoritative closure predicates remain unsatisfied.
   candidate and the controlled TL-07 closure chain while every stated stop
   condition remains fail-closed.
 - No product deploy, Preview/Production mutation, TL-08 start, force push,
-  merge or timeout/gate weakening is authorized.
+  further timeout change or gate weakening is authorized. The exact 360-second
+  owner-scoped remediation and ordinary governed Infra merges remain authorized
+  while all stop conditions remain fail-closed.
 - Stop for Owner decision at any explicit capability, security, budget or
   stability condition in the authorization.
 - No persistent/billable VM, volume, load balancer or network was created.

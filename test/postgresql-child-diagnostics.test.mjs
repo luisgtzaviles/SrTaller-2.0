@@ -147,7 +147,7 @@ test('secret-like child diagnostics are redacted before retention', () => {
   assert.match(payload?.stderr ?? '', /csrf=\[redacted\]/u);
 });
 
-test('exact suite inventory and governed budgets remain unchanged', () => {
+test('exact suite inventory and explicit governed budgets remain protected', () => {
   assert.deepEqual(ownerScopedPostgresqlTestFiles, [
     'test/owner-scoped-persistence-postgresql.test.mjs',
     'test/repair-persistence-postgresql.test.mjs',
@@ -160,7 +160,22 @@ test('exact suite inventory and governed budgets remain unchanged', () => {
   ]);
   assert.equal((ownerRunner.match(/'run',\s*'--detach'/gu) ?? []).length, 1);
   assert.match(ownerRunner, /timeout: 150_000/u);
-  assert.match(workflowRunner, /timeout: 240_000/u);
+  assert.match(
+    workflowRunner,
+    /const DEFAULT_POSTGRESQL_SUITE_TIMEOUT_MS = 240_000/u,
+  );
+  assert.match(
+    workflowRunner,
+    /const OWNER_SCOPED_POSTGRESQL_SUITE_TIMEOUT_MS = 360_000/u,
+  );
+  assert.match(
+    workflowRunner,
+    /definition\.name === 'owner-scoped-adapters'[\s\S]*OWNER_SCOPED_POSTGRESQL_SUITE_TIMEOUT_MS[\s\S]*DEFAULT_POSTGRESQL_SUITE_TIMEOUT_MS/u,
+  );
+  assert.equal(
+    (workflowRunner.match(/360_000/gu) ?? []).length,
+    1,
+  );
   assert.doesNotMatch(ownerRunner, /Promise\.allSettled|Promise\.all\(/u);
 });
 

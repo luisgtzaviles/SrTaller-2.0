@@ -22,6 +22,9 @@ import { sha256File } from './lib/ci-evidence.mjs';
 
 const execute = promisify(execFile);
 
+const DEFAULT_POSTGRESQL_SUITE_TIMEOUT_MS = 240_000;
+const OWNER_SCOPED_POSTGRESQL_SUITE_TIMEOUT_MS = 360_000;
+
 function argument(name) {
   const index = process.argv.indexOf(name);
   return index === -1 ? undefined : process.argv[index + 1];
@@ -148,7 +151,10 @@ for (const definition of suiteDefinitions) {
         ...process.env,
         SR_PG_CI_EXECUTION_LABEL: executionLabel,
       },
-      timeout: 240_000,
+      timeout:
+        definition.name === 'owner-scoped-adapters'
+          ? OWNER_SCOPED_POSTGRESQL_SUITE_TIMEOUT_MS
+          : DEFAULT_POSTGRESQL_SUITE_TIMEOUT_MS,
     },
   );
   const result = JSON.parse(stdout);

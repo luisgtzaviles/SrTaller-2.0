@@ -7,6 +7,12 @@ PostgreSQL campaign under the unchanged 240-second authoritative child-process
 budget. It changes verification orchestration only. Product code, SQL,
 migrations, assertions, suite inventory and promotion policy are unchanged.
 
+This is historical evidence for the contract in force during this Work Unit.
+After later PR #78 evidence demonstrated a same-candidate 235.049-second
+wrapper PASS and another leg terminated exactly at 240 seconds, the Owner
+authorized a separate bounded remediation to 360 seconds only for the
+owner-scoped outer wrapper. The history and results below remain unchanged.
+
 TL-06 remains frozen at
 `edd9bb4d73dd2eba41eba5aaf6367d8b2dde7850`; this Work Unit was created from
 clean `main` at `81b57994c69ed3584776ff080253f9a772e6425b`.

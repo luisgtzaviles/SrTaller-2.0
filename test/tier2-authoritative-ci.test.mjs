@@ -12,6 +12,7 @@ import {
   compareTier2Legs,
   createTier2Attestation,
   estimateTier2Cost,
+  isRetryableTier2DeleteStatus,
   isRetryableTier2PreBootstrapTransportError,
   parseOwnerScopedDiagnostics,
   tier2ResourceLabels,
@@ -271,6 +272,13 @@ test('pre-bootstrap recovery recognizes only bounded SSH transport failures', ()
   }), false);
 });
 
+test('cleanup retries only the demonstrated eventual firewall dependency response', () => {
+  assert.equal(isRetryableTier2DeleteStatus('firewall', 422), true);
+  assert.equal(isRetryableTier2DeleteStatus('server', 422), false);
+  assert.equal(isRetryableTier2DeleteStatus('placement_group', 422), false);
+  assert.equal(isRetryableTier2DeleteStatus('firewall', 500), false);
+});
+
 test('provider profile validation rejects silent shared-CPU or placement drift', () => {
   const server = {
     image: { name: 'ubuntu-24.04' },
@@ -278,11 +286,11 @@ test('provider profile validation rejects silent shared-CPU or placement drift',
     placement_group: { id: 91 },
     server_type: {
       architecture: 'x86',
-      cores: 4,
+      cores: 16,
       cpu_type: 'dedicated',
-      disk: 160,
-      memory: 16,
-      name: 'ccx23',
+      disk: 360,
+      memory: 64,
+      name: 'ccx43',
     },
   };
   assert.equal(validateTier2ServerProfile(server, 91), server);
@@ -415,7 +423,7 @@ test('workflow and bootstrap mechanically preserve the public-repository trust b
   assert.match(orchestrator, /placement_group/u);
   assert.match(orchestrator, /source_ips/u);
   assert.match(orchestrator, /managed resources remain after cleanup/u);
-  assert.match(orchestrator, /expected: \[200, 204, 404\]/u);
+  assert.match(orchestrator, /isRetryableTier2DeleteStatus/u);
   assert.match(orchestrator, /refuses to delete a run with a remaining server/u);
   assert.match(orchestrator, /pre-bootstrap transport recovery 1\/1/u);
   assert.match(orchestrator, /authoritative: false/u);

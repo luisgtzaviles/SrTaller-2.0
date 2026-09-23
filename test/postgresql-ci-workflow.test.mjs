@@ -133,7 +133,18 @@ test('tier2-shadow dispatch skips hosted FULL without changing normal authoritat
   assert.match(promotionGate, /tier2_shadow_only != 'true'/u);
   assert.match(promotionGate, /name: Authoritative promotion gate/u);
   assert.match(workflow, /force_full="workflow-dispatch"/u);
-  assert.match(runner, /timeout: 240_000/u);
+  assert.match(
+    runner,
+    /const DEFAULT_POSTGRESQL_SUITE_TIMEOUT_MS = 240_000/u,
+  );
+  assert.match(
+    runner,
+    /const OWNER_SCOPED_POSTGRESQL_SUITE_TIMEOUT_MS = 360_000/u,
+  );
+  assert.match(
+    runner,
+    /definition\.name === 'owner-scoped-adapters'[\s\S]*OWNER_SCOPED_POSTGRESQL_SUITE_TIMEOUT_MS[\s\S]*DEFAULT_POSTGRESQL_SUITE_TIMEOUT_MS/u,
+  );
 });
 
 test('compiled smoke uses an isolated migrated PostgreSQL service without relaxing startup', () => {
@@ -325,7 +336,11 @@ test('owner-scoped PostgreSQL runner retains the exact material adapter inventor
   );
   assert.match(
     runner,
-    /timeout: 240_000/u,
+    /const DEFAULT_POSTGRESQL_SUITE_TIMEOUT_MS = 240_000/u,
+  );
+  assert.match(
+    runner,
+    /const OWNER_SCOPED_POSTGRESQL_SUITE_TIMEOUT_MS = 360_000/u,
   );
   assert.match(
     runner,

@@ -16,6 +16,7 @@ import {
   compareTier2Legs,
   createTier2Attestation,
   estimateTier2Cost,
+  isRetryableTier2DeleteStatus,
   isRetryableTier2PreBootstrapTransportError,
   tier2ResourceLabels,
   validateTier2RecoveryInvocation,
@@ -103,9 +104,28 @@ function resourcePath(resource) {
 
 async function deleteResource(resource) {
   const path = resourcePath(resource);
-  await api(path, { expected: [200, 204, 404], method: 'DELETE' });
-  const deadline = Date.now() + 90_000;
-  while (Date.now() < deadline) {
+  const acceptanceDeadline = Date.now() + 90_000;
+  let deleteAccepted = false;
+  while (Date.now() < acceptanceDeadline && !deleteAccepted) {
+    const response = await fetch(`${apiBase}${path}`, {
+      headers: { Authorization: `Bearer ${requiredEnvironment('HCLOUD_TOKEN')}` },
+      method: 'DELETE',
+    });
+    if (response.status === 404) return;
+    if (response.status === 200 || response.status === 204) {
+      deleteAccepted = true;
+      break;
+    }
+    if (!isRetryableTier2DeleteStatus(resource.kind, response.status)) {
+      throw new Error(`Hetzner API DELETE ${path} failed with status ${response.status}`);
+    }
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 1_000));
+  }
+  if (!deleteAccepted) {
+    throw new Error(`Hetzner resource dependency did not clear: ${resource.kind} ${resource.id}`);
+  }
+  const proofDeadline = Date.now() + 90_000;
+  while (Date.now() < proofDeadline) {
     const response = await fetch(`${apiBase}${path}`, {
       headers: { Authorization: `Bearer ${requiredEnvironment('HCLOUD_TOKEN')}` },
     });
