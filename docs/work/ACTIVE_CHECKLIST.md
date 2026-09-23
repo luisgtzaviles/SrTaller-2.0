@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: fix/tier2-capacity-cleanup
 base_sha: 0133d65339f2534d67764c2d770c655a6fb89214
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-23
 dependency_exception: INFRA_CI_BLOCKER
@@ -121,25 +121,24 @@ residual and independent inventory is empty.
 - [x] Promote and integrate the material recovery through governed PR #77.
 - [x] Remove both exact residual non-server resources with protected recovery.
 - [x] Preserve the second material attempt as failed capacity evidence.
-- [~] Remediate insufficient CCX23 capacity and eventual firewall release.
+- [x] Remediate insufficient CCX23 capacity and eventual firewall release.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
 
 ## Current
 
-The second material campaign proved that CCX23 does not provide stable useful
-margin: one owner-scoped leg exceeded 240 seconds and one passed at 228.103
-seconds. A focused Infra candidate selects CCX43 dedicated capacity and adds a
-bounded firewall-delete retry only for the demonstrated eventual dependency
-release. Both failed campaigns remain historical FAIL evidence and contribute
-zero successful campaigns or accepted legs to cutover readiness.
+The exact capacity/cleanup implementation commit passed canonical local FULL.
+It selects CCX43 dedicated capacity and adds a bounded firewall-delete retry
+only for the demonstrated eventual dependency release. Both failed campaigns
+remain historical FAIL evidence and contribute zero successful campaigns or
+accepted legs to cutover readiness.
 
 ## Next
 
-Verify and promote the capacity/cleanup candidate through one governed PR,
-then resume bounded material SHADOW observations on the exact integrated
-CCX43 profile.
+Promote the exact capacity/cleanup candidate through one governed PR, observe
+its exact-main hosted gate, then resume bounded material SHADOW observations on
+the exact integrated CCX43 profile.
 
 ## Blockers
 
@@ -251,7 +250,15 @@ are currently no managed Hetzner resources.
 - [x] Second material attempt evidence preserved as FAIL; run-2 FULL PASS with
   owner-scoped 8/8 in 228.103 s, run-1 owner-scoped timeout, exact residual
   recovery PASS and final provider inventory empty.
-- [ ] Capacity/cleanup focused regressions and canonical promotion verification.
+- [x] Capacity/cleanup focused regressions: Tier-2 15/15,
+  Work Unit/workflow/Tier-2 53/53, architecture and `git diff --check` PASS.
+- [x] Base `verify` on capacity/cleanup implementation: PASS (1120 tests;
+  1073 pass; 47 governed PostgreSQL skips), including typecheck and build.
+- [x] Canonical Full Verification on capacity/cleanup implementation commit
+  `f1099378d1fde7ba254bafcd798fac2601e80b4e`: stages 0–19 PASS,
+  owner-scoped 8/8 in 103.799 s, PBI-041 9/9 with 16.875 s publish,
+  TL-07 3/3, 89 migrations, rerun 0 pending, runtime/backend/UI smokes,
+  fingerprint and cleanup PASS.
 - [x] Promotion lifecycle check on the final implementation SHA: PASS.
 - [x] Shadow-only workflow/Tier-2/Work Unit regressions: 65/65 PASS.
 - [x] Base `verify` on the shadow-only implementation: PASS (1117 tests;
@@ -282,8 +289,10 @@ are currently no managed Hetzner resources.
   demonstrated Infra remediation, ordinary governed PR integration, a cutover
   candidate and the controlled TL-07 closure chain while every stated stop
   condition remains fail-closed.
-- No product deploy, Preview/Production mutation, TL-08 start, force push,
-  merge or timeout/gate weakening is authorized.
+- No product deploy, Preview/Production mutation, TL-08 start, force push or
+  timeout/gate weakening is authorized. Ordinary governed Infra merges remain
+  authorized by the Owner's Master authorization while all stop conditions
+  remain fail-closed.
 - Stop for Owner decision at any explicit capability, security, budget or
   stability condition in the authorization.
 - No persistent/billable VM, volume, load balancer or network was created.
