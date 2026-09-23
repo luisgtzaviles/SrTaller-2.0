@@ -101,7 +101,7 @@ became eligible, exposing a bootstrap deadlock in the workflow dependency.
 - [x] Remove the hosted-success dependency from trusted SHADOW eligibility.
 - [x] Prove SHADOW remains unable to satisfy promotion or Work Unit closure.
 - [x] Run focused and exact-HEAD promotion verification.
-- [ ] Promote the remediation through one governed Draft PR.
+- [~] Promote the remediation through one governed Draft PR.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
@@ -117,11 +117,12 @@ and reinforces non-authoritative metadata and regressions.
 
 ## Next
 
-The semantic remediation is locally promotion-ready. Focused regressions and
-the canonical Full Verification passed on implementation SHA
-`d4a3b509bcb023d9e6052979370fa23d5e128e25`; this readiness reconciliation is
-documentation-only and must pass its exact delta gate before remote promotion.
-Material Tier-2 execution remains a separate post-integration Owner
+The semantic remediation is locally promotion-ready and Draft PR #75 is open.
+Focused regressions and the canonical Full Verification passed on the final
+security-remediated implementation SHA
+`a8bca1ee881d44bd587b7d78f66c7a02a780e4ee`. This readiness reconciliation is
+documentation-only; remote authoritative CI on the eventual exact PR HEAD is
+pending. Material Tier-2 execution remains a separate post-integration Owner
 authorization through explicit `workflow_dispatch`.
 
 ## Blockers
@@ -187,12 +188,12 @@ makes the separately authorized SHADOW observation possible.
 - [x] Shadow eligibility matrix covers hosted green/red independence plus PR,
   fork, `pull_request_target`, non-main, stale controller and missing protected
   Environment denial.
-- [x] Canonical Full Verification on remediation implementation SHA
-  `d4a3b509bcb023d9e6052979370fa23d5e128e25`: stages 0–19 PASS,
-  owner-scoped 8/8 in 112.065 s, TL-07 3/3, 89 migrations, rerun 0 pending,
+- [x] Canonical Full Verification on final remediation implementation SHA
+  `a8bca1ee881d44bd587b7d78f66c7a02a780e4ee`: stages 0–19 PASS,
+  owner-scoped 8/8 in 116.940 s, TL-07 3/3, 89 migrations, rerun 0 pending,
   smokes/fingerprint/cleanup PASS.
 - [ ] Shadow FULL evidence on two independent dedicated VMs.
-- [ ] Exact docs-only readiness delta and promotion lifecycle check.
+- [x] Promotion lifecycle check on the final implementation SHA: PASS.
 
 ## Promotion Gates
 
