@@ -4,15 +4,15 @@ Current PBI: NONE
 
 <!-- WORK_UNIT_METADATA
 work_unit: INFRA — Deterministic Authoritative CI Runner
-iteration: 1 - governed infrastructure dependency
+iteration: 2 - shadow eligibility deadlock remediation
 type: INFRASTRUCTURE_QUALITY
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
-branch: chore/deterministic-authoritative-ci-runner
-base_sha: 0e6193e4afa6ebe35accdac7b58e69fa992d9c43
+branch: fix/tier2-shadow-deadlock
+base_sha: 1e579e3c90dab88d89d1f39c3806090b782dc876
 status: READY_FOR_PROMOTION
 closure_mode: DERIVED
-last_updated: 2026-09-22
+last_updated: 2026-09-23
 dependency_exception: INFRA_CI_BLOCKER
 dependency_work_unit: TL-07 — Station Inventory + Enrollment Authority
 dependency_branch: feature/tl-07-station-inventory-enrollment-readiness
@@ -25,15 +25,18 @@ dependency_return: REQUIRED
 
 Materialize deterministic authoritative FULL execution on two independent,
 ephemeral, dedicated x86_64 CI VMs without weakening the existing verification
-contract, then use the trusted current-main controller to prove and close the
-already integrated TL-07 subject SHA.
+contract. This iteration removes the hosted-success prerequisite from the
+explicit Tier-2 SHADOW observation without granting SHADOW any promotion or
+closure authority.
 
 ## Why
 
 Hosted-runner resource variance produced opposing owner-scoped timeouts for the
 same TL-07 merge SHA. The product snapshot is integrated, but TL-07 remains in
 `PROMOTION` because its required exact-main proof is not deterministic enough
-to satisfy the unchanged 240-second contract.
+to satisfy the unchanged 240-second contract. PR #74 integrated the trusted
+Tier-2 controller, but its exact-main hosted run timed out before the shadow job
+became eligible, exposing a bootstrap deadlock in the workflow dependency.
 
 ## In Scope
 
@@ -46,6 +49,10 @@ to satisfy the unchanged 240-second contract.
   cleanup/deletion proof, bounded shadow validation and cutover candidate.
 - Controlled verification and closure of TL-07 merge SHA
   `0e6193e4afa6ebe35accdac7b58e69fa992d9c43`.
+- Independent, explicitly dispatched SHADOW eligibility on protected live
+  `main`, including when hosted FULL is red.
+- Machine-verifiable non-authoritative SHADOW metadata and negative promotion /
+  closure regressions.
 
 ## Out of Scope
 
@@ -91,35 +98,39 @@ to satisfy the unchanged 240-second contract.
 - [x] Implement trusted ephemeral provisioning and deletion proof.
 - [x] Integrate unchanged FULL execution and sanitized evidence.
 - [x] Implement orphan/TTL safety.
+- [x] Remove the hosted-success dependency from trusted SHADOW eligibility.
+- [x] Prove SHADOW remains unable to satisfy promotion or Work Unit closure.
+- [x] Run focused and exact-HEAD promotion verification.
+- [~] Promote the remediation through one governed Draft PR.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
 
 ## Current
 
-The isolated Hetzner project `SR-Taller-Authoritative-CI` exists with no
-persistent compute. Its project-scoped token is stored only as the encrypted
-`HCLOUD_TOKEN` secret in the protected `authoritative-ci` Environment. The
-versioned bootstrap, two-leg controller, exact-subject validation, spread-host
-placement, controller-IP firewall, ephemeral SSH identity, sanitized evidence,
-verified deletion and scheduled expired-resource sweep are implemented locally.
-The implementation commit `43bea4ab646b9a3203c01777cd6da54b13172673`
-passed the canonical local Full Verification stages 0–19; this subsequent
-checklist-only reconciliation does not misattribute that FULL run.
+PR #74 is integrated at `1e579e3c90dab88d89d1f39c3806090b782dc876`.
+Its exact-main hosted run preserved fail-closed behavior: run-1 passed, run-2
+hit the unchanged 240-second owner-scoped limit, comparison was skipped and the
+promotion gate failed. Because SHADOW depended on hosted comparison success,
+it was also skipped. This iteration changes only that eligibility dependency
+and reinforces non-authoritative metadata and regressions.
 
 ## Next
 
-Request separate authority to push/open the shadow-only Infra candidate. Only
-ordinary integration into protected `main` can safely execute the first Tier-2
-shadow observation; shadow results then determine whether a separate cutover
-candidate may proceed.
+The semantic remediation is locally promotion-ready and Draft PR #75 is open.
+Focused regressions and the canonical Full Verification passed on the final
+security-remediated implementation SHA
+`a8bca1ee881d44bd587b7d78f66c7a02a780e4ee`. This readiness reconciliation is
+documentation-only; remote authoritative CI on the eventual exact PR HEAD is
+pending. Material Tier-2 execution remains a separate post-integration Owner
+authorization through explicit `workflow_dispatch`.
 
 ## Blockers
 
-NONE for the local implementation candidate. Shadow validation and cutover are
-intentionally unavailable before ordinary protected-main integration; that is
-a trust-boundary requirement, not permission to run feature-branch code with
-the cloud credential.
+NONE for remote promotion of this remediation. The Infra Work Unit still cannot
+close because exact-main hosted CI for PR #74 is red and no material SHADOW
+observation exists. This remediation does not waive that predicate; it only
+makes the separately authorized SHADOW observation possible.
 
 ## Important Discoveries
 
@@ -147,6 +158,13 @@ the cloud credential.
   Environment independently admits only `main`, and the promotion aggregate
   remains on the current hosted FULL until bounded shadow evidence supports a
   reviewed cutover.
+- PR #74 exact-main exposed a dependency deadlock: a hosted FULL failure made
+  SHADOW ineligible even though hosted variability is the phenomenon SHADOW
+  must measure. Owner authorized independent SHADOW eligibility without any
+  authority change.
+- Security review of the remediation removed an upstream-repository default
+  from the validator so a missing caller identity fails closed like a fork;
+  the SHADOW job also retains read-only repository permissions.
 - Pre-push security review found that the subject-closure API accepted a local
   attestation document. The same branch now rejects local evidence and requires
   the single canonical, non-expired artifact downloaded from the exact
@@ -166,8 +184,16 @@ the cloud credential.
 - [x] Full Verification on implementation commit `43bea4ab646b9a3203c01777cd6da54b13172673`:
   stages 0–19 PASS, owner-scoped 8/8 in 122.566 s, TL-07 3/3, 89 migrations,
   rerun 0 pending, smokes/fingerprint/cleanup PASS.
+- [x] Shadow-deadlock focused Harness/Infra regressions: 59/59 PASS.
+- [x] Shadow eligibility matrix covers hosted green/red independence plus PR,
+  fork, `pull_request_target`, non-main, stale controller and missing protected
+  Environment denial.
+- [x] Canonical Full Verification on final remediation implementation SHA
+  `a8bca1ee881d44bd587b7d78f66c7a02a780e4ee`: stages 0–19 PASS,
+  owner-scoped 8/8 in 116.940 s, TL-07 3/3, 89 migrations, rerun 0 pending,
+  smokes/fingerprint/cleanup PASS.
 - [ ] Shadow FULL evidence on two independent dedicated VMs.
-- [x] Promotion lifecycle check on the exact local Infra candidate: PASS.
+- [x] Promotion lifecycle check on the final implementation SHA: PASS.
 
 ## Promotion Gates
 
@@ -186,6 +212,8 @@ the cloud credential.
 - Owner explicitly authorized creation of the project-scoped Hetzner token and
   encrypted storage as `HCLOUD_TOKEN`; the secret value was not documented or
   placed on disk/VMs.
+- Owner authorized this semantic remediation and remote promotion, but not the
+  first material SHADOW campaign, cutover, Infra closure or TL-07 closure.
 - No product deploy, Preview/Production mutation, TL-08 start, force push,
   merge or timeout/gate weakening is authorized.
 - Stop for Owner decision at any explicit capability, security, budget or

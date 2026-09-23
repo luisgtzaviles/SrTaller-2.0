@@ -4,6 +4,8 @@ import test from 'node:test';
 
 import {
   TIER2_CONTRACT,
+  TIER2_SHADOW_MODE,
+  TIER2_TRUSTED_REPOSITORY,
   classifyManagedResources,
   compareTier2Legs,
   createTier2Attestation,
@@ -13,9 +15,25 @@ import {
   validateTier2Invocation,
   validateTier2ServerProfile,
 } from '../scripts/lib/tier2-authoritative-ci.mjs';
+import { selectSubjectAttestationArtifact } from '../scripts/lib/work-unit.mjs';
 
 const controllerSha = 'a'.repeat(40);
 const dependencySubjectSha = 'b'.repeat(40);
+
+function trustedInvocation(overrides = {}) {
+  return {
+    controllerSha,
+    dependencySubjectSha,
+    environmentAuthorized: true,
+    eventName: 'workflow_dispatch',
+    liveMainSha: controllerSha,
+    ref: 'refs/heads/main',
+    repository: TIER2_TRUSTED_REPOSITORY,
+    requested: true,
+    testedSha: dependencySubjectSha,
+    ...overrides,
+  };
+}
 
 function runnerEvidence({ leg = 'run-1', serverId = 1 } = {}) {
   return {
@@ -55,55 +73,75 @@ function runnerEvidence({ leg = 'run-1', serverId = 1 } = {}) {
 test('trusted Tier-2 invocation accepts only protected current main and one explicit subject', () => {
   assert.deepEqual(
     validateTier2Invocation({
-      controllerSha,
-      dependencySubjectSha,
-      eventName: 'workflow_dispatch',
-      liveMainSha: controllerSha,
-      ref: 'refs/heads/main',
-      testedSha: dependencySubjectSha,
+      ...trustedInvocation(),
     }),
     {
+      authoritative: false,
       controllerSha,
       eventName: 'workflow_dispatch',
       liveMainSha: controllerSha,
+      mode: TIER2_SHADOW_MODE,
       ref: 'refs/heads/main',
+      repository: TIER2_TRUSTED_REPOSITORY,
       testedSha: dependencySubjectSha,
     },
   );
   for (const eventName of ['pull_request', 'pull_request_target']) {
     assert.throws(
-      () => validateTier2Invocation({
-        controllerSha,
-        dependencySubjectSha,
+      () => validateTier2Invocation(trustedInvocation({
         eventName,
-        liveMainSha: controllerSha,
         ref: 'refs/pull/7/merge',
-        testedSha: dependencySubjectSha,
-      }),
+      })),
       /restricted/u,
     );
   }
   assert.throws(
-    () => validateTier2Invocation({
-      controllerSha,
-      dependencySubjectSha,
-      eventName: 'workflow_dispatch',
-      liveMainSha: controllerSha,
-      ref: 'refs/heads/main',
+    () => validateTier2Invocation(trustedInvocation({
       testedSha: 'c'.repeat(40),
-    }),
+    })),
     /not the current controller or authorized dependency/u,
   );
   assert.throws(
-    () => validateTier2Invocation({
-      controllerSha,
-      dependencySubjectSha,
-      eventName: 'push',
+    () => validateTier2Invocation(trustedInvocation({
       liveMainSha: 'd'.repeat(40),
-      ref: 'refs/heads/main',
       testedSha: controllerSha,
-    }),
+    })),
     /must equal live remote main/u,
+  );
+});
+
+test('shadow eligibility is independent of hosted FULL results but remains explicitly requested', () => {
+  for (const hostedResult of ['success', 'failure']) {
+    const result = validateTier2Invocation(trustedInvocation({ hostedResult }));
+    assert.equal(result.mode, 'SHADOW');
+    assert.equal(result.authoritative, false);
+  }
+  assert.throws(
+    () => validateTier2Invocation(trustedInvocation({ requested: false })),
+    /explicit governed request/u,
+  );
+});
+
+test('shadow eligibility fails closed for fork, non-main, untrusted controller, and missing Environment authorization', () => {
+  assert.throws(
+    () => validateTier2Invocation(trustedInvocation({ repository: undefined })),
+    /trusted upstream repository/u,
+  );
+  assert.throws(
+    () => validateTier2Invocation(trustedInvocation({ repository: 'fork/SrTaller-2.0' })),
+    /trusted upstream repository/u,
+  );
+  assert.throws(
+    () => validateTier2Invocation(trustedInvocation({ ref: 'refs/heads/feature/untrusted' })),
+    /refs\/heads\/main/u,
+  );
+  assert.throws(
+    () => validateTier2Invocation(trustedInvocation({ liveMainSha: 'c'.repeat(40) })),
+    /must equal live remote main/u,
+  );
+  assert.throws(
+    () => validateTier2Invocation(trustedInvocation({ environmentAuthorized: false })),
+    /protected Environment authorization/u,
   );
 });
 
@@ -180,7 +218,26 @@ test('attestation binds controller, subject, run and comparison without claiming
   });
   assert.equal(attestation.controllerSha, controllerSha);
   assert.equal(attestation.testedSha, dependencySubjectSha);
-  assert.equal(attestation.promotionGate, 'PENDING_CONTROLLER_AGGREGATE');
+  assert.equal(attestation.mode, 'SHADOW');
+  assert.equal(attestation.authoritative, false);
+  assert.equal(attestation.promotionGate, 'NOT_APPLICABLE_SHADOW');
+});
+
+test('shadow evidence cannot satisfy authoritative promotion or Work Unit closure', async () => {
+  const workflow = await readFile('.github/workflows/authoritative-linux-ci.yml', 'utf8');
+  const tier2Job = workflow.slice(workflow.indexOf('  tier2-shadow:'), workflow.indexOf('  promotion-gate:'));
+  const promotionGate = workflow.slice(workflow.indexOf('  promotion-gate:'));
+  assert.doesNotMatch(promotionGate, /tier2-shadow/u);
+  assert.doesNotMatch(tier2Job, /compare-authoritative-gates\.result/u);
+  assert.throws(
+    () => selectSubjectAttestationArtifact([{
+      expired: false,
+      id: 1,
+      name: 'tier2-shadow-123-1',
+      workflow_run: { id: 123 },
+    }], '123'),
+    /exactly one authoritative subject attestation artifact/u,
+  );
 });
 
 test('cost projection enforces the approved monthly guard without changing compute profile', () => {
@@ -211,9 +268,13 @@ test('workflow and bootstrap mechanically preserve the public-repository trust b
   ]);
   const tier2Job = workflow.slice(workflow.indexOf('  tier2-shadow:'), workflow.indexOf('  promotion-gate:'));
   assert.match(tier2Job, /github\.ref == 'refs\/heads\/main'/u);
-  assert.match(tier2Job, /github\.event_name == 'push'.*github\.event_name == 'workflow_dispatch'/su);
+  assert.match(tier2Job, /github\.repository == 'luisgtzaviles\/SrTaller-2\.0'/u);
+  assert.match(tier2Job, /github\.event_name == 'workflow_dispatch'/u);
+  assert.match(tier2Job, /inputs\.run_tier2_shadow == true/u);
+  assert.doesNotMatch(tier2Job, /compare-authoritative-gates/u);
   assert.doesNotMatch(tier2Job, /pull_request_target/u);
   assert.match(tier2Job, /environment: authoritative-ci/u);
+  assert.match(tier2Job, /permissions:\s*\n\s*contents: read/u);
   assert.match(tier2Job, /HCLOUD_TOKEN: \$\{\{ secrets\.HCLOUD_TOKEN \}\}/u);
   assert.match(tier2Job, /actions\/checkout@[0-9a-f]{40}/u);
   assert.match(tier2Job, /actions\/setup-node@[0-9a-f]{40}/u);
@@ -230,4 +291,6 @@ test('workflow and bootstrap mechanically preserve the public-repository trust b
   assert.match(orchestrator, /placement_group/u);
   assert.match(orchestrator, /source_ips/u);
   assert.match(orchestrator, /managed resources remain after cleanup/u);
+  assert.match(orchestrator, /authoritative: false/u);
+  assert.match(orchestrator, /mode: TIER2_SHADOW_MODE/u);
 });

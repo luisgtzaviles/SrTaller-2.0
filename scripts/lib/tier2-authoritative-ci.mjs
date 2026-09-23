@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 
 export const TIER2_CONTRACT = 'SR_TALLER_TIER2_AUTHORITATIVE_V1';
+export const TIER2_SHADOW_MODE = 'SHADOW';
+export const TIER2_TRUSTED_REPOSITORY = 'luisgtzaviles/SrTaller-2.0';
 export const TIER2_BOOTSTRAP_VERSION = 'ubuntu-24.04-x86_64-v1';
 export const TIER2_PROVIDER = 'hetzner-cloud';
 export const TIER2_LOCATION = 'hel1';
@@ -34,9 +36,12 @@ function sha256(value) {
 export function validateTier2Invocation({
   controllerSha,
   dependencySubjectSha,
+  environmentAuthorized,
   eventName,
   liveMainSha,
   ref,
+  repository,
+  requested,
   testedSha,
 }) {
   requireSha(controllerSha, 'controllerSha');
@@ -45,8 +50,17 @@ export function validateTier2Invocation({
   if (!allowedEvents.has(eventName)) {
     throw new Error('Tier-2 provisioning is restricted to push or workflow_dispatch');
   }
+  if (repository !== TIER2_TRUSTED_REPOSITORY) {
+    throw new Error('Tier-2 provisioning is restricted to the trusted upstream repository');
+  }
   if (ref !== 'refs/heads/main') {
     throw new Error('Tier-2 provisioning is restricted to refs/heads/main');
+  }
+  if (requested !== true) {
+    throw new Error('Tier-2 shadow requires an explicit governed request');
+  }
+  if (environmentAuthorized !== true) {
+    throw new Error('Tier-2 shadow requires protected Environment authorization');
   }
   if (controllerSha !== liveMainSha) {
     throw new Error('Tier-2 controller SHA must equal live remote main');
@@ -59,10 +73,13 @@ export function validateTier2Invocation({
     throw new Error('testedSha is not the current controller or authorized dependency subject');
   }
   return Object.freeze({
+    authoritative: false,
     controllerSha,
     eventName,
     liveMainSha,
+    mode: TIER2_SHADOW_MODE,
     ref,
+    repository,
     testedSha,
   });
 }
@@ -249,10 +266,12 @@ export function createTier2Attestation({
   requireString(runId, 'runId');
   requireString(workflow, 'workflow');
   return Object.freeze({
+    authoritative: false,
     comparisonSha256: comparison.comparableSha256,
     contract: TIER2_CONTRACT,
     controllerSha,
-    promotionGate: 'PENDING_CONTROLLER_AGGREGATE',
+    mode: TIER2_SHADOW_MODE,
+    promotionGate: 'NOT_APPLICABLE_SHADOW',
     runAttempt,
     runId,
     testedSha,
