@@ -100,6 +100,9 @@ persistent compute. Its project-scoped token is stored only as the encrypted
 versioned bootstrap, two-leg controller, exact-subject validation, spread-host
 placement, controller-IP firewall, ephemeral SSH identity, sanitized evidence,
 verified deletion and scheduled expired-resource sweep are implemented locally.
+The implementation commit `43bea4ab646b9a3203c01777cd6da54b13172673`
+passed the canonical local Full Verification stages 0–19; this subsequent
+checklist-only reconciliation does not misattribute that FULL run.
 
 ## Next
 
@@ -151,8 +154,11 @@ the cloud credential.
 - [x] Architecture/checker regression on final candidate: PASS.
 - [x] Workflow/security regressions on final candidate: 63/63 PASS.
 - [x] Base `verify`: PASS (1111 tests; 1064 pass; 47 governed PostgreSQL skips).
+- [x] Full Verification on implementation commit `43bea4ab646b9a3203c01777cd6da54b13172673`:
+  stages 0–19 PASS, owner-scoped 8/8 in 122.566 s, TL-07 3/3, 89 migrations,
+  rerun 0 pending, smokes/fingerprint/cleanup PASS.
 - [ ] Shadow FULL evidence on two independent dedicated VMs.
-- [~] Promotion verification on the exact local Infra candidate.
+- [x] Promotion lifecycle check on the exact local Infra candidate: PASS.
 
 ## Promotion Gates
 
