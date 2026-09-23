@@ -9,15 +9,18 @@ on:
       - r0/**
   workflow_dispatch:
     inputs:
+      mode:
+        description: Explicit execution mode; Tier-2 shadow never grants promotion authority
+        default: normal
+        required: true
+        type: choice
+        options:
+          - normal
+          - tier2-shadow
       tested_sha:
-        description: Exact integrated subject SHA; blank verifies current main
+        description: Exact integrated subject SHA; required for tier2-shadow
         required: false
         type: string
-      run_tier2_shadow:
-        description: Run the non-authoritative Tier-2 shadow campaign from trusted live main
-        default: false
-        required: false
-        type: boolean
 
 permissions:
   contents: read
@@ -37,6 +40,8 @@ jobs:
       docs_only: ${{ steps.classify.outputs.docs_only }}
       enforced_pipeline: ${{ steps.classify.outputs.enforced_pipeline }}
       risk: ${{ steps.classify.outputs.risk }}
+      dispatch_mode: ${{ steps.dispatch-mode.outputs.dispatch_mode }}
+      tier2_shadow_only: ${{ steps.dispatch-mode.outputs.tier2_shadow_only }}
 
     steps:
       - name: Checkout exact history
@@ -50,6 +55,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24.18.0
+
+      - name: Resolve explicit dispatch mode fail closed
+        id: dispatch-mode
+        env:
+          DISPATCH_MODE: ${{ inputs.mode || 'normal' }}
+          TESTED_SHA: ${{ inputs.tested_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/resolve-authoritative-dispatch-mode.mjs \
+            --event-name "${GITHUB_EVENT_NAME}" \
+            --mode "${DISPATCH_MODE}" \
+            --tested-sha "${TESTED_SHA}" \
+            --output "${RUNNER_TEMP}/AUTHORITATIVE_DISPATCH_MODE.json" \
+            --github-output "${GITHUB_OUTPUT}"
 
       - name: Classify exact delta fail closed
         id: classify
@@ -110,6 +130,7 @@ jobs:
           path: |
             ${{ runner.temp }}/WORKFLOW_CHANGE_RISK.json
             ${{ runner.temp }}/PREVIEW_MIGRATION_PREFLIGHT.json
+            ${{ runner.temp }}/AUTHORITATIVE_DISPATCH_MODE.json
           if-no-files-found: error
           retention-days: 30
 
@@ -117,7 +138,9 @@ jobs:
     name: DOCS_ONLY fail-closed
     needs:
       - classify-change
-    if: needs.classify-change.outputs.docs_only == 'true'
+    if: >-
+      needs.classify-change.outputs.tier2_shadow_only != 'true' &&
+      needs.classify-change.outputs.docs_only == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
 
@@ -171,7 +194,9 @@ jobs:
     name: VC-024 ${{ matrix.execution }}
     needs:
       - classify-change
-    if: needs.classify-change.outputs.docs_only != 'true'
+    if: >-
+      needs.classify-change.outputs.tier2_shadow_only != 'true' &&
+      needs.classify-change.outputs.docs_only != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
@@ -481,6 +506,7 @@ jobs:
       - authoritative-gate
     if: >-
       always() &&
+      needs.classify-change.outputs.tier2_shadow_only != 'true' &&
       needs.classify-change.outputs.docs_only != 'true' &&
       needs.authoritative-gate.result == 'success'
     runs-on: ubuntu-24.04
@@ -535,16 +561,56 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  tier2-shadow-context:
+    name: Tier-2 shadow trusted context
+    needs:
+      - classify-change
+    if: needs.classify-change.outputs.tier2_shadow_only == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout trusted current-main controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Set up controller Node.js 24.18.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.18.0
+
+      - name: Validate trusted shadow context without cloud credentials
+        env:
+          TESTED_SHA: ${{ inputs.tested_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/validate-tier2-shadow-context.mjs \
+            --tested-sha "${TESTED_SHA}" \
+            --output "${RUNNER_TEMP}/tier2-shadow-context/TIER2_SHADOW_CONTEXT.json"
+
+      - name: Upload trusted shadow context evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tier2-shadow-context-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/tier2-shadow-context/
+          if-no-files-found: warn
+          retention-days: 30
+
   tier2-shadow:
     name: Tier-2 deterministic shadow
     needs:
       - classify-change
+      - tier2-shadow-context
     if: >-
-      needs.classify-change.outputs.docs_only != 'true' &&
-      github.repository == 'luisgtzaviles/SrTaller-2.0' &&
-      github.ref == 'refs/heads/main' &&
-      github.event_name == 'workflow_dispatch' &&
-      inputs.run_tier2_shadow == true
+      needs.classify-change.outputs.tier2_shadow_only == 'true' &&
+      needs.tier2-shadow-context.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 100
     environment: authoritative-ci
@@ -568,7 +634,7 @@ jobs:
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
           SR_TIER2_SHADOW_REQUESTED: "true"
-          TESTED_SHA: ${{ inputs.tested_sha || needs.classify-change.outputs.candidate_sha }}
+          TESTED_SHA: ${{ inputs.tested_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -594,7 +660,9 @@ jobs:
       - docs-only-gate
       - authoritative-gate
       - compare-authoritative-gates
-    if: always()
+    if: >-
+      always() &&
+      needs.classify-change.outputs.tier2_shadow_only != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
 

@@ -105,6 +105,37 @@ test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', (
   assert.match(workflow, /environment: authoritative-ci[\s\S]*HCLOUD_TOKEN: \$\{\{ secrets\.HCLOUD_TOKEN \}\}/u);
 });
 
+test('tier2-shadow dispatch skips hosted FULL without changing normal authoritative semantics', () => {
+  const hostedJob = workflow.slice(
+    workflow.indexOf('  authoritative-gate:'),
+    workflow.indexOf('  compare-authoritative-gates:'),
+  );
+  const comparisonJob = workflow.slice(
+    workflow.indexOf('  compare-authoritative-gates:'),
+    workflow.indexOf('  tier2-shadow-context:'),
+  );
+  const shadowContext = workflow.slice(
+    workflow.indexOf('  tier2-shadow-context:'),
+    workflow.indexOf('  tier2-shadow:'),
+  );
+  const shadowJob = workflow.slice(
+    workflow.indexOf('  tier2-shadow:'),
+    workflow.indexOf('  promotion-gate:'),
+  );
+  const promotionGate = workflow.slice(workflow.indexOf('  promotion-gate:'));
+
+  assert.match(workflow, /DISPATCH_MODE: \$\{\{ inputs\.mode \|\| 'normal' \}\}/u);
+  assert.match(workflow, /resolve-authoritative-dispatch-mode\.mjs/u);
+  assert.match(hostedJob, /tier2_shadow_only != 'true'/u);
+  assert.match(comparisonJob, /tier2_shadow_only != 'true'/u);
+  assert.match(shadowContext, /tier2_shadow_only == 'true'/u);
+  assert.match(shadowJob, /tier2_shadow_only == 'true'/u);
+  assert.match(promotionGate, /tier2_shadow_only != 'true'/u);
+  assert.match(promotionGate, /name: Authoritative promotion gate/u);
+  assert.match(workflow, /force_full="workflow-dispatch"/u);
+  assert.match(runner, /timeout: 240_000/u);
+});
+
 test('compiled smoke uses an isolated migrated PostgreSQL service without relaxing startup', () => {
   assert.match(
     workflow,
@@ -144,7 +175,7 @@ test('workflow selects DOCS_ONLY fail closed and executes one atomic base gate p
     workflow.indexOf('  authoritative-gate:'),
   );
   assert.doesNotMatch(docsOnlyJob, /verify-structure\.mjs|pnpm install/u);
-  assert.match(workflow, /if: needs\.classify-change\.outputs\.docs_only != 'true'/u);
+  assert.match(workflow, /needs\.classify-change\.outputs\.tier2_shadow_only != 'true' &&\s*\n\s*needs\.classify-change\.outputs\.docs_only != 'true'/u);
   assert.match(workflow, /name: Run atomic canonical base verification/u);
   assert.match(
     workflow,
@@ -204,7 +235,7 @@ test('authoritative promotion gate always resolves the selected non-reductive pa
     promotionGate,
     /needs:\s*\n\s*- classify-change\s*\n\s*- docs-only-gate\s*\n\s*- authoritative-gate\s*\n\s*- compare-authoritative-gates/u,
   );
-  assert.match(promotionGate, /if: always\(\)/u);
+  assert.match(promotionGate, /if: >-\s*\n\s*always\(\)/u);
   assert.match(
     promotionGate,
     /CLASSIFICATION_RESULT: \$\{\{ needs\.classify-change\.result \}\}/u,

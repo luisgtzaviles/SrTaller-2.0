@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 
 export const TIER2_CONTRACT = 'SR_TALLER_TIER2_AUTHORITATIVE_V1';
 export const TIER2_SHADOW_MODE = 'SHADOW';
+export const AUTHORITATIVE_DISPATCH_NORMAL_MODE = 'normal';
+export const TIER2_SHADOW_DISPATCH_MODE = 'tier2-shadow';
 export const TIER2_TRUSTED_REPOSITORY = 'luisgtzaviles/SrTaller-2.0';
 export const TIER2_BOOTSTRAP_VERSION = 'ubuntu-24.04-x86_64-v1';
 export const TIER2_PROVIDER = 'hetzner-cloud';
@@ -14,6 +16,10 @@ export const TL07_SUBJECT_SHA = '0e6193e4afa6ebe35accdac7b58e69fa992d9c43';
 
 const shaPattern = /^[0-9a-f]{40}$/u;
 const allowedEvents = new Set(['push', 'workflow_dispatch']);
+const allowedDispatchModes = new Set([
+  AUTHORITATIVE_DISPATCH_NORMAL_MODE,
+  TIER2_SHADOW_DISPATCH_MODE,
+]);
 
 function requireSha(value, label) {
   if (!shaPattern.test(value ?? '')) {
@@ -33,15 +39,33 @@ function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
 }
 
-export function validateTier2Invocation({
+export function validateAuthoritativeDispatchMode({ eventName, mode, testedSha }) {
+  requireString(eventName, 'eventName');
+  const normalizedMode = mode || AUTHORITATIVE_DISPATCH_NORMAL_MODE;
+  if (!allowedDispatchModes.has(normalizedMode)) {
+    throw new Error('authoritative workflow dispatch mode is invalid');
+  }
+  if (eventName !== 'workflow_dispatch' && normalizedMode !== AUTHORITATIVE_DISPATCH_NORMAL_MODE) {
+    throw new Error('Tier-2 shadow mode is restricted to workflow_dispatch');
+  }
+  if (normalizedMode === TIER2_SHADOW_DISPATCH_MODE) {
+    requireSha(testedSha, 'testedSha');
+  }
+  return Object.freeze({
+    authoritative: normalizedMode === AUTHORITATIVE_DISPATCH_NORMAL_MODE,
+    mode: normalizedMode,
+    testedSha: testedSha || null,
+    tier2ShadowOnly: normalizedMode === TIER2_SHADOW_DISPATCH_MODE,
+  });
+}
+
+export function validateTier2ControlPlane({
   controllerSha,
   dependencySubjectSha,
-  environmentAuthorized,
   eventName,
   liveMainSha,
   ref,
   repository,
-  requested,
   testedSha,
 }) {
   requireSha(controllerSha, 'controllerSha');
@@ -50,17 +74,14 @@ export function validateTier2Invocation({
   if (!allowedEvents.has(eventName)) {
     throw new Error('Tier-2 provisioning is restricted to push or workflow_dispatch');
   }
+  if (eventName !== 'workflow_dispatch') {
+    throw new Error('Tier-2 material shadow is restricted to workflow_dispatch');
+  }
   if (repository !== TIER2_TRUSTED_REPOSITORY) {
     throw new Error('Tier-2 provisioning is restricted to the trusted upstream repository');
   }
   if (ref !== 'refs/heads/main') {
     throw new Error('Tier-2 provisioning is restricted to refs/heads/main');
-  }
-  if (requested !== true) {
-    throw new Error('Tier-2 shadow requires an explicit governed request');
-  }
-  if (environmentAuthorized !== true) {
-    throw new Error('Tier-2 shadow requires protected Environment authorization');
   }
   if (controllerSha !== liveMainSha) {
     throw new Error('Tier-2 controller SHA must equal live remote main');
@@ -78,6 +99,34 @@ export function validateTier2Invocation({
     eventName,
     liveMainSha,
     mode: TIER2_SHADOW_MODE,
+    ref,
+    repository,
+    testedSha,
+  });
+}
+
+export function validateTier2Invocation({
+  controllerSha,
+  dependencySubjectSha,
+  environmentAuthorized,
+  eventName,
+  liveMainSha,
+  ref,
+  repository,
+  requested,
+  testedSha,
+}) {
+  if (requested !== true) {
+    throw new Error('Tier-2 shadow requires an explicit governed request');
+  }
+  if (environmentAuthorized !== true) {
+    throw new Error('Tier-2 shadow requires protected Environment authorization');
+  }
+  return validateTier2ControlPlane({
+    controllerSha,
+    dependencySubjectSha,
+    eventName,
+    liveMainSha,
     ref,
     repository,
     testedSha,

@@ -3,7 +3,9 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
+  AUTHORITATIVE_DISPATCH_NORMAL_MODE,
   TIER2_CONTRACT,
+  TIER2_SHADOW_DISPATCH_MODE,
   TIER2_SHADOW_MODE,
   TIER2_TRUSTED_REPOSITORY,
   classifyManagedResources,
@@ -12,6 +14,8 @@ import {
   estimateTier2Cost,
   parseOwnerScopedDiagnostics,
   tier2ResourceLabels,
+  validateAuthoritativeDispatchMode,
+  validateTier2ControlPlane,
   validateTier2Invocation,
   validateTier2ServerProfile,
 } from '../scripts/lib/tier2-authoritative-ci.mjs';
@@ -34,6 +38,50 @@ function trustedInvocation(overrides = {}) {
     ...overrides,
   };
 }
+
+test('explicit dispatch modes preserve normal authority and require an exact shadow subject', () => {
+  assert.deepEqual(validateAuthoritativeDispatchMode({
+    eventName: 'workflow_dispatch',
+    mode: AUTHORITATIVE_DISPATCH_NORMAL_MODE,
+  }), {
+    authoritative: true,
+    mode: 'normal',
+    testedSha: null,
+    tier2ShadowOnly: false,
+  });
+  assert.deepEqual(validateAuthoritativeDispatchMode({
+    eventName: 'workflow_dispatch',
+    mode: TIER2_SHADOW_DISPATCH_MODE,
+    testedSha: controllerSha,
+  }), {
+    authoritative: false,
+    mode: 'tier2-shadow',
+    testedSha: controllerSha,
+    tier2ShadowOnly: true,
+  });
+  assert.throws(
+    () => validateAuthoritativeDispatchMode({
+      eventName: 'workflow_dispatch',
+      mode: TIER2_SHADOW_DISPATCH_MODE,
+    }),
+    /testedSha/u,
+  );
+  assert.throws(
+    () => validateAuthoritativeDispatchMode({
+      eventName: 'push',
+      mode: TIER2_SHADOW_DISPATCH_MODE,
+      testedSha: controllerSha,
+    }),
+    /restricted to workflow_dispatch/u,
+  );
+  assert.throws(
+    () => validateAuthoritativeDispatchMode({
+      eventName: 'workflow_dispatch',
+      mode: 'implicit-shadow',
+    }),
+    /mode is invalid/u,
+  );
+});
 
 function runnerEvidence({ leg = 'run-1', serverId = 1 } = {}) {
   return {
@@ -143,6 +191,10 @@ test('shadow eligibility fails closed for fork, non-main, untrusted controller, 
     () => validateTier2Invocation(trustedInvocation({ environmentAuthorized: false })),
     /protected Environment authorization/u,
   );
+  assert.throws(
+    () => validateTier2ControlPlane(trustedInvocation({ eventName: 'push' })),
+    /restricted to workflow_dispatch/u,
+  );
 });
 
 test('resource labels carry TTL and orphan classifier fails closed on expired resources', () => {
@@ -228,6 +280,7 @@ test('shadow evidence cannot satisfy authoritative promotion or Work Unit closur
   const tier2Job = workflow.slice(workflow.indexOf('  tier2-shadow:'), workflow.indexOf('  promotion-gate:'));
   const promotionGate = workflow.slice(workflow.indexOf('  promotion-gate:'));
   assert.doesNotMatch(promotionGate, /tier2-shadow/u);
+  assert.match(promotionGate, /tier2_shadow_only != 'true'/u);
   assert.doesNotMatch(tier2Job, /compare-authoritative-gates\.result/u);
   assert.throws(
     () => selectSubjectAttestationArtifact([{
@@ -266,11 +319,21 @@ test('workflow and bootstrap mechanically preserve the public-repository trust b
     readFile('scripts/ci/tier2-bootstrap.sh', 'utf8'),
     readFile('scripts/run-tier2-authoritative-ci.mjs', 'utf8'),
   ]);
+  const hostedJob = workflow.slice(workflow.indexOf('  authoritative-gate:'), workflow.indexOf('  compare-authoritative-gates:'));
+  const comparisonJob = workflow.slice(workflow.indexOf('  compare-authoritative-gates:'), workflow.indexOf('  tier2-shadow-context:'));
+  const contextJob = workflow.slice(workflow.indexOf('  tier2-shadow-context:'), workflow.indexOf('  tier2-shadow:'));
   const tier2Job = workflow.slice(workflow.indexOf('  tier2-shadow:'), workflow.indexOf('  promotion-gate:'));
-  assert.match(tier2Job, /github\.ref == 'refs\/heads\/main'/u);
-  assert.match(tier2Job, /github\.repository == 'luisgtzaviles\/SrTaller-2\.0'/u);
-  assert.match(tier2Job, /github\.event_name == 'workflow_dispatch'/u);
-  assert.match(tier2Job, /inputs\.run_tier2_shadow == true/u);
+  const promotionGate = workflow.slice(workflow.indexOf('  promotion-gate:'));
+  assert.match(workflow, /mode:\s*\n\s*description:[^\n]+\n\s*default: normal[\s\S]*- tier2-shadow/u);
+  assert.match(workflow, /resolve-authoritative-dispatch-mode\.mjs/u);
+  assert.match(hostedJob, /tier2_shadow_only != 'true'/u);
+  assert.match(comparisonJob, /tier2_shadow_only != 'true'/u);
+  assert.match(contextJob, /tier2_shadow_only == 'true'/u);
+  assert.match(contextJob, /validate-tier2-shadow-context\.mjs/u);
+  assert.doesNotMatch(contextJob, /HCLOUD_TOKEN|environment: authoritative-ci/u);
+  assert.match(tier2Job, /tier2-shadow-context/u);
+  assert.match(tier2Job, /tier2_shadow_only == 'true'/u);
+  assert.doesNotMatch(tier2Job, /authoritative-gate|compare-authoritative-gates|promotion-gate/u);
   assert.doesNotMatch(tier2Job, /compare-authoritative-gates/u);
   assert.doesNotMatch(tier2Job, /pull_request_target/u);
   assert.match(tier2Job, /environment: authoritative-ci/u);
@@ -279,6 +342,9 @@ test('workflow and bootstrap mechanically preserve the public-repository trust b
   assert.match(tier2Job, /actions\/checkout@[0-9a-f]{40}/u);
   assert.match(tier2Job, /actions\/setup-node@[0-9a-f]{40}/u);
   assert.match(tier2Job, /actions\/upload-artifact@[0-9a-f]{40}/u);
+  assert.match(promotionGate, /tier2_shadow_only != 'true'/u);
+  assert.doesNotMatch(promotionGate, /^\s+- tier2-shadow\s*$/mu);
+  assert.match(workflow, /force_full="workflow-dispatch"/u);
   assert.match(sweep, /schedule:/u);
   assert.match(sweep, /--sweep-expired/u);
   assert.match(bootstrap, /NODE_VERSION="24\.18\.0"/u);
