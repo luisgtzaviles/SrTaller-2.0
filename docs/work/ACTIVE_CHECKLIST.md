@@ -2,15 +2,15 @@
 
 <!-- WORK_UNIT_METADATA
 work_unit: QUALITY — Diagnose Owner-Scoped CI Runtime Variability
-iteration: 1 - Authorized Start
+iteration: 2 - Owner-accepted diagnosis
 type: QUALITY
 risk: SENSITIVE
 shadow_risk: SENSITIVE
 branch: chore/quality-owner-scoped-ci-variability
 base_sha: 9bd8bfcf106ba69be66202eedee115a2eea19739
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
-last_updated: 2026-09-23
+last_updated: 2026-09-22
 -->
 
 Current PBI: NONE
@@ -64,26 +64,26 @@ resume promotion.
 - [x] Audit the complete 240-second owner-scoped wrapper boundary.
 - [x] Build the authoritative PR #70/#71/TL-07 runtime series.
 - [x] Classify cause and decide whether repository remediation is justified.
-- [ ] Await Owner decision on TL-07 promotion and this Quality handoff.
+- [x] Record Owner acceptance and freeze the documentary closure candidate.
 
 ## Current
 
-The review classifies the observed behavior as `CI_HOST_RESOURCE_VARIABILITY`.
+The Owner accepts `CI_HOST_RESOURCE_VARIABILITY` as the bounded diagnosis.
 The same-head slow leg expands all material child processes proportionally;
 no TL-07, PostgreSQL, migration, assertion, cleanup or specific-suite defect is
-shown. No runtime remediation was implemented.
+shown. No runtime remediation or general retry policy was implemented.
 
 ## Next
 
-Owner decides whether the preserved historical failure and narrow successful
-margin are acceptable for TL-07 promotion. A separate bounded progress-marker
-change is optional if exact inner-suite identity on future outer timeouts is
-required; it is not a runtime fix.
+Promote this documentary/evidence candidate only after separate Owner
+authorization. TL-07 may then resume through its own separately authorized
+promotion path. A bounded progress-marker improvement remains a future Quality
+candidate and is not part of this Work Unit.
 
 ## Blockers
 
-TL-07 remote promotion is paused by explicit Owner direction pending this
-review. There is no proven repository-controlled runtime defect to remediate.
+No local blocker remains for this Quality candidate. TL-07 remains frozen and
+PR #72 remains untouched until its own promotion is separately resumed.
 
 ## Important Discoveries
 
@@ -102,6 +102,10 @@ review. There is no proven repository-controlled runtime defect to remediate.
 - PR #71 exact-main also required a second attempt after the same outer timeout,
   before TL-07 was present. Runtime is not worsening monotonically with TL-07.
 - Runner image/region do not correlate with the observed fast and slow legs.
+- Available CI telemetry cannot distinguish VM performance-tier variation,
+  host contention or another underlying hosted-runner resource cause.
+- Owner acceptance is specific to PR #72 evidence and does not establish a
+  general retry-on-timeout policy.
 - The comparative report is in
   [`owner-scoped-ci-runtime-variability`](../quality/evidence/owner-scoped-ci-runtime-variability/README.md).
 - `apps/dev-preview-web/src/.DS_Store` remains unrelated and untracked.
@@ -116,15 +120,17 @@ review. There is no proven repository-controlled runtime defect to remediate.
 
 ## Promotion Gates
 
-- The Quality review remains `ACTIVE` pending Owner disposition.
-- No timeout, retry, suite, assertion or gate change is proposed.
-- TL-07 remains a dependent, frozen Draft candidate and is not merged.
+- [x] Owner accepted the bounded diagnosis and documentary closure direction.
+- [x] No timeout, retry, suite, assertion or gate change is proposed.
+- [x] Exact-HEAD docs-only promotion verification PASS.
+- [x] TL-07 remains a dependent, frozen Draft candidate and is not merged.
+- [ ] Push, PR, authoritative CI, review, merge and governed closure require
+  separate authority.
 
 ## Remote Actions / Authorization
 
 - Read-only GitHub/CI inspection was authorized and completed.
-- No push, new PR, merge, deploy or CI rerun is authorized for this Quality
-  Work Unit.
+- No push, new PR, merge, deploy or CI rerun is authorized in this step.
 - PR #72 remains open and Draft; TL-07 was not modified or pushed.
 
 ## Handoff Notes
@@ -136,11 +142,14 @@ review. There is no proven repository-controlled runtime defect to remediate.
 - Preserve `apps/dev-preview-web/src/.DS_Store` untracked.
 - Attempt 1 remains historical authoritative evidence; attempt 2 does not
   erase it.
+- Do not encode a general retry policy from this PR-specific risk acceptance.
+- Future candidate only: bounded, sanitized parent-level progress markers
+  before the external wrapper timeout.
 
 ## Closure Predicate
 
-The Quality diagnosis is complete when the historical attempts, exact budget
-boundary, same-head suite variance and authoritative runtime series are
-documented; one cause class is selected without changing TL-07 or weakening
-the gate; proportional documentation checks pass; and the Owner decides the
-disposition of TL-07 and this Quality branch.
+The Quality Work Unit closes only when this exact documentary snapshot is
+merged through an authorized ordinary PR, authoritative exact-main CI and its
+promotion gate are GREEN, deployment is N/A for this documentation-only scope,
+and the governed closure ref targets that exact merge. TL-07 remains outside
+this predicate and retains its own promotion authority.

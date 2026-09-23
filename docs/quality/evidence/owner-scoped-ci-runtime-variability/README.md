@@ -130,7 +130,21 @@ Evidence:
 
 The logs demonstrate hosted-worker throughput variability. They do not expose
 enough host telemetry to distinguish VM performance tier from colocated-host
-contention, so that lower-level mechanism is intentionally not claimed.
+contention or another underlying hosted-runner resource cause, so that
+lower-level mechanism is intentionally not claimed.
+
+## Owner decision
+
+The Owner accepts `CI_HOST_RESOURCE_VARIABILITY` as the bounded diagnosis for
+this evidence set. The failed first attempt remains authoritative historical
+evidence and is not rewritten as a successful first attempt by the later green
+run.
+
+This acceptance is specific to PR #72 and its accumulated evidence. It does
+not create a general retry policy and does not authorize `retry once on
+timeout` in repository workflow, CI or promotion contracts. Any future general
+policy for infrastructure-class retry semantics requires a separate governance
+decision.
 
 ## Remediation decision
 
@@ -144,4 +158,5 @@ The outer-timeout path has a bounded observability limitation: it does not
 retain the active inner-suite ordinal when the parent is killed. A future
 Quality change could stream a sanitized suite-start/progress marker without
 moving the budget or changing pass/fail semantics, but that is not the cause
-of the runtime variance and is not implemented in this review.
+of the runtime variance, is not required to resume TL-07 and is not implemented
+in this review.
