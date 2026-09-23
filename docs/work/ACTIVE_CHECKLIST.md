@@ -84,12 +84,14 @@ TL-07 product history is preserved and authoritative `main` has been merged
 ordinarily. The canonical full verification passed once on reconciliation
 merge `a6845e8e204e471db59abbe7396a6b5aaf698dd8`: stages 0–19, owner-scoped
 `8/8`, TL-07 PostgreSQL `3/3`, 89 migrations, rerun `0 pending`, runtime
-smokes, fingerprint and cleanup all passed.
+smokes, fingerprint and cleanup all passed. The subsequent readiness-only
+checklist delta passed the exact `DOCS_ONLY` verifier and Work Unit promotion
+checker.
 
 ## Next
 
-Validate and commit this exact docs-only readiness reconciliation, then update
-existing Draft PR #72 through an ordinary push and observe authoritative CI.
+Update existing Draft PR #72 through an ordinary push, observe authoritative
+CI on its exact HEAD and complete the security/architectural review.
 
 ## Blockers
 
@@ -127,7 +129,7 @@ authoritative remote CI and final security/architectural review results.
 - [x] One canonical `verify:full` on reconciliation merge `a6845e8e204e471db59abbe7396a6b5aaf698dd8`: stages 0–19 PASS.
 - [x] Owner-scoped campaign in that run: `8/8` PASS, 115.010s campaign / 118.654s wrapper, below 240s.
 - [x] TL-07 PostgreSQL in that run: `3/3` PASS; 89 migrations; second run `0 pending`.
-- [~] Final docs-only readiness delta, Work Unit checker and `git diff --check`.
+- [x] Final docs-only readiness delta, Work Unit promotion checker and delta `git diff --check`.
 
 ## Promotion Gates
 
