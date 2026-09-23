@@ -12,11 +12,13 @@ import {
   compareTier2Legs,
   createTier2Attestation,
   estimateTier2Cost,
+  isRetryableTier2PreBootstrapTransportError,
   parseOwnerScopedDiagnostics,
   tier2ResourceLabels,
   validateAuthoritativeDispatchMode,
   validateTier2ControlPlane,
   validateTier2Invocation,
+  validateTier2RecoveryInvocation,
   validateTier2ServerProfile,
 } from '../scripts/lib/tier2-authoritative-ci.mjs';
 import { selectSubjectAttestationArtifact } from '../scripts/lib/work-unit.mjs';
@@ -214,6 +216,61 @@ test('resource labels carry TTL and orphan classifier fails closed on expired re
   );
 });
 
+test('explicit residual recovery is bound to trusted live main and a single run identity', () => {
+  assert.deepEqual(validateTier2RecoveryInvocation({
+    controllerSha,
+    environmentAuthorized: true,
+    eventName: 'workflow_dispatch',
+    liveMainSha: controllerSha,
+    recoveryRunId: '35841981493-1',
+    ref: 'refs/heads/main',
+    repository: TIER2_TRUSTED_REPOSITORY,
+  }), {
+    controllerSha,
+    liveMainSha: controllerSha,
+    recoveryRunId: '35841981493-1',
+  });
+  assert.throws(
+    () => validateTier2RecoveryInvocation({
+      controllerSha,
+      environmentAuthorized: true,
+      eventName: 'workflow_dispatch',
+      liveMainSha: controllerSha,
+      recoveryRunId: '../../all',
+      ref: 'refs/heads/main',
+      repository: TIER2_TRUSTED_REPOSITORY,
+    }),
+    /run identity is invalid/u,
+  );
+  assert.throws(
+    () => validateTier2RecoveryInvocation({
+      controllerSha,
+      environmentAuthorized: true,
+      eventName: 'push',
+      liveMainSha: controllerSha,
+      recoveryRunId: '35841981493-1',
+      ref: 'refs/heads/main',
+      repository: TIER2_TRUSTED_REPOSITORY,
+    }),
+    /restricted to workflow_dispatch/u,
+  );
+});
+
+test('pre-bootstrap recovery recognizes only bounded SSH transport failures', () => {
+  assert.equal(isRetryableTier2PreBootstrapTransportError({
+    code: 255,
+    stderr: 'Connection timed out during banner exchange',
+  }), true);
+  assert.equal(isRetryableTier2PreBootstrapTransportError({
+    code: 1,
+    stderr: 'test failure',
+  }), false);
+  assert.equal(isRetryableTier2PreBootstrapTransportError({
+    code: 255,
+    stderr: 'Permission denied (publickey)',
+  }), false);
+});
+
 test('provider profile validation rejects silent shared-CPU or placement drift', () => {
   const server = {
     image: { name: 'ubuntu-24.04' },
@@ -347,6 +404,7 @@ test('workflow and bootstrap mechanically preserve the public-repository trust b
   assert.match(workflow, /force_full="workflow-dispatch"/u);
   assert.match(sweep, /schedule:/u);
   assert.match(sweep, /--sweep-expired/u);
+  assert.match(sweep, /--sweep-run-id/u);
   assert.match(bootstrap, /NODE_VERSION="24\.18\.0"/u);
   assert.match(bootstrap, /PNPM_VERSION="11\.15\.1"/u);
   assert.match(bootstrap, /ubuntu/u);
@@ -357,6 +415,9 @@ test('workflow and bootstrap mechanically preserve the public-repository trust b
   assert.match(orchestrator, /placement_group/u);
   assert.match(orchestrator, /source_ips/u);
   assert.match(orchestrator, /managed resources remain after cleanup/u);
+  assert.match(orchestrator, /expected: \[200, 204, 404\]/u);
+  assert.match(orchestrator, /refuses to delete a run with a remaining server/u);
+  assert.match(orchestrator, /pre-bootstrap transport recovery 1\/1/u);
   assert.match(orchestrator, /authoritative: false/u);
   assert.match(orchestrator, /mode: TIER2_SHADOW_MODE/u);
 });

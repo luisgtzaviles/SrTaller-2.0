@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "17 */6 * * *"
   workflow_dispatch:
+    inputs:
+      recovery_run_id:
+        description: Exact prior Tier-2 run identity for non-server residual cleanup
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -33,13 +38,20 @@ jobs:
         with:
           node-version: 24.18.0
 
-      - name: Sweep only expired governed resources
+      - name: Sweep expired resources or explicitly recover one server-free run
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-        run: >-
-          node scripts/run-tier2-authoritative-ci.mjs
-          --sweep-expired
-          --output "${RUNNER_TEMP}/tier2-orphan-sweep"
+          RECOVERY_RUN_ID: ${{ inputs.recovery_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--output "${RUNNER_TEMP}/tier2-orphan-sweep")
+          if [[ -n "${RECOVERY_RUN_ID}" ]]; then
+            args+=(--sweep-run-id "${RECOVERY_RUN_ID}")
+          else
+            args+=(--sweep-expired)
+          fi
+          node scripts/run-tier2-authoritative-ci.mjs "${args[@]}"
 
       - name: Upload sanitized orphan evidence
         if: always()

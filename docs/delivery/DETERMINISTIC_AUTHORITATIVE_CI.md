@@ -98,6 +98,14 @@ stacking cost. Normal execution deletes servers first, then firewall, spread
 placement group and SSH key, and proves every provider object returns `404`.
 Any deletion failure fails the campaign.
 
+Hetzner deletion is asynchronous. The orchestrator accepts the successful
+delete response variants and then polls the exact resource until the provider
+returns `404`; the initial response alone is never deletion proof. If a failed
+campaign leaves only non-server resources, an explicit protected
+`workflow_dispatch` recovery may target that exact prior run identity.
+Recovery fails closed if any server from that run still exists, so it cannot
+become an alternate path for terminating active compute.
+
 The separate `Authoritative CI Orphan Sweep` workflow runs from protected
 `main` every six hours and may delete only expired resources with the exact
 governed label. It publishes a sanitized inventory/deletion artifact. It does
@@ -160,6 +168,28 @@ toolchain facts, semantic comparison, subject/controller/run binding, cost
 projection and deletion proof. Volatile smoke database/container/port names
 are excluded from semantic comparison. The raw bounded verification log is
 used only to extract timings and is deleted before artifact upload.
+
+Transport readiness and test execution remain separate boundaries. Before a
+leg starts FULL, a recognized SSH banner timeout or connection reset may use
+one bounded transport recovery after the ordinary readiness probe. That is
+bootstrap recovery, not a FULL retry: once `verify:full` starts, the leg is
+executed exactly once and its result is preserved.
+
+## Material shadow observations
+
+The first material shadow attempt proved the trusted control plane and one
+complete CCX23 leg, then failed closed before the second leg started FULL. The
+completed leg ran all stages, owner-scoped PostgreSQL 8/8 within the unchanged
+240-second contract, TL-07 3/3, 89 migrations, runtime/UI smokes, fingerprint
+and internal cleanup. The other leg lost its pre-bootstrap SSH connection with
+a banner timeout after the readiness probe.
+
+That attempt also exposed an orchestrator cleanup defect: successful
+asynchronous server-delete responses were rejected before their `404` proof,
+so a dependent firewall could not be deleted in the same pass. Provider
+inventory proved both VMs absent and identified only that non-billable
+firewall as residual. The attempt remains failed evidence and contributes no
+successful campaign or leg toward cutover readiness.
 
 The shadow subject and a future subject-SHA closure are different contracts.
 An Infra material observation normally tests the then-current trusted
