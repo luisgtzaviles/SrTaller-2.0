@@ -46,25 +46,34 @@ retry-to-green policy.
 
 ## Compute contract
 
-The initial target per leg is dedicated-class x86_64 compute with approximately
-four dedicated vCPU, 16 GB RAM, sufficient NVMe storage for Docker/build/test
-work, and Ubuntu 24.04/glibc. Exact provider profile and price must be verified
-at provisioning time. The operational budget guard is approximately USD 25 per
-month; it is an approval/monitoring boundary, not authority to under-size or
-weaken verification.
+The initial target per leg was dedicated-class x86_64 compute with four
+dedicated vCPU and 16 GB RAM. Material evidence proved that profile could not
+provide stable useful margin under the unchanged 240-second owner-scoped
+contract. The selected remediation profile is therefore dedicated-class
+x86_64 compute with 16 dedicated vCPU, 64 GB RAM, sufficient NVMe storage for
+Docker/build/test work, and Ubuntu 24.04/glibc. Exact provider profile and price
+must be verified at provisioning time. The operational budget guard remains
+approximately USD 25 per month; it is an approval/monitoring boundary, not
+authority to under-size or weaken verification.
 
 The reproducible bootstrap pins Node.js 24.18.0 and pnpm 11.15.1, installs
 Docker Engine and only required system tooling. PostgreSQL remains the governed
 18.4 image/digest used by repository tests. Mutable shared filesystem caches
 are forbidden.
 
-The materialized initial profile is Hetzner Cloud `CCX23` in `hel1`: x86 AMD,
-four dedicated vCPU, 16 GB RAM and 160 GB SSD. The authenticated Console price
-observed on 2026-09-22 was USD 0.163/hour per VM (USD 101.49/month if retained
-continuously), plus public IPv4. Therefore this profile is allowed only as an
-ephemeral resource. A 90-minute two-leg upper lifetime projects below USD 0.50
-before tax/IPv4; actual shadow duration and accumulated project spend remain a
-required Owner checkpoint against the USD 25 monthly guard.
+The materialized initial profile was Hetzner Cloud `CCX23` in `hel1`: x86 AMD,
+four dedicated vCPU, 16 GB RAM and 160 GB SSD. It produced material
+owner-scoped observations of 142.026 seconds, 228.103 seconds and one hard
+timeout beyond 240 seconds, so it is retained as failed capacity evidence and
+is no longer eligible for cutover.
+
+The current candidate profile is `CCX43` in `hel1`: x86 AMD, 16 dedicated vCPU,
+64 GB RAM and at least 360 GB SSD. The published HEL price observed on
+2026-09-23 is USD 0.5216/hour per VM, excluding IPv4/tax. A 90-minute two-leg
+upper lifetime therefore projects below USD 1.57 before IPv4/tax and remains
+well inside both the monthly guard and the Owner's USD 10 autonomous-session
+cap. It remains ephemeral-only; material provisioning must revalidate the
+exact returned profile before FULL starts.
 
 ## Materialized controller and bootstrap
 
@@ -73,7 +82,7 @@ The protected controller uses
 It validates current live `main`, the trusted event/ref, ancestry and the exact
 authorized subject before contacting Hetzner. It then creates one temporary
 spread placement group, a firewall admitting SSH only from the controller's
-current IPv4 address, one ephemeral SSH key and two labeled CCX23 servers.
+current IPv4 address, one ephemeral SSH key and two labeled CCX43 servers.
 
 [`tier2-bootstrap.sh`](../../scripts/ci/tier2-bootstrap.sh) is the versioned
 `ubuntu-24.04-x86_64-v1` bootstrap. It verifies Ubuntu 24.04/x86_64, installs
@@ -100,7 +109,10 @@ Any deletion failure fails the campaign.
 
 Hetzner deletion is asynchronous. The orchestrator accepts the successful
 delete response variants and then polls the exact resource until the provider
-returns `404`; the initial response alone is never deletion proof. If a failed
+returns `404`; the initial response alone is never deletion proof. After both
+servers have proven `404`, a firewall `422` caused by eventual dependency
+release receives only a bounded retry; no other resource/status is treated as
+retryable. If a failed
 campaign leaves only non-server resources, an explicit protected
 `workflow_dispatch` recovery may target that exact prior run identity.
 Recovery fails closed if any server from that run still exists, so it cannot
@@ -190,6 +202,17 @@ so a dependent firewall could not be deleted in the same pass. Provider
 inventory proved both VMs absent and identified only that non-billable
 firewall as residual. The attempt remains failed evidence and contributes no
 successful campaign or leg toward cutover readiness.
+
+The second material shadow attempt executed FULL on both CCX23 legs after the
+transport fix. One leg passed every stage with owner-scoped 8/8 in 228.103
+seconds; the other exceeded the unchanged 240-second owner-scoped contract and
+failed before complete child diagnostics. Its cleanup also reproduced a
+firewall `422` after both servers were absent; protected exact-run recovery
+removed that sole non-billable residual and provider inventory returned empty.
+The attempt remains failed evidence and contributes no accepted campaign or
+leg. Together, the material timings prove insufficient stable margin on CCX23
+and justify the bounded CCX43 capacity remediation without changing FULL,
+suite inventory, serial execution or the 240-second gate.
 
 The shadow subject and a future subject-SHA closure are different contracts.
 An Infra material observation normally tests the then-current trusted

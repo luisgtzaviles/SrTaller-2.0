@@ -4,13 +4,13 @@ Current PBI: NONE
 
 <!-- WORK_UNIT_METADATA
 work_unit: INFRA — Deterministic Authoritative CI Runner
-iteration: 4 - first material shadow recovery
+iteration: 5 - deterministic capacity and cleanup
 type: INFRASTRUCTURE_QUALITY
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
-branch: fix/tier2-material-shadow-recovery
-base_sha: d181933b31b86de601c5985ac38b2a438cac304f
-status: READY_FOR_PROMOTION
+branch: fix/tier2-capacity-cleanup
+base_sha: 0133d65339f2534d67764c2d770c655a6fb89214
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-23
 dependency_exception: INFRA_CI_BLOCKER
@@ -25,8 +25,9 @@ dependency_return: REQUIRED
 
 Materialize deterministic authoritative FULL execution on two independent,
 ephemeral, dedicated x86_64 CI VMs without weakening the existing verification
-contract. This iteration remediates the two defects demonstrated by the first
-material SHADOW attempt without changing FULL, its gates or SHADOW authority.
+contract. This iteration remediates the capacity and eventual firewall-release
+defects demonstrated by the second material SHADOW attempt without changing
+FULL, its gates or SHADOW authority.
 
 ## Why
 
@@ -34,10 +35,12 @@ Hosted-runner resource variance produced opposing owner-scoped timeouts for the
 same TL-07 merge SHA. The product snapshot is integrated, but TL-07 remains in
 `PROMOTION` because its required exact-main proof is not deterministic enough
 to satisfy the unchanged 240-second contract. The first material campaign
-proved one complete deterministic leg but exposed a pre-FULL SSH transport
-race on the second leg and incorrect handling of an asynchronous Hetzner
-server-delete response. Both VMs were absent afterward; one non-billable
-firewall remained and must be explicitly removed before campaigns continue.
+proved one complete deterministic leg but exposed pre-FULL transport and
+cleanup defects. Their integrated remediation allowed both FULL legs to run in
+the second campaign, which then proved CCX23 lacks stable capacity: one leg
+timed out beyond 240 seconds and the other passed at 228.103 seconds. Both VMs
+were removed; protected recovery removed the sole non-billable firewall
+residual and independent inventory is empty.
 
 ## In Scope
 
@@ -115,33 +118,34 @@ firewall remained and must be explicitly removed before campaigns continue.
 - [x] Integrate shadow-only dispatch through governed PR #76.
 - [x] Run the first material SHADOW attempt and preserve its failed evidence.
 - [x] Remediate the demonstrated pre-FULL transport and cleanup defects.
-- [~] Promote the material recovery through one governed PR.
-- [ ] Remove the exact residual non-server resource with protected recovery.
+- [x] Promote and integrate the material recovery through governed PR #77.
+- [x] Remove both exact residual non-server resources with protected recovery.
+- [x] Preserve the second material attempt as failed capacity evidence.
+- [~] Remediate insufficient CCX23 capacity and eventual firewall release.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
 
 ## Current
 
-The demonstrated defects now have a focused, fully verified recovery
-candidate. It accepts asynchronous delete responses but still requires exact
-`404` proof, provides one bounded pre-FULL SSH transport recovery, and adds a
-protected exact-run cleanup that refuses any run with a remaining server. The
-first campaign remains a FAIL and contributes zero successful legs to cutover
-readiness.
+The second material campaign proved that CCX23 does not provide stable useful
+margin: one owner-scoped leg exceeded 240 seconds and one passed at 228.103
+seconds. A focused Infra candidate selects CCX43 dedicated capacity and adds a
+bounded firewall-delete retry only for the demonstrated eventual dependency
+release. Both failed campaigns remain historical FAIL evidence and contribute
+zero successful campaigns or accepted legs to cutover readiness.
 
 ## Next
 
-Promote and integrate this exact recovery candidate through one governed PR,
-explicitly remove the server-free residual firewall, then resume bounded
-material SHADOW observations.
+Verify and promote the capacity/cleanup candidate through one governed PR,
+then resume bounded material SHADOW observations on the exact integrated
+CCX43 profile.
 
 ## Blockers
 
-The residual firewall must be removed after this recovery path is integrated.
-It is non-billable and provider inventory proves no VM remains. The Infra Work
-Unit still cannot close because no successful material SHADOW campaign exists
-and authoritative closure predicates remain unsatisfied.
+The Infra Work Unit still cannot close because no successful material SHADOW
+campaign exists and authoritative closure predicates remain unsatisfied. There
+are currently no managed Hetzner resources.
 
 ## Important Discoveries
 
@@ -194,6 +198,21 @@ and authoritative closure predicates remain unsatisfied.
 - The cleanup bug is response-contract handling, not evidence of a VM leak:
   Hetzner returned `200` for asynchronous server deletion while the runner
   accepted only `204/404`.
+- PR #77 integrated the transport and explicit-recovery remediation at merge
+  SHA `0133d65339f2534d67764c2d770c655a6fb89214`. Its PR CI passed; exact-main
+  hosted run `35845443267` preserved a run-2 owner-scoped 240-second timeout
+  and was not retried.
+- Protected recoveries `35846441443` and `35847832344` removed the exact
+  firewall residuals from the first and second material attempts. Independent
+  inventory `35846501183` proved zero managed resources between campaigns.
+- Second material SHADOW run `35846558175` tested controller/subject
+  `0133d65339f2534d67764c2d770c655a6fb89214`. One CCX23 leg completed 8/8 in
+  228.103 seconds; the other exceeded 240 seconds. Campaign cost estimate was
+  USD 0.0554 and the failed attempt contributes zero accepted legs.
+- The selected remediation profile is CCX43 in `hel1`: 16 dedicated x86 vCPU,
+  64 GB RAM, at least 360 GB SSD and USD 0.5216/hour per VM before IPv4/tax.
+  This remains within the USD 10 session cap while prioritizing deterministic
+  margin over premature cost optimization.
 
 ## Focused Verification
 
@@ -227,6 +246,12 @@ and authoritative closure predicates remain unsatisfied.
   `ed1ddda83e474dc8e9d8195f480bd5f7770ae5a9`: stages 0–19 PASS,
   owner-scoped 8/8 in 124.602 s, PBI-041 9/9, TL-07 3/3, 89 migrations,
   rerun 0 pending, runtime/backend/UI smokes, fingerprint and cleanup PASS.
+- [x] PR #77 CI on exact HEAD `88646e65f57f120543c3337d1a5cb1298713c5fb`:
+  hosted run-1/run-2, owner-scoped 8/8 both, comparison and promotion gate PASS.
+- [x] Second material attempt evidence preserved as FAIL; run-2 FULL PASS with
+  owner-scoped 8/8 in 228.103 s, run-1 owner-scoped timeout, exact residual
+  recovery PASS and final provider inventory empty.
+- [ ] Capacity/cleanup focused regressions and canonical promotion verification.
 - [x] Promotion lifecycle check on the final implementation SHA: PASS.
 - [x] Shadow-only workflow/Tier-2/Work Unit regressions: 65/65 PASS.
 - [x] Base `verify` on the shadow-only implementation: PASS (1117 tests;
