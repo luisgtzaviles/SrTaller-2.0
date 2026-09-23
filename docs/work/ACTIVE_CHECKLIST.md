@@ -4,13 +4,13 @@ Current PBI: NONE
 
 <!-- WORK_UNIT_METADATA
 work_unit: TL-07 — Station Inventory + Enrollment Authority
-iteration: 3 - Post-Quality reconciliation and final verification
+iteration: 4 - CI variability Quality reconciliation
 type: PRODUCT
 risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: feature/tl-07-station-inventory-enrollment-readiness
 base_sha: 74fe2b5fd5b66ee48428953f3e027f2815c839ca
-status: READY_FOR_PROMOTION
+status: ACTIVE
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
@@ -34,14 +34,15 @@ fail-closed tenancy and trust semantics.
 - Branch-scoped Admin authorization, tenant isolation, audit and concurrency.
 - Admin HTTP/UI `Dispositivos`, QR/manual-code presentation and Level-2 UX.
 - Additive migration/backfill for the exact approved legacy Station mapping.
-- Reconciliation with the integrated bounded child-diagnostics Quality fix.
+- Reconciliation with the integrated child-diagnostics and CI-variability
+  Quality evidence.
 
 ## Out of Scope
 
 - Device redemption, activation or operational handoff owned by TL-08.
 - Station reactivation, physical delete, generic lifecycle patch, MDM,
   fingerprint authority and invented telemetry.
-- Push, PR, TL-07 merge, deploy, infrastructure and unrelated cleanup.
+- PR merge, deploy, infrastructure and unrelated cleanup.
 
 ## Applicable Contracts
 
@@ -49,6 +50,7 @@ fail-closed tenancy and trust semantics.
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
 - [`QUALITY_STRATEGY.md`](../quality/QUALITY_STRATEGY.md)
 - [`DEFINITION_OF_DONE.md`](../delivery/DEFINITION_OF_DONE.md)
+- [Owner-scoped CI runtime variability](../quality/evidence/owner-scoped-ci-runtime-variability/README.md)
 
 ## Risks
 
@@ -60,6 +62,8 @@ fail-closed tenancy and trust semantics.
   redemption endpoint in TL-07.
 - The owner-scoped campaign must stay serial, preserve eight suites and remain
   within its unchanged 240-second outer budget.
+- The historical hosted-runner timeout remains evidence and must not become an
+  implicit retry-to-green policy.
 
 ## Plan
 
@@ -68,51 +72,49 @@ fail-closed tenancy and trust semantics.
 - [x] Complete Admin HTTP/UI, authorization, audit and responsive product proof.
 - [x] Fix the historical Access PIN schema fixture incompatibility.
 - [x] Fix the historical Access Session schema fixture incompatibility.
-- [x] Classify the later contextual-authorization campaign failure as unresolved environmental/Quality evidence.
-- [x] Preserve TL-07 while bounded isolated diagnosis could not reproduce that failure.
-- [x] Integrate and close the Quality dependency for bounded sanitized child diagnostics.
-- [x] Reconcile current `main` into the preserved TL-07 branch by ordinary merge.
-- [x] Run focused continuity verification on the combined state.
-- [x] Run exactly one canonical `verify:full` on the reconciled exact candidate.
-- [x] Reconcile evidence/checklist and freeze a promotion-ready local candidate.
+- [x] Preserve TL-07 while the bounded CI-variability diagnosis was completed.
+- [x] Integrate and close both owner-scoped Quality dependencies.
+- [x] Merge authoritative `main` into the preserved TL-07 branch ordinarily.
+- [~] Execute the exact verification path required by the current Harness.
+- [ ] Push the reconciled branch and complete authoritative PR review.
 
 ## Current
 
-TL-07 is fully implemented and reconciled with authoritative `main` through an
-ordinary merge. Focused continuity checks and the single authorized canonical
-`verify:full` passed on the reconciled product candidate without retry.
+TL-07 product history is preserved and authoritative `main` has been merged
+ordinarily. The only incoming main delta was the closed documentary Quality
+evidence for `CI_HOST_RESOURCE_VARIABILITY`; no product, runtime, PostgreSQL,
+harness, timeout, gate or retry-policy change entered the branch.
 
 ## Next
 
-Await explicit Owner authorization for remote promotion. Push, PR, merge,
-deploy and TL-08 remain separate and unauthorized.
+Run the single canonical full verification required for this architectural
+product PR, reconcile the exact docs-only readiness delta, then update existing
+Draft PR #72 through an ordinary push.
 
 ## Blockers
 
-None for local promotion readiness. Remote promotion and every later gate
-still require their own explicit authorization and material result.
+No semantic product/security conflict exists. Promotion remains contingent on
+the required exact verification and authoritative remote CI results.
 
 ## Important Discoveries
 
 - TL-07 product implementation and product walkthrough were complete before
-  the Quality dependency; TL-08 redemption remains deliberately absent.
-- The historical Access PIN and Access Session fixtures now seed only columns
+  the Quality dependencies; TL-08 redemption remains deliberately absent.
+- The historical Access PIN and Access Session fixtures seed only columns
   available at their intentionally rolled-back schema versions.
-- The Access Session fixture uses the Owner-approved legacy Station mapping,
+- The Access Session fixture uses the approved legacy Station mapping,
   preserves the alternate credential as revoked and creates its second Station
   only after TL-07 is reapplied.
-- The later owner-scoped contextual-authorization failure was not reproduced by
-  bounded isolated diagnosis and therefore did not justify a TL-07 product
-  change.
-- The integrated Quality dependency preserves bounded and redacted child
-  stdout/stderr, assertion summary, exit code, signal and timeout reason.
-- The Quality dependency did not change the eight-suite inventory, serial
-  execution, fresh database per suite, outer 240-second budget or fail-closed
-  result semantics.
-- The reconciled repository defines 89 migrations and the material migration
-  rerun reports `0 pending`.
-- `apps/dev-preview-web/src/.DS_Store` remains an unrelated Owner artifact and
-  must remain untracked.
+- The integrated child-diagnostics dependency preserves bounded, redacted
+  failure context without changing the eight-suite serial campaign.
+- The Owner accepts `CI_HOST_RESOURCE_VARIABILITY` for the specific historical
+  PR #72 evidence. Available telemetry cannot distinguish VM performance tier,
+  host contention or another hosted-runner resource cause.
+- PR #72 attempt 1 remains a failed outer-wrapper timeout. Attempt 2 success
+  does not erase that evidence or establish a general retry policy.
+- The repository defines 89 migrations and the prior material migration rerun
+  reported `0 pending`.
+- `apps/dev-preview-web/src/.DS_Store` remains unrelated and untracked.
 
 ## Focused Verification
 
@@ -120,42 +122,43 @@ still require their own explicit authorization and material result.
 - [x] Prior TL-07 PostgreSQL material proof: `3/3` PASS.
 - [x] Prior Access PIN PostgreSQL historical fixture: `1/1` PASS.
 - [x] Prior Access Session PostgreSQL historical fixture: `1/1` PASS.
-- [x] Reconciled Station/domain/Admin HTTP/UI and trusted-context regressions.
-- [x] Reconciled Access PIN and Access Session PostgreSQL proof.
-- [x] Reconciled TL-07 PostgreSQL `3/3`, migrations current and rerun `0 pending`.
-- [x] Child-diagnostics regressions, eight-suite inventory and unchanged budget.
-- [x] Typecheck, build, architecture, Work Unit checker and `git diff --check`.
-- [x] Exactly one canonical `verify:full` on the reconciled product candidate.
+- [x] Local product/full candidate `8b877a8c6999b9954d376c46bf64930ce67fa108`: stages 0–19 PASS.
+- [x] Historical PR #72 attempt 2: owner-scoped `8/8`, TL-07 PostgreSQL `3/3`, comparison and promotion gate PASS.
+- [ ] One canonical `verify:full` on the newly reconciled product candidate.
+- [ ] Final docs-only readiness delta, Work Unit checker and `git diff --check`.
 
 ## Promotion Gates
 
 - [x] Approved TL-07 product scope implemented without TL-08 redemption.
 - [x] Historical-schema fixture remediations preserved.
-- [x] Owner-scoped child diagnostics integrated through closed Quality Work Unit.
-- [x] Focused continuity verification PASS on the combined state.
-- [x] Canonical `verify:full` PASS on one exact candidate.
-- [x] `READY_FOR_PROMOTION` snapshot and clean tracked tree.
-- [ ] Push, PR, CI and review remain separately unauthorized.
+- [x] Owner-scoped Quality dependencies integrated and closed.
+- [x] Timeout, suite inventory, serial isolation and fail-closed semantics unchanged.
+- [ ] Required local verification PASS on the reconciled candidate.
+- [ ] Existing PR #72 updated and authoritative CI/review PASS.
+- [ ] Owner merge authorization remains separate.
 
 ## Remote Actions / Authorization
 
-- Owner authorized local reconciliation, focused checks, one canonical full
-  verification and logical local commits.
-- Push, PR, TL-07 merge, deploy and TL-08 remain unauthorized.
-- No force push, rebase, squash, timeout change or retries-to-green are allowed.
+- Owner authorized ordinary main reconciliation, required local checks,
+  ordinary push to existing PR #72 and authoritative CI/review.
+- PR #72 merge, deploy, TL-08 and unrelated cleanup remain unauthorized.
+- No force push, rebase, squash, timeout change, retry policy or suite reduction
+  is allowed.
 
 ## Handoff Notes
 
-- The preserved TL-07 checkpoint is `8b75ba6724257044896b4c4ae26c09ef616c4d42`.
-- The integrated Quality merge on `main` is `9bd8bfcf106ba69be66202eedee115a2eea19739`.
+- Preserved TL-07 PR checkpoint before this reconciliation:
+  `1e5335734920de8a0f47a929120dcdce0c4ea3c9`.
+- Integrated Quality merge on `main`:
+  `82c59813639f75f6123072c7d3c866077cdd22a7`.
 - Preserve `apps/dev-preview-web/src/.DS_Store`; it is unrelated and untracked.
+- Future bounded parent-level progress markers remain outside TL-07.
 - TL-08 is explicitly not started and production redemption is forbidden.
 
 ## Closure Predicate
 
-TL-07 becomes `READY_FOR_PROMOTION` only when all approved inventory,
-enrollment-authority, lifecycle, authorization, audit, HTTP and Admin UI blocks
-remain material; the two historical fixtures and material TL-07 PostgreSQL
-proof pass; the owner-scoped campaign preserves eight serial fresh-database
-suites within the unchanged budget; canonical `verify:full` passes once on the
-exact reconciled HEAD; the tracked tree is clean; and TL-08 remains unstarted.
+TL-07 closes only after this exact product snapshot is merged through an
+authorized ordinary PR; authoritative exact-main CI, required PostgreSQL
+material and promotion gate are GREEN; any required environment validation is
+satisfied; and the governed closure ref targets the exact merge. TL-08 and
+deploy retain separate authority.
