@@ -74,22 +74,25 @@ Materialize the approved TL-07 authority, lifecycle and administrative UX with f
 
 ## Current
 
-TL-07 implementation and local product proof are complete. The one authorized
-canonical `verify:full` failed in the owner-scoped PostgreSQL campaign because
-the historical Operational Session fixture still crossed the TL-07 Station
-schema boundary incorrectly. That fixture is remediated and its focused
-PostgreSQL test passes; a fresh canonical full gate has not been authorized or
-executed on the remediated HEAD.
+TL-07 implementation and local product proof are complete. The authorized
+canonical `verify:full` on the remediated candidate passed the historical PIN
+and Operational Session fixtures, then failed in the final owner-scoped
+Contextual Authorization PostgreSQL suite. The same suite passes in a governed
+isolated PostgreSQL run, so the full failure is not currently attributable to
+TL-07 product behavior.
 
 ## Next
 
-Await explicit Owner authorization for one fresh canonical `verify:full` on
-the remediated exact HEAD. Do not promote and do not start TL-08.
+Await an explicitly authorized bounded diagnosis of the owner-scoped campaign
+failure before any further full verification. Do not promote and do not start
+TL-08.
 
 ## Blockers
 
-Canonical `verify:full` has not passed on the remediated exact HEAD. The prior
-run is a real failed gate and cannot be reused or retried automatically.
+Canonical `verify:full` has not passed on the remediated exact HEAD. Its only
+reported child failure was Contextual Authorization after the historical PIN
+and Operational Session fixtures completed; the focused isolated suite passes.
+The full result remains failed and cannot be retried automatically.
 
 ## Important Discoveries
 
@@ -122,6 +125,11 @@ run is a real failed gate and cannot be reused or retried automatically.
   fixture now uses the single Owner-approved legacy Station mapping, preserves
   the alternate credential as revoked, and creates its second Station only
   after TL-07 is reapplied.
+- The second canonical full run reached and passed both historical fixtures,
+  then reported only `contextual-authorization-postgresql.test.mjs` as failed.
+  Its isolated governed PostgreSQL execution passes, while the full child
+  failure marker omits the inner assertion; this is an unresolved campaign or
+  environment diagnostic, not evidence to change TL-07 behavior.
 
 ## Focused Verification
 
@@ -132,15 +140,15 @@ run is a real failed gate and cannot be reused or retried automatically.
 - [x] PostgreSQL concurrency and Alpha/Beta proof: TL-07 `3/3` PASS.
 - [x] UI desktop/768/640, keyboard/a11y and light/dark proof.
 - [x] Station/PIN/Operational Session regression suites.
-- [!] Canonical `verify:full`: the authorized run failed in Stage 4 at the
-  historical Operational Session fixture; its focused remediation now passes,
-  but no fresh full run has been authorized.
+- [!] Canonical `verify:full`: the authorized remediated run failed in Stage 4
+  only at Contextual Authorization after PIN and Operational Session passed.
+  The isolated governed suite passes; no additional full run is authorized.
 
 ## Promotion Gates
 
 - Implementation, focused verification, material TL-07 PostgreSQL and UI proof
-  pass. Promotion remains blocked until canonical `verify:full` passes on the
-  remediated exact HEAD.
+  pass. Promotion remains blocked until the owner-scoped campaign failure is
+  diagnosed and canonical `verify:full` passes on an authorized exact HEAD.
 
 ## Remote Actions / Authorization
 
