@@ -97,7 +97,12 @@ test('authoritative workflow runs PostgreSQL in both independent VC-024 jobs', (
     /cp[\s\S]*PBI039_POSTGRESQL_MANIFEST\.json[\s\S]*evidence_dir/u,
   );
   assert.match(workflow, /- r0\/\*\*/u);
-  assert.doesNotMatch(workflow, /secrets\./u);
+  const publicFullJob = workflow.slice(
+    workflow.indexOf('  authoritative-gate:'),
+    workflow.indexOf('  compare-authoritative-gates:'),
+  );
+  assert.doesNotMatch(publicFullJob, /secrets\./u);
+  assert.match(workflow, /environment: authoritative-ci[\s\S]*HCLOUD_TOKEN: \$\{\{ secrets\.HCLOUD_TOKEN \}\}/u);
 });
 
 test('compiled smoke uses an isolated migrated PostgreSQL service without relaxing startup', () => {

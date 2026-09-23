@@ -58,6 +58,51 @@ Docker Engine and only required system tooling. PostgreSQL remains the governed
 18.4 image/digest used by repository tests. Mutable shared filesystem caches
 are forbidden.
 
+The materialized initial profile is Hetzner Cloud `CCX23` in `hel1`: x86 AMD,
+four dedicated vCPU, 16 GB RAM and 160 GB SSD. The authenticated Console price
+observed on 2026-09-22 was USD 0.163/hour per VM (USD 101.49/month if retained
+continuously), plus public IPv4. Therefore this profile is allowed only as an
+ephemeral resource. A 90-minute two-leg upper lifetime projects below USD 0.50
+before tax/IPv4; actual shadow duration and accumulated project spend remain a
+required Owner checkpoint against the USD 25 monthly guard.
+
+## Materialized controller and bootstrap
+
+The protected controller uses
+[`run-tier2-authoritative-ci.mjs`](../../scripts/run-tier2-authoritative-ci.mjs).
+It validates current live `main`, the trusted event/ref, ancestry and the exact
+authorized subject before contacting Hetzner. It then creates one temporary
+spread placement group, a firewall admitting SSH only from the controller's
+current IPv4 address, one ephemeral SSH key and two labeled CCX23 servers.
+
+[`tier2-bootstrap.sh`](../../scripts/ci/tier2-bootstrap.sh) is the versioned
+`ubuntu-24.04-x86_64-v1` bootstrap. It verifies Ubuntu 24.04/x86_64, installs
+only the required system tools and Docker, verifies the official Node.js
+24.18.0 archive against its pinned SHA-256, activates pnpm 11.15.1, clones the
+public repository without credentials and checks out the exact tested SHA.
+Every VM starts with fresh package/cache paths; no mutable shared cache or
+persistent runner registration exists.
+
+The controller credential is read only by the GitHub-hosted controller through
+the `authoritative-ci` Environment. SSH child processes receive a scrubbed
+environment. The VM receives only the public repository URL, tested SHA,
+ephemeral SSH trust and the bootstrap/collector sources. The cloud token is
+never an SSH argument, file, VM environment variable or evidence field.
+
+## Provisioning and deletion contract
+
+Every resource carries `managed-by`, `run-id`, `controller-sha` and
+`expires-at` labels. A campaign fails before provisioning if any governed
+resource already exists, making a prior orphan visible instead of silently
+stacking cost. Normal execution deletes servers first, then firewall, spread
+placement group and SSH key, and proves every provider object returns `404`.
+Any deletion failure fails the campaign.
+
+The separate `Authoritative CI Orphan Sweep` workflow runs from protected
+`main` every six hours and may delete only expired resources with the exact
+governed label. It publishes a sanitized inventory/deletion artifact. It does
+not provision servers or execute repository code on them.
+
 ## FULL and evidence
 
 Each independent VM preserves the existing FULL contract: owner-scoped eight
@@ -78,6 +123,20 @@ Sanitized evidence stored outside the VM binds:
 Raw secrets, tokens, customer data and persistent machine identity are excluded.
 Resources require TTL/orphan markers; orphan detection or failed deletion fails
 the infrastructure result.
+
+The first integrated form is deliberately `SHADOW`: it runs only for `push` or
+`workflow_dispatch` on protected `refs/heads/main`, after the existing hosted
+FULL comparison succeeds. Pull requests and forks cannot select the protected
+Environment, and the job condition independently excludes those events. The
+current promotion aggregate does not depend on the shadow job; no cutover is
+claimed before bounded observations exist.
+
+The shadow artifact contains each leg's Full Verification summary, material
+PostgreSQL manifest, eight sanitized owner-scoped child timings, machine and
+toolchain facts, semantic comparison, subject/controller/run binding, cost
+projection and deletion proof. Volatile smoke database/container/port names
+are excluded from semantic comparison. The raw bounded verification log is
+used only to extract timings and is deleted before artifact upload.
 
 ## Governed dependency exception
 
@@ -135,3 +194,9 @@ exact-subject equivalence, full material coverage, useful stable margin below
 candidate route authoritative FULL to Tier 2. Reconsider the design if current
 account capabilities cannot enforce the trust boundary, pricing exceeds the
 guard, or shadow runs do not provide stable useful margin.
+
+The separate Hetzner project is `SR-Taller-Authoritative-CI` (project id
+`16132171`). GitHub Environment `authoritative-ci` contains only the encrypted
+secret named `HCLOUD_TOKEN`; the value is not repository data and must never be
+documented. The project token is scoped by Hetzner to this isolated project and
+has no Preview, Production, Dokploy or Cloudflare authority.

@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: chore/deterministic-authoritative-ci-runner
 base_sha: 0e6193e4afa6ebe35accdac7b58e69fa992d9c43
-status: BLOCKED
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-22
 dependency_exception: INFRA_CI_BLOCKER
@@ -83,36 +83,37 @@ to satisfy the unchanged 240-second contract.
 - [x] Implement the subject-SHA closure contract with fail-closed regressions.
 - [x] Apply and verify the minimum mechanical `main` protection.
 - [x] Create and protect the `authoritative-ci` Environment.
-- [!] Establish the isolated Hetzner CI project and minimum-scope token.
-- [ ] Implement the versioned runner bootstrap/image contract.
-- [ ] Implement trusted ephemeral provisioning and deletion proof.
-- [ ] Integrate unchanged FULL execution and sanitized evidence.
-- [ ] Implement orphan/TTL safety.
+- [x] Establish the isolated Hetzner CI project and project-scoped token.
+- [x] Implement the versioned runner bootstrap/image contract.
+- [x] Implement trusted ephemeral provisioning and deletion proof.
+- [x] Integrate unchanged FULL execution and sanitized evidence.
+- [x] Implement orphan/TTL safety.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
 - [ ] Integrate Infra, run controlled TL-07 subject verification and close TL-07.
 
 ## Current
 
-GitHub now has an active no-bypass `main-governed-promotion` ruleset requiring
-ordinary PR integration, conversation resolution, strict
-`Authoritative promotion gate` from GitHub Actions and no force push/deletion.
-Only merge commits remain enabled. The `authoritative-ci` Environment accepts
-only `main`, contains no secrets and disables administrator bypass.
+The isolated Hetzner project `SR-Taller-Authoritative-CI` exists with no
+persistent compute. Its project-scoped token is stored only as the encrypted
+`HCLOUD_TOKEN` secret in the protected `authoritative-ci` Environment. The
+versioned bootstrap, two-leg controller, exact-subject validation, spread-host
+placement, controller-IP firewall, ephemeral SSH identity, sanitized evidence,
+verified deletion and scheduled expired-resource sweep are implemented locally.
 
 ## Next
 
-Owner authenticates the existing Hetzner account in the prepared browser tab
-or supplies a secure equivalent administrative path. Then create a separate CI
-project, issue a minimum-scope project token and store it only in the protected
-`authoritative-ci` Environment.
+Request separate authority to push/open the shadow-only Infra candidate. Only
+ordinary integration into protected `main` can safely execute the first Tier-2
+shadow observation; shadow results then determine whether a separate cutover
+candidate may proceed.
 
 ## Blockers
 
-BLOCKED at Block 5. The Hetzner browser is at the login screen; no `hcloud`
-binary/context, environment token or matching Keychain item exists. No project,
-token, server or billable resource was created. Current official pricing also
-must be confirmed in the authenticated Console before selecting the profile.
+NONE for the local implementation candidate. Shadow validation and cutover are
+intentionally unavailable before ordinary protected-main integration; that is
+a trust-boundary requirement, not permission to run feature-branch code with
+the cloud credential.
 
 ## Important Discoveries
 
@@ -127,21 +128,31 @@ must be confirmed in the authenticated Console before selecting the profile.
 - GitHub ruleset `main-governed-promotion` is active with zero bypass actors;
   its required check is pinned to GitHub Actions app id `15368`.
 - Environment `authoritative-ci` uses a custom `main` branch policy,
-  `can_admins_bypass: false` and currently has no secrets.
-- Official 2026 Hetzner pricing lists CCX23 at USD 0.1626/hour or USD
-  101.49/month in European regions, excluding VAT/IPv4. Ephemeral hourly use
-  may fit the USD 25 guard, but shadow measurements and authenticated current
-  availability are still required.
+  `can_admins_bypass: false` and contains only the encrypted secret named
+  `HCLOUD_TOKEN`.
+- Separate Hetzner project id `16132171` currently has no persistent resource.
+  Its API token is project-scoped and has no Preview/Production authority.
+- Authenticated Console selection confirmed CCX23 in `hel1`: x86 AMD, four
+  dedicated vCPU, 16 GB RAM, 160 GB SSD, USD 0.163/hour per VM plus IPv4. The
+  USD 101.49/month continuous price forbids persistent use under the guard.
+- A 90-minute two-leg maximum projects below USD 0.50 before tax/IPv4; actual
+  shadow observations and accumulated monthly spend still require review.
+- The first code path is shadow-only. PR/fork events cannot enter it, the
+  Environment independently admits only `main`, and the promotion aggregate
+  remains on the current hosted FULL until bounded shadow evidence supports a
+  reviewed cutover.
 
 ## Focused Verification
 
 - [x] Work Unit lifecycle unit tests: 17/17 PASS after Blocks 1–2, including
   explicit non-ancestor subject and wrong closure-tag target rejection.
 - [x] GitHub ruleset/merge-settings/Environment API readback matches Blocks 3–4.
-- [ ] Architecture/checker regression.
-- [ ] Workflow/security regressions for trusted trigger and attestation.
+- [x] Tier-2 focused unit/security regressions: 8/8 PASS.
+- [x] Architecture/checker regression on final candidate: PASS.
+- [x] Workflow/security regressions on final candidate: 63/63 PASS.
+- [x] Base `verify`: PASS (1111 tests; 1064 pass; 47 governed PostgreSQL skips).
 - [ ] Shadow FULL evidence on two independent dedicated VMs.
-- [ ] Promotion verification on the final Infra candidate.
+- [~] Promotion verification on the exact local Infra candidate.
 
 ## Promotion Gates
 
@@ -157,11 +168,14 @@ must be confirmed in the authenticated Console before selecting the profile.
 
 - Owner authorized the minimum GitHub protection/Environment configuration and
   isolated Hetzner CI provisioning in the stated order.
+- Owner explicitly authorized creation of the project-scoped Hetzner token and
+  encrypted storage as `HCLOUD_TOKEN`; the secret value was not documented or
+  placed on disk/VMs.
 - No product deploy, Preview/Production mutation, TL-08 start, force push,
   merge or timeout/gate weakening is authorized.
 - Stop for Owner decision at any explicit capability, security, budget or
   stability condition in the authorization.
-- No Hetzner credential was read, created, stored or activated.
+- No persistent/billable VM, volume, load balancer or network was created.
 
 ## Handoff Notes
 

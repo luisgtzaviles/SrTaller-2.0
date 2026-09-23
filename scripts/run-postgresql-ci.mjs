@@ -35,6 +35,7 @@ function required(value, label) {
 }
 
 const outputPath = resolve(required(argument('--output'), '--output'));
+const runtimeDiagnosticsOutput = argument('--runtime-diagnostics-output');
 const executionLabel = required(
   process.env.VC024_EXECUTION_LABEL ?? argument('--execution-label'),
   'execution label',
@@ -233,6 +234,21 @@ const schemaResult = suiteResults.get('schema');
 const schemaEvidence = schemaResult.suite.schemaEvidence;
 const adapterResult = suiteResults.get('owner-scoped-adapters');
 const postgresEnvironment = adapterResult.suite.environment;
+
+if (runtimeDiagnosticsOutput) {
+  const runtimeDiagnostics = Object.freeze({
+    contract: 'SR_TALLER_POSTGRESQL_RUNTIME_DIAGNOSTICS_V1',
+    executionLabel,
+    headSha,
+    ownerScoped: adapterResult.diagnostics,
+    schemaVersion: 1,
+  });
+  await writeFile(
+    resolve(runtimeDiagnosticsOutput),
+    `${JSON.stringify(runtimeDiagnostics, null, 2)}\n`,
+    { mode: 0o600 },
+  );
+}
 
 const totals = Object.freeze({
   suites: suites.length,

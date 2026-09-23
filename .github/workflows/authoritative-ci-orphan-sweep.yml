@@ -1,0 +1,51 @@
+name: Authoritative CI Orphan Sweep
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: authoritative-ci-orphan-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep-expired:
+    name: Delete expired governed Tier-2 resources
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: authoritative-ci
+
+    steps:
+      - name: Checkout trusted current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Set up Node.js 24.18.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.18.0
+
+      - name: Sweep only expired governed resources
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+        run: >-
+          node scripts/run-tier2-authoritative-ci.mjs
+          --sweep-expired
+          --output "${RUNNER_TEMP}/tier2-orphan-sweep"
+
+      - name: Upload sanitized orphan evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tier2-orphan-sweep-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/tier2-orphan-sweep/
+          if-no-files-found: error
+          retention-days: 30

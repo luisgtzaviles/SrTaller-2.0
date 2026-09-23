@@ -68,6 +68,12 @@ classification plus both conditional verification paths.
 The aggregate adds no reduced path and does not replace the underlying jobs or
 artifacts. Its stable name is the future branch-protection interface.
 
+The protected `authoritative-ci` Environment admits only `main`, disables
+administrator bypass and contains only the isolated CI-project credential named
+`HCLOUD_TOKEN`. The credential value is never repository evidence. The initial
+Tier-2 integration is shadow-only and does not alter this required-check
+semantics until bounded observations support a separately reviewed cutover.
+
 ## Review policy
 
 | Shadow risk | Review expectation |
