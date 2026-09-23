@@ -1,7 +1,14 @@
 import { execFile } from 'node:child_process';
+import { lstat, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { promisify } from 'node:util';
 
-import { closeWorkUnit } from './lib/work-unit.mjs';
+import {
+  closeIntegratedSubjectWorkUnit,
+  closeWorkUnit,
+  selectSubjectAttestationArtifact,
+} from './lib/work-unit.mjs';
 
 const execute = promisify(execFile);
 
@@ -37,11 +44,76 @@ if (authoritativeRun.workflowName !== 'Authoritative Linux CI') {
   throw new Error(`run ${runId} is not Authoritative Linux CI`);
 }
 
-const result = await closeWorkUnit({
-  projectRoot: process.cwd(),
-  authoritativeRun,
-  confirmPredicate: true,
-  push: true,
-});
+const subjectSha = argument('--subject-sha');
+if (argument('--attestation')) {
+  throw new Error('local --attestation files are forbidden; subject evidence must come from the exact GitHub Actions run artifact');
+}
+
+let result;
+if (subjectSha) {
+  const { stdout: repositoryOutput } = await execute(
+    'gh',
+    ['repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner'],
+    { cwd: process.cwd(), encoding: 'utf8' },
+  );
+  const repository = repositoryOutput.trim();
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(repository)) {
+    throw new Error('GitHub repository identity is invalid');
+  }
+  const { stdout: artifactOutput } = await execute(
+    'gh',
+    ['api', `repos/${repository}/actions/runs/${runId}/artifacts?per_page=100`],
+    { cwd: process.cwd(), encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
+  );
+  const artifactInventory = JSON.parse(artifactOutput);
+  if (artifactInventory.total_count !== artifactInventory.artifacts?.length) {
+    throw new Error('subject attestation artifact inventory is incomplete');
+  }
+  const attestationProvenance = selectSubjectAttestationArtifact(
+    artifactInventory.artifacts,
+    runId,
+  );
+  const temporary = await mkdtemp(join(tmpdir(), 'srtaller-subject-attestation-'));
+  try {
+    await execute(
+      'gh',
+      [
+        'run', 'download', runId,
+        '--name', attestationProvenance.artifactName,
+        '--dir', temporary,
+      ],
+      { cwd: process.cwd(), encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
+    );
+    const entries = await readdir(temporary, { withFileTypes: true });
+    if (entries.length !== 1 ||
+        entries[0].name !== 'AUTHORITATIVE_SUBJECT_ATTESTATION.json' ||
+        !entries[0].isFile()) {
+      throw new Error('subject attestation artifact must contain exactly the canonical evidence file');
+    }
+    const attestationPath = join(temporary, entries[0].name);
+    const fileState = await lstat(attestationPath);
+    if (!fileState.isFile() || fileState.isSymbolicLink()) {
+      throw new Error('subject attestation evidence must be a regular file');
+    }
+    result = await closeIntegratedSubjectWorkUnit({
+    projectRoot: process.cwd(),
+    authoritativeRun,
+    attestation: JSON.parse(await readFile(attestationPath, 'utf8')),
+    attestationProvenance,
+    subjectSha,
+    confirmPredicate: true,
+    push: true,
+    });
+  } finally {
+    await rm(temporary, { force: true, recursive: true });
+  }
+} else {
+  result = await closeWorkUnit({
+    projectRoot: process.cwd(),
+    authoritativeRun,
+    confirmPredicate: true,
+    push: true,
+  });
+}
 
 process.stdout.write(`${JSON.stringify({ ...result, runUrl: authoritativeRun.url }, null, 2)}\n`);

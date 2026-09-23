@@ -7,6 +7,14 @@ import { promisify } from 'node:util';
 const execute = promisify(execFile);
 
 const CLOSURE_TAG_PREFIX = 'srtaller-work-unit-closed';
+const INFRA_DEPENDENCY_EXCEPTION = 'INFRA_CI_BLOCKER';
+const INFRA_DEPENDENCY_WORK_UNIT = 'INFRA — Deterministic Authoritative CI Runner';
+const INFRA_DEPENDENCY_TYPE = 'INFRASTRUCTURE_QUALITY';
+const SUBJECT_ATTESTATION_CONTRACT = 'SR_TALLER_AUTHORITATIVE_SUBJECT_V1';
+const SUBJECT_ATTESTATION_ARTIFACT = 'authoritative-subject-attestation';
+const SUBJECT_ATTESTATION_PROVENANCE = 'GITHUB_ACTIONS_RUN_ARTIFACT_V1';
+const AUTHORITATIVE_WORKFLOW = 'Authoritative Linux CI';
+const AUTHORITATIVE_WORKFLOW_PATH = '.github/workflows/authoritative-linux-ci.yml';
 
 export const WORK_UNIT_CHECKLIST = 'docs/work/ACTIVE_CHECKLIST.md';
 export const WORK_UNIT_STATUSES = Object.freeze([
@@ -52,6 +60,14 @@ const requiredMetadata = Object.freeze([
   'status',
   'risk',
   'last_updated',
+]);
+
+const dependencyMetadata = Object.freeze([
+  'dependency_work_unit',
+  'dependency_branch',
+  'dependency_subject_sha',
+  'dependency_status',
+  'dependency_return',
 ]);
 
 async function git(projectRoot, argumentsList) {
@@ -150,6 +166,55 @@ export function parseWorkUnitDocument(source) {
   }
   if (metadata.last_updated && !/^\d{4}-\d{2}-\d{2}$/u.test(metadata.last_updated)) {
     findings.push(finding('INVALID_LAST_UPDATED', 'last_updated must use YYYY-MM-DD.'));
+  }
+  if (metadata.dependency_exception) {
+    if (metadata.dependency_exception !== INFRA_DEPENDENCY_EXCEPTION) {
+      findings.push(finding(
+        'INVALID_DEPENDENCY_EXCEPTION',
+        `Unsupported dependency exception: ${metadata.dependency_exception}.`,
+      ));
+    }
+    for (const key of dependencyMetadata) {
+      if (!metadata[key]) {
+        findings.push(finding(
+          'MISSING_DEPENDENCY_METADATA',
+          `Dependency exception metadata is missing: ${key}.`,
+        ));
+      }
+    }
+    if (metadata.work_unit !== INFRA_DEPENDENCY_WORK_UNIT || metadata.type !== INFRA_DEPENDENCY_TYPE) {
+      findings.push(finding(
+        'DEPENDENCY_EXCEPTION_SCOPE_VIOLATION',
+        'INFRA_CI_BLOCKER is limited to the named deterministic CI Infrastructure/Quality Work Unit.',
+      ));
+    }
+    if (!['BLOCKED', 'PROMOTION'].includes(metadata.dependency_status)) {
+      findings.push(finding(
+        'INVALID_DEPENDENCY_STATUS',
+        'The dependent Work Unit must be explicitly BLOCKED or PROMOTION.',
+      ));
+    }
+    if (metadata.dependency_return !== 'REQUIRED') {
+      findings.push(finding(
+        'INVALID_DEPENDENCY_RETURN',
+        'The dependency exception must return control to the preserved Work Unit.',
+      ));
+    }
+    if (metadata.dependency_subject_sha && !/^[0-9a-f]{40}$/u.test(metadata.dependency_subject_sha)) {
+      findings.push(finding(
+        'INVALID_DEPENDENCY_SUBJECT_SHA',
+        'dependency_subject_sha must be a full lowercase Git SHA.',
+      ));
+    }
+  } else {
+    for (const key of dependencyMetadata) {
+      if (metadata[key]) {
+        findings.push(finding(
+          'ORPHAN_DEPENDENCY_METADATA',
+          `${key} requires dependency_exception: ${INFRA_DEPENDENCY_EXCEPTION}.`,
+        ));
+      }
+    }
   }
 
   const sectionMatches = [...source.matchAll(/^## ([^\r\n]+)\r?$/gmu)];
@@ -461,13 +526,26 @@ function normalizedConclusion(value) {
   return typeof value === 'string' ? value.toLowerCase() : '';
 }
 
-function assertAuthoritativeRun(authoritativeRun, head) {
+function assertSuccessfulPromotionRun(authoritativeRun) {
   if (!authoritativeRun || typeof authoritativeRun !== 'object') {
-    throw new Error('authoritative exact-main run evidence is required');
+    throw new Error('authoritative run evidence is required');
   }
-  if (authoritativeRun.workflowName !== 'Authoritative Linux CI') {
+  if (authoritativeRun.workflowName !== AUTHORITATIVE_WORKFLOW) {
     throw new Error('closure evidence must come from Authoritative Linux CI');
   }
+  if (authoritativeRun.status !== 'completed' || normalizedConclusion(authoritativeRun.conclusion) !== 'success') {
+    throw new Error('authoritative run is not successfully completed');
+  }
+  const promotionGate = authoritativeRun.jobs?.find(
+    ({ name }) => name === 'Authoritative promotion gate',
+  );
+  if (!promotionGate || normalizedConclusion(promotionGate.conclusion) !== 'success') {
+    throw new Error('Authoritative promotion gate is not successful');
+  }
+}
+
+function assertAuthoritativeRun(authoritativeRun, head) {
+  assertSuccessfulPromotionRun(authoritativeRun);
   if (authoritativeRun.headSha !== head) {
     throw new Error(`authoritative run HEAD ${authoritativeRun.headSha ?? 'unknown'} does not match main ${head}`);
   }
@@ -477,15 +555,134 @@ function assertAuthoritativeRun(authoritativeRun, head) {
   if (authoritativeRun.headBranch !== 'main') {
     throw new Error('authoritative run must be bound to the main branch');
   }
-  if (authoritativeRun.status !== 'completed' || normalizedConclusion(authoritativeRun.conclusion) !== 'success') {
-    throw new Error('authoritative exact-main run is not successfully completed');
+}
+
+export function selectSubjectAttestationArtifact(artifacts, runId) {
+  if (!Array.isArray(artifacts)) {
+    throw new Error('GitHub Actions artifact inventory is required');
   }
-  const promotionGate = authoritativeRun.jobs?.find(
-    ({ name }) => name === 'Authoritative promotion gate',
-  );
-  if (!promotionGate || normalizedConclusion(promotionGate.conclusion) !== 'success') {
-    throw new Error('Authoritative promotion gate is not successful');
+  const matches = artifacts.filter(({ name }) => name === SUBJECT_ATTESTATION_ARTIFACT);
+  if (matches.length !== 1) {
+    throw new Error('exactly one authoritative subject attestation artifact is required');
   }
+  const artifact = matches[0];
+  if (!Number.isSafeInteger(artifact.id) || artifact.id <= 0 || artifact.expired === true) {
+    throw new Error('authoritative subject attestation artifact is invalid or expired');
+  }
+  if (String(artifact.workflow_run?.id) !== String(runId)) {
+    throw new Error('authoritative subject attestation artifact belongs to another run');
+  }
+  return Object.freeze({
+    artifactId: artifact.id,
+    artifactName: SUBJECT_ATTESTATION_ARTIFACT,
+    contract: SUBJECT_ATTESTATION_PROVENANCE,
+    expired: false,
+    runId: String(runId),
+  });
+}
+
+function assertSubjectAuthoritativeRun(
+  authoritativeRun,
+  attestation,
+  attestationProvenance,
+  controllerSha,
+  testedSha,
+) {
+  assertSuccessfulPromotionRun(authoritativeRun);
+  if (authoritativeRun.headSha !== controllerSha || authoritativeRun.headBranch !== 'main') {
+    throw new Error('subject verification must be controlled by the current trusted main SHA');
+  }
+  if (authoritativeRun.event !== 'workflow_dispatch') {
+    throw new Error('subject verification must use the governed workflow_dispatch path');
+  }
+  if (!attestation || typeof attestation !== 'object') {
+    throw new Error('subject verification attestation is required');
+  }
+  if (attestationProvenance?.contract !== SUBJECT_ATTESTATION_PROVENANCE ||
+      attestationProvenance.artifactName !== SUBJECT_ATTESTATION_ARTIFACT ||
+      !Number.isSafeInteger(attestationProvenance.artifactId) ||
+      attestationProvenance.artifactId <= 0 ||
+      attestationProvenance.expired !== false ||
+      String(attestationProvenance.runId) !== String(authoritativeRun.databaseId)) {
+    throw new Error('subject verification attestation lacks exact GitHub Actions artifact provenance');
+  }
+  if (attestation.schemaVersion !== 1 || attestation.contract !== SUBJECT_ATTESTATION_CONTRACT) {
+    throw new Error('subject verification attestation contract is invalid');
+  }
+  if (attestation.workflow !== AUTHORITATIVE_WORKFLOW ||
+      attestation.workflowPath !== AUTHORITATIVE_WORKFLOW_PATH) {
+    throw new Error('subject verification attestation names the wrong workflow');
+  }
+  if (attestation.controllerSha !== controllerSha) {
+    throw new Error('subject verification controller SHA mismatch');
+  }
+  if (attestation.testedSha !== testedSha) {
+    throw new Error('subject verification testedSha mismatch');
+  }
+  if (String(attestation.runId) !== String(authoritativeRun.databaseId)) {
+    throw new Error('subject verification run identity mismatch');
+  }
+  if (attestation.conclusion !== 'success' || attestation.promotionGate !== 'success') {
+    throw new Error('subject verification attestation is failed or incomplete');
+  }
+}
+
+async function publishClosureTag({
+  projectRoot,
+  remote,
+  metadata,
+  target,
+  candidateParent,
+  messageVersion = 'v1',
+  extraMessage = [],
+}) {
+  const tag = workUnitClosureTag(metadata);
+  const ref = `refs/tags/${tag}`;
+  try {
+    const existing = await git(projectRoot, ['rev-parse', '--verify', `${ref}^{commit}`]);
+    if (existing !== target) {
+      throw new Error(`closure ref ${ref} already targets ${existing}, not ${target}`);
+    }
+    await execute('git', ['push', remote, ref], { cwd: projectRoot });
+    return Object.freeze({
+      status: 'ALREADY_CLOSED',
+      effectiveStatus: 'IDLE',
+      tag,
+      ref,
+      mergeCommit: target,
+      candidateParent,
+      pushed: true,
+    });
+  } catch (error) {
+    if (!/Needed a single revision|unknown revision|ambiguous argument|not a valid object name/iu.test(error.message)) {
+      throw error;
+    }
+  }
+
+  const message = [
+    `SR Taller Work Unit closure ${messageVersion}`,
+    '',
+    `Work Unit: ${metadata.work_unit}`,
+    `Branch: ${metadata.branch}`,
+    ...extraMessage,
+  ].join('\n');
+  await execute('git', ['tag', '-a', tag, '-m', message, target], { cwd: projectRoot });
+  try {
+    await execute('git', ['push', remote, ref], { cwd: projectRoot });
+  } catch (error) {
+    await execute('git', ['tag', '-d', tag], { cwd: projectRoot });
+    throw error;
+  }
+
+  return Object.freeze({
+    status: 'CLOSED',
+    effectiveStatus: 'IDLE',
+    tag,
+    ref,
+    mergeCommit: target,
+    candidateParent,
+    pushed: true,
+  });
 }
 
 export async function closeWorkUnit({
@@ -536,55 +733,128 @@ export async function closeWorkUnit({
   }
   assertAuthoritativeRun(authoritativeRun, head);
 
-  const tag = workUnitClosureTag(parsed.metadata);
-  const ref = `refs/tags/${tag}`;
-  try {
-    const existing = await git(projectRoot, ['rev-parse', '--verify', `${ref}^{commit}`]);
-    if (existing !== head) {
-      throw new Error(`closure ref ${ref} already targets ${existing}, not ${head}`);
-    }
-    await execute('git', ['push', remote, ref], { cwd: projectRoot });
-    return Object.freeze({
-      status: 'ALREADY_CLOSED',
-      effectiveStatus: 'IDLE',
-      tag,
-      ref,
-      mergeCommit: head,
-      candidateParent: landing.candidateParent,
-      pushed: true,
-    });
-  } catch (error) {
-    if (!/Needed a single revision|unknown revision|ambiguous argument|not a valid object name/iu.test(error.message)) {
-      throw error;
-    }
-  }
-
-  const message = [
-    'SR Taller Work Unit closure v1',
-    '',
-    `Work Unit: ${parsed.metadata.work_unit}`,
-    `Branch: ${parsed.metadata.branch}`,
-  ].join('\n');
-  await execute('git', ['tag', '-a', tag, '-m', message, head], { cwd: projectRoot });
-  try {
-    await execute('git', ['push', remote, ref], { cwd: projectRoot });
-  } catch (error) {
-    await execute('git', ['tag', '-d', tag], { cwd: projectRoot });
-    throw error;
-  }
-
-  return Object.freeze({
-    status: 'CLOSED',
-    effectiveStatus: 'IDLE',
-    tag,
-    ref,
-    mergeCommit: head,
+  return publishClosureTag({
+    projectRoot,
+    remote,
+    metadata: parsed.metadata,
+    target: head,
     candidateParent: landing.candidateParent,
-    pushed: true,
   });
 }
 
-function renderChecklist({ name, branch, baseSha, risk, shadowRisk, objective, type, lastUpdated }) {
+export async function closeIntegratedSubjectWorkUnit({
+  projectRoot = process.cwd(),
+  checklistPath = WORK_UNIT_CHECKLIST,
+  authoritativeRun,
+  attestation,
+  attestationProvenance,
+  subjectSha,
+  confirmPredicate = false,
+  push = true,
+  remote = 'origin',
+} = {}) {
+  if (!confirmPredicate) throw new Error('closure predicate must be explicitly confirmed');
+  if (!push) throw new Error('local-only closure refs are forbidden; closure must be shared');
+  if (!/^[0-9a-f]{40}$/u.test(subjectSha ?? '')) {
+    throw new Error('subject SHA must be a full lowercase Git SHA');
+  }
+  const [branch, head, originMain, liveRemoteMain, trackedStatus, controllerSource] = await Promise.all([
+    git(projectRoot, ['branch', '--show-current']),
+    git(projectRoot, ['rev-parse', 'HEAD']),
+    git(projectRoot, ['rev-parse', `${remote}/main`]),
+    remoteBranchHead(projectRoot, remote, 'main'),
+    git(projectRoot, ['status', '--porcelain=v1', '--untracked-files=no']),
+    readFile(resolve(projectRoot, checklistPath), 'utf8'),
+  ]);
+  if (branch !== 'main') throw new Error('Work Unit closure must run on main');
+  if (head !== originMain || head !== liveRemoteMain) {
+    throw new Error('current main, remote-tracking main and live remote main must match');
+  }
+  if (trackedStatus !== '') throw new Error('tracked working tree must be clean before closure');
+
+  const controller = parseWorkUnitDocument(controllerSource);
+  if (controller.findings.length > 0) throw new Error('controller Work Unit metadata is invalid');
+  if (controller.metadata.dependency_exception !== INFRA_DEPENDENCY_EXCEPTION ||
+      controller.metadata.work_unit !== INFRA_DEPENDENCY_WORK_UNIT) {
+    throw new Error('current main does not carry the authorized Infrastructure dependency exception');
+  }
+  if (controller.metadata.dependency_subject_sha !== subjectSha) {
+    throw new Error('subject SHA is not the explicitly authorized dependency subject');
+  }
+  const controllerClosure = await inspectDerivedClosure({
+    projectRoot,
+    checklistPath,
+    source: controllerSource,
+    metadata: controller.metadata,
+    currentHead: head,
+  });
+  if (!controllerClosure.proven) {
+    throw new Error('Infrastructure dependency Work Unit must be closed before subject closure');
+  }
+  if (!await isAncestor(projectRoot, subjectSha, head)) {
+    throw new Error('subject SHA is not an ancestor integrated into live main');
+  }
+
+  const subjectSource = await gitFile(projectRoot, subjectSha, checklistPath);
+  if (subjectSource === null) throw new Error('subject checklist is unavailable');
+  const subject = parseWorkUnitDocument(subjectSource);
+  if (subject.findings.length > 0) throw new Error('subject Work Unit metadata is invalid');
+  if (subject.metadata.work_unit !== controller.metadata.dependency_work_unit ||
+      subject.metadata.branch !== controller.metadata.dependency_branch ||
+      subject.metadata.status !== controller.metadata.dependency_status) {
+    throw new Error('subject Work Unit does not match the preserved dependency identity');
+  }
+  const landing = await inspectLandingCommit({
+    projectRoot,
+    checklistPath,
+    source: subjectSource,
+    metadata: subject.metadata,
+    mergeCommit: subjectSha,
+  });
+  if (landing.findings.length > 0) {
+    throw new Error(landing.findings.map(({ code, message }) => `${code}: ${message}`).join('\n'));
+  }
+  assertSubjectAuthoritativeRun(
+    authoritativeRun,
+    attestation,
+    attestationProvenance,
+    head,
+    subjectSha,
+  );
+
+  return publishClosureTag({
+    projectRoot,
+    remote,
+    metadata: subject.metadata,
+    target: subjectSha,
+    candidateParent: landing.candidateParent,
+    messageVersion: 'v2-subject-attested',
+    extraMessage: [
+      `Controller: ${head}`,
+      `Tested subject: ${subjectSha}`,
+      `Authoritative run: ${authoritativeRun.databaseId}`,
+    ],
+  });
+}
+
+function renderChecklist({
+  name,
+  branch,
+  baseSha,
+  risk,
+  shadowRisk,
+  objective,
+  type,
+  lastUpdated,
+  dependency,
+}) {
+  const dependencyLines = dependency ? `dependency_exception: ${INFRA_DEPENDENCY_EXCEPTION}
+dependency_work_unit: ${dependency.workUnit}
+dependency_branch: ${dependency.branch}
+dependency_subject_sha: ${dependency.subjectSha}
+dependency_status: ${dependency.status}
+dependency_return: REQUIRED
+` : '';
   return `# Active Work Unit Checklist
 
 <!-- WORK_UNIT_METADATA
@@ -598,7 +868,7 @@ base_sha: ${baseSha}
 status: ACTIVE
 closure_mode: DERIVED
 last_updated: ${lastUpdated}
--->
+${dependencyLines}-->
 
 ## Objective
 
@@ -680,6 +950,7 @@ export async function initializeWorkUnit({
   baseSha,
   lastUpdated = new Date().toISOString().slice(0, 10),
   confirmPreviousClosed = false,
+  dependencyException,
 } = {}) {
   for (const [label, value] of Object.entries({ name, branch, objective })) {
     if (typeof value !== 'string' || value.trim() === '') {
@@ -716,6 +987,7 @@ export async function initializeWorkUnit({
     throw new Error('new Work Unit branch HEAD must equal its origin/main base before initialization');
   }
 
+  let dependency = null;
   try {
     const existingSource = await readFile(resolve(projectRoot, checklistPath), 'utf8');
     const existing = parseWorkUnitDocument(existingSource);
@@ -723,10 +995,22 @@ export async function initializeWorkUnit({
       throw new Error('existing Work Unit metadata is invalid; refusing unsafe overwrite');
     }
     const existingStatus = existing.metadata.status;
-    if (['ACTIVE', 'BLOCKED'].includes(existingStatus)) {
+    if (dependencyException === INFRA_DEPENDENCY_EXCEPTION) {
+      if (name !== INFRA_DEPENDENCY_WORK_UNIT || type !== INFRA_DEPENDENCY_TYPE) {
+        throw new Error('the dependency exception is limited to the named Infrastructure/Quality Work Unit');
+      }
+      if (!['BLOCKED', 'PROMOTION'].includes(existingStatus)) {
+        throw new Error('the preserved Work Unit must be explicitly BLOCKED or PROMOTION');
+      }
+      dependency = {
+        workUnit: existing.metadata.work_unit,
+        branch: existing.metadata.branch,
+        subjectSha: head,
+        status: existingStatus,
+      };
+    } else if (['ACTIVE', 'BLOCKED'].includes(existingStatus)) {
       throw new Error(`refusing to overwrite ${existingStatus} Work Unit ${existing.metadata.work_unit ?? ''}`.trim());
-    }
-    if (['READY_FOR_PROMOTION', 'PROMOTION', 'CLOSED'].includes(existingStatus)) {
+    } else if (['READY_FOR_PROMOTION', 'PROMOTION', 'CLOSED'].includes(existingStatus)) {
       if (!confirmPreviousClosed) {
         throw new Error('previous derived closure must be explicitly confirmed with --confirm-previous-closed');
       }
@@ -754,6 +1038,7 @@ export async function initializeWorkUnit({
     objective: objective.trim(),
     type,
     lastUpdated,
+    dependency,
   });
   await writeFile(resolve(projectRoot, checklistPath), source);
   return inspectWorkUnit({ projectRoot, checklistPath, actualBranch, head });

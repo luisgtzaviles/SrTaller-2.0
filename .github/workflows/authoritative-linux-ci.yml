@@ -8,6 +8,11 @@ on:
       - ci/**
       - r0/**
   workflow_dispatch:
+    inputs:
+      tested_sha:
+        description: Exact integrated subject SHA; blank verifies current main
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -523,6 +528,57 @@ jobs:
           name: vc024-comparison
           path: ${{ runner.temp }}/vc024-comparison/
           if-no-files-found: error
+          retention-days: 30
+
+  tier2-shadow:
+    name: Tier-2 deterministic shadow
+    needs:
+      - classify-change
+      - compare-authoritative-gates
+    if: >-
+      needs.classify-change.outputs.docs_only != 'true' &&
+      needs.compare-authoritative-gates.result == 'success' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 100
+    environment: authoritative-ci
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout trusted current-main controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Set up controller Node.js 24.18.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.18.0
+
+      - name: Execute two-leg ephemeral Tier-2 shadow
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          TESTED_SHA: ${{ inputs.tested_sha || needs.classify-change.outputs.candidate_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF}" = "refs/heads/main"
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          node scripts/run-tier2-authoritative-ci.mjs \
+            --tested-sha "${TESTED_SHA}" \
+            --output "${RUNNER_TEMP}/tier2-shadow"
+
+      - name: Upload sanitized Tier-2 shadow evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tier2-shadow-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/tier2-shadow/
+          if-no-files-found: warn
           retention-days: 30
 
   promotion-gate:

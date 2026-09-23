@@ -2,23 +2,27 @@
 
 ## Status and observed baseline
 
-- **Status:** exact proposed configuration; not applied.
-- **Authority required to apply:** separate explicit Owner authorization.
-- **Observed 2026-09-20:** public user-owned repository; default branch `main`;
-  Owner has `ADMIN`; `main` has no branch protection and no ruleset.
-- Merge commits, squash and rebase are currently allowed;
-  `delete_branch_on_merge` is disabled.
+- **Status:** applied on 2026-09-22 under Owner decision INFRA-003.
+- **Authority:** Owner authorization for the deterministic authoritative CI
+  Infrastructure Work Unit.
+- **Repository:** public user-owned repository; default branch `main`.
+- **Mechanical protection:** active repository ruleset
+  `main-governed-promotion`; no bypass actors; current administrators cannot
+  bypass it.
+- **Merge settings:** merge commits enabled; squash/rebase/auto-merge disabled;
+  automatic merged-head deletion enabled.
 - The current workflow exposes mutually conditional DOCS_ONLY and FULL jobs.
   `Authoritative promotion gate` is the single always-resolving aggregate added
-  by Harness 2.0 and is the only proposed required status check.
+  by Harness 2.0 and is the only required status check, pinned to the GitHub
+  Actions integration.
 
 This document does not grant push, review, merge, deploy, permission-change or
 repository-administration authority.
 
-## Exact proposed main ruleset
+## Exact active main ruleset
 
-Create one active repository ruleset named `main-governed-promotion` targeting
-only `refs/heads/main` with these settings:
+The active repository ruleset `main-governed-promotion` targets only the
+default branch (`main`) with these settings:
 
 | Rule | Exact setting |
 |---|---|
@@ -64,6 +68,12 @@ classification plus both conditional verification paths.
 The aggregate adds no reduced path and does not replace the underlying jobs or
 artifacts. Its stable name is the future branch-protection interface.
 
+The protected `authoritative-ci` Environment admits only `main`, disables
+administrator bypass and contains only the isolated CI-project credential named
+`HCLOUD_TOKEN`. The credential value is never repository evidence. The initial
+Tier-2 integration is shadow-only and does not alter this required-check
+semantics until bounded observations support a separately reviewed cutover.
+
 ## Review policy
 
 | Shadow risk | Review expectation |
@@ -76,19 +86,15 @@ No active policy requires `empresasgalatech`. Emergency recovery uses an
 explicit Owner-authorized temporary ruleset change; there is no standing
 bypass actor.
 
-## Safe activation sequence
+## Activation and recovery
 
-1. Promote Harness 2.0 through a PR while current repository settings remain
-   unchanged.
-2. Confirm `Authoritative promotion gate` resolves successfully on both a
-   FULL change and a legitimate DOCS_ONLY change.
-3. Create the ruleset in evaluation/disabled mode when GitHub exposes such a
-   mode; otherwise prepare it without activation.
-4. Verify target, exact check identity and absence of bypass actors.
-5. Obtain separate Owner authorization.
-6. Activate and test with a disposable branch/PR: direct push denied, PR path
-   allowed, stale branch requires update, failed aggregate blocks, conversation
-   blocks until resolved, force push and deletion denied.
-7. Reconfirm Owner recovery access before changing collaborator permissions.
+The ruleset was activated only after Owner authorization and API verification
+of its target, exact check source, zero approvals, conversation resolution and
+empty bypass list. The eventual Infra promotion PR must exercise the ordinary
+PR/check path before the Work Unit can promote.
 
-Protection activation is not part of Harness 2.0 Iteration 5.
+Recovery is not a standing bypass. The Owner/repository administrator must
+explicitly authorize and apply a temporary ruleset change through GitHub's
+administrative surface, preserve the audit event, repair the blocking fault and
+restore/reverify this exact contract. Direct push, force push, deletion or
+moving a closure tag is never the recovery mechanism.

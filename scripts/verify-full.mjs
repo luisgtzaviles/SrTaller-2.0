@@ -182,6 +182,10 @@ if (process.argv.includes('--dry-run')) {
   await mkdir(evidenceDirectory, { recursive: true });
   const evidencePath = join(evidenceDirectory, 'FULL_VERIFICATION_SUMMARY.json');
   const postgresqlEvidencePath = join(evidenceDirectory, 'POSTGRESQL_MANIFEST.json');
+  const postgresqlRuntimeDiagnosticsPath = join(
+    evidenceDirectory,
+    'POSTGRESQL_RUNTIME_DIAGNOSTICS.json',
+  );
   let skipInventory;
 
   const operations = {
@@ -218,6 +222,7 @@ if (process.argv.includes('--dry-run')) {
           '--workflow-run-id', campaignId,
           '--head-sha', initial.baseHead,
           '--output', postgresqlEvidencePath,
+          '--runtime-diagnostics-output', postgresqlRuntimeDiagnosticsPath,
         ],
         { timeoutMs: 20 * 60_000 },
       );

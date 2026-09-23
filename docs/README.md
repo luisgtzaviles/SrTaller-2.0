@@ -120,6 +120,7 @@ autoriza un cambio de producto.
 - [Línea base de seguridad](architecture/SECURITY_BASELINE.md)
 - [Observabilidad](architecture/OBSERVABILITY_STRATEGY.md)
 - [Despliegue](architecture/DEPLOYMENT_STRATEGY.md)
+- [CI autoritativo determinista](delivery/DETERMINISTIC_AUTHORITATIVE_CI.md)
 
 ## Decisiones
 
