@@ -10,7 +10,7 @@ risk: ARCHITECTURAL
 shadow_risk: ARCHITECTURAL
 branch: fix/tier2-shadow-deadlock
 base_sha: 1e579e3c90dab88d89d1f39c3806090b782dc876
-status: ACTIVE
+status: READY_FOR_PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-23
 dependency_exception: INFRA_CI_BLOCKER
@@ -100,7 +100,7 @@ became eligible, exposing a bootstrap deadlock in the workflow dependency.
 - [x] Implement orphan/TTL safety.
 - [x] Remove the hosted-success dependency from trusted SHADOW eligibility.
 - [x] Prove SHADOW remains unable to satisfy promotion or Work Unit closure.
-- [ ] Run focused and exact-HEAD promotion verification.
+- [x] Run focused and exact-HEAD promotion verification.
 - [ ] Promote the remediation through one governed Draft PR.
 - [ ] Run bounded shadow validation on two independent dedicated VMs.
 - [ ] Prepare and verify the Tier-2 cutover candidate.
@@ -117,16 +117,19 @@ and reinforces non-authoritative metadata and regressions.
 
 ## Next
 
-The semantic remediation and its focused negative matrix are complete. Run the
-exact local promotion gate, reconcile readiness, and promote through one
-ordinary Draft PR. Material Tier-2 execution remains a separate
-post-integration Owner authorization through explicit `workflow_dispatch`.
+The semantic remediation is locally promotion-ready. Focused regressions and
+the canonical Full Verification passed on implementation SHA
+`d4a3b509bcb023d9e6052979370fa23d5e128e25`; this readiness reconciliation is
+documentation-only and must pass its exact delta gate before remote promotion.
+Material Tier-2 execution remains a separate post-integration Owner
+authorization through explicit `workflow_dispatch`.
 
 ## Blockers
 
-The Infra Work Unit cannot close because exact-main hosted CI for PR #74 is red
-and no material SHADOW observation exists. This remediation does not waive that
-predicate; it only makes the separately authorized SHADOW observation possible.
+NONE for remote promotion of this remediation. The Infra Work Unit still cannot
+close because exact-main hosted CI for PR #74 is red and no material SHADOW
+observation exists. This remediation does not waive that predicate; it only
+makes the separately authorized SHADOW observation possible.
 
 ## Important Discoveries
 
@@ -177,8 +180,16 @@ predicate; it only makes the separately authorized SHADOW observation possible.
 - [x] Full Verification on implementation commit `43bea4ab646b9a3203c01777cd6da54b13172673`:
   stages 0–19 PASS, owner-scoped 8/8 in 122.566 s, TL-07 3/3, 89 migrations,
   rerun 0 pending, smokes/fingerprint/cleanup PASS.
+- [x] Shadow-deadlock focused Harness/Infra regressions: 59/59 PASS.
+- [x] Shadow eligibility matrix covers hosted green/red independence plus PR,
+  fork, `pull_request_target`, non-main, stale controller and missing protected
+  Environment denial.
+- [x] Canonical Full Verification on remediation implementation SHA
+  `d4a3b509bcb023d9e6052979370fa23d5e128e25`: stages 0–19 PASS,
+  owner-scoped 8/8 in 112.065 s, TL-07 3/3, 89 migrations, rerun 0 pending,
+  smokes/fingerprint/cleanup PASS.
 - [ ] Shadow FULL evidence on two independent dedicated VMs.
-- [ ] Promotion lifecycle check on the exact remediation candidate.
+- [ ] Exact docs-only readiness delta and promotion lifecycle check.
 
 ## Promotion Gates
 
