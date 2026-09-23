@@ -15,6 +15,7 @@ const result = await initializeWorkUnit({
   type: argument('--type') ?? 'GOVERNANCE',
   baseSha: argument('--base'),
   confirmPreviousClosed: process.argv.includes('--confirm-previous-closed'),
+  dependencyException: argument('--dependency-exception'),
 });
 
 process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);

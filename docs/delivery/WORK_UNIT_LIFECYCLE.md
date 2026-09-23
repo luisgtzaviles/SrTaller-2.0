@@ -306,6 +306,34 @@ de la declarada y el reemplazo de una Work Unit `ACTIVE`/`BLOCKED`. Un snapshot
 `--confirm-previous-closed` y un ref de cierre válido. La confirmación humana no
 puede sustituir la prueba mecánica.
 
+### Excepción gobernada de dependencia Infra
+
+`INFRA_CI_BLOCKER` es la única excepción materializada al WIP normal. Sólo la
+autoridad Owner INFRA-005 permite iniciar la Work Unit exacta
+`INFRA — Deterministic Authoritative CI Runner`, de tipo
+`INFRASTRUCTURE_QUALITY`, mientras otra Work Unit está explícitamente
+`BLOCKED` o `PROMOTION` por esa dependencia. Su metadata conserva nombre,
+rama, subject SHA y estado de la Work Unit dependiente, y exige retorno.
+
+El inicializador rechaza cualquier otro nombre/tipo, una Work Unit productiva,
+un estado no bloqueado/promoción y metadata incompleta. No constituye una vía
+general de WIP, no autoriza TL-08 y no modifica las reglas ordinarias.
+
+### Cierre atestiguado de un subject integrado
+
+El cierre exact-main permanece como default. La ruta excepcional
+`--subject-sha` sólo opera después de que la Work Unit Infra controladora haya
+sido integrada y cerrada. Acepta exclusivamente el subject declarado por
+`INFRA_CI_BLOCKER`, exige que sea un merge ordinario ancestro de live `main` y
+valida una atestación `SR_TALLER_AUTHORITATIVE_SUBJECT_V1` que liga workflow,
+run, controller SHA, tested SHA y `Authoritative promotion gate` exitoso.
+
+El tag determinista se deriva de la metadata del Work Unit subject y apunta a
+su merge, no al controller posterior. Un SHA histórico arbitrario, workflow o
+controller distinto, evidencia incompleta/fallida, gate ausente o target
+incorrecto falla cerrado. El contrato completo está en
+[`DETERMINISTIC_AUTHORITATIVE_CI.md`](./DETERMINISTIC_AUTHORITATIVE_CI.md).
+
 ## Verificación focalizada en Iteration 3
 
 No se crea todavía `verify:focused`. El repositorio no puede inferir de forma

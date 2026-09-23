@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 
 import { compareHarnessRisk } from '../scripts/lib/harness-risk-classifier.mjs';
 import {
+  closeIntegratedSubjectWorkUnit,
   closeWorkUnit,
   initializeWorkUnit,
   inspectWorkUnit,
@@ -89,6 +90,39 @@ function authoritativeRun(head, { conclusion = 'success', gateConclusion = 'succ
     headBranch: 'main',
     event: 'push',
     jobs: [{ name: 'Authoritative promotion gate', conclusion: gateConclusion }],
+  };
+}
+
+function authoritativeSubjectRun(controllerSha, {
+  conclusion = 'success',
+  gateConclusion = 'success',
+  event = 'workflow_dispatch',
+  workflowName = 'Authoritative Linux CI',
+} = {}) {
+  return {
+    databaseId: 123456,
+    workflowName,
+    status: 'completed',
+    conclusion,
+    headSha: controllerSha,
+    headBranch: 'main',
+    event,
+    jobs: [{ name: 'Authoritative promotion gate', conclusion: gateConclusion }],
+  };
+}
+
+function subjectAttestation(controllerSha, testedSha, overrides = {}) {
+  return {
+    schemaVersion: 1,
+    contract: 'SR_TALLER_AUTHORITATIVE_SUBJECT_V1',
+    workflow: 'Authoritative Linux CI',
+    workflowPath: '.github/workflows/authoritative-linux-ci.yml',
+    controllerSha,
+    testedSha,
+    runId: 123456,
+    conclusion: 'success',
+    promotionGate: 'success',
+    ...overrides,
   };
 }
 
@@ -454,6 +488,159 @@ test('safe initializer refuses active Work Units, dirty tracked work, wrong bran
       objective: 'Must be rejected.',
       baseSha: repo.baseSha,
     }), /base SHA must match current origin\/main/u);
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('the governed dependency exception is limited to the named Infra dependency and preserves TL-07', async () => {
+  const repo = await repository();
+  try {
+    await repo.git('switch', '--quiet', '-c', 'feature/tl-07');
+    await writeFile(
+      join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md'),
+      checklist({ branch: 'feature/tl-07', baseSha: repo.baseSha, status: 'PROMOTION' }),
+    );
+    await repo.git('add', '.');
+    await repo.git('commit', '--quiet', '-m', 'tl07 promotion snapshot');
+    await repo.git('switch', '--quiet', 'main');
+    await repo.git('merge', '--quiet', '--no-ff', 'feature/tl-07', '-m', 'merge tl07');
+    const subjectSha = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
+    await repo.git('push', '--quiet', 'origin', 'main');
+
+    await repo.git('switch', '--quiet', '-c', 'chore/deterministic-authoritative-ci-runner');
+    await assert.rejects(initializeWorkUnit({
+      projectRoot: repo.root,
+      name: 'TL-08 — Device Redemption',
+      branch: 'chore/deterministic-authoritative-ci-runner',
+      objective: 'Must not use the Infra exception.',
+      type: 'PRODUCT',
+      dependencyException: 'INFRA_CI_BLOCKER',
+    }), /limited to the named Infrastructure\/Quality Work Unit/u);
+
+    const result = await initializeWorkUnit({
+      projectRoot: repo.root,
+      name: 'INFRA — Deterministic Authoritative CI Runner',
+      branch: 'chore/deterministic-authoritative-ci-runner',
+      objective: 'Restore deterministic authoritative CI for the preserved TL-07 dependency.',
+      risk: 'ARCHITECTURAL',
+      shadowRisk: 'ARCHITECTURAL',
+      type: 'INFRASTRUCTURE_QUALITY',
+      dependencyException: 'INFRA_CI_BLOCKER',
+      lastUpdated: '2026-09-22',
+    });
+    assert.equal(result.status, 'PASS');
+    assert.equal(result.metadata.dependency_work_unit, 'Test Work Unit');
+    assert.equal(result.metadata.dependency_branch, 'feature/tl-07');
+    assert.equal(result.metadata.dependency_subject_sha, subjectSha);
+    assert.equal(result.metadata.dependency_status, 'PROMOTION');
+    assert.equal(result.metadata.dependency_return, 'REQUIRED');
+  } finally {
+    await rm(repo.container, { recursive: true, force: true });
+  }
+});
+
+test('subject-SHA closure is fail-closed and targets only the explicitly preserved integrated dependency', async () => {
+  const repo = await repository();
+  try {
+    await repo.git('switch', '--quiet', '-c', 'feature/tl-07');
+    await writeFile(
+      join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md'),
+      checklist({ branch: 'feature/tl-07', baseSha: repo.baseSha, status: 'PROMOTION' }),
+    );
+    await repo.git('add', '.');
+    await repo.git('commit', '--quiet', '-m', 'tl07 promotion snapshot');
+    await repo.git('switch', '--quiet', 'main');
+    await repo.git('merge', '--quiet', '--no-ff', 'feature/tl-07', '-m', 'merge tl07');
+    const subjectSha = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
+    await repo.git('push', '--quiet', 'origin', 'main');
+
+    await repo.git('switch', '--quiet', '-c', 'chore/deterministic-authoritative-ci-runner');
+    await initializeWorkUnit({
+      projectRoot: repo.root,
+      name: 'INFRA — Deterministic Authoritative CI Runner',
+      branch: 'chore/deterministic-authoritative-ci-runner',
+      objective: 'Restore deterministic authoritative CI for the preserved TL-07 dependency.',
+      risk: 'ARCHITECTURAL',
+      shadowRisk: 'ARCHITECTURAL',
+      type: 'INFRASTRUCTURE_QUALITY',
+      dependencyException: 'INFRA_CI_BLOCKER',
+      lastUpdated: '2026-09-22',
+    });
+    const checklistPath = join(repo.root, 'docs/work/ACTIVE_CHECKLIST.md');
+    const readySource = (await readFile(checklistPath, 'utf8'))
+      .replace('status: ACTIVE', 'status: READY_FOR_PROMOTION');
+    await writeFile(checklistPath, readySource);
+    await repo.git('add', '.');
+    await repo.git('commit', '--quiet', '-m', 'infra ready');
+    await repo.git('switch', '--quiet', 'main');
+    await repo.git('merge', '--quiet', '--no-ff', 'chore/deterministic-authoritative-ci-runner', '-m', 'merge infra');
+    const controllerSha = (await repo.git('rev-parse', 'HEAD')).stdout.trim();
+    await repo.git('push', '--quiet', 'origin', 'main');
+    await closeWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeRun(controllerSha),
+      confirmPredicate: true,
+    });
+
+    const run = authoritativeSubjectRun(controllerSha);
+    const attestation = subjectAttestation(controllerSha, subjectSha);
+    await assert.rejects(closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: run,
+      attestation,
+      subjectSha: repo.baseSha,
+      confirmPredicate: true,
+    }), /not the explicitly authorized dependency subject/u);
+    await assert.rejects(closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: run,
+      attestation: subjectAttestation(controllerSha, subjectSha, { testedSha: repo.baseSha }),
+      subjectSha,
+      confirmPredicate: true,
+    }), /testedSha mismatch/u);
+    await assert.rejects(closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: run,
+      attestation: subjectAttestation(controllerSha, subjectSha, { controllerSha: repo.baseSha }),
+      subjectSha,
+      confirmPredicate: true,
+    }), /controller SHA mismatch/u);
+    await assert.rejects(closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeSubjectRun(controllerSha, { workflowName: 'Untrusted workflow' }),
+      attestation,
+      subjectSha,
+      confirmPredicate: true,
+    }), /must come from Authoritative Linux CI/u);
+    await assert.rejects(closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeSubjectRun(controllerSha, { conclusion: 'failure' }),
+      attestation,
+      subjectSha,
+      confirmPredicate: true,
+    }), /not successfully completed/u);
+    await assert.rejects(closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: authoritativeSubjectRun(controllerSha, { gateConclusion: 'skipped' }),
+      attestation,
+      subjectSha,
+      confirmPredicate: true,
+    }), /promotion gate is not successful/u);
+
+    const closure = await closeIntegratedSubjectWorkUnit({
+      projectRoot: repo.root,
+      authoritativeRun: run,
+      attestation,
+      subjectSha,
+      confirmPredicate: true,
+    });
+    assert.equal(closure.status, 'CLOSED');
+    assert.equal(closure.mergeCommit, subjectSha);
+    assert.equal(
+      (await repo.git('rev-parse', `${closure.ref}^{commit}`)).stdout.trim(),
+      subjectSha,
+    );
   } finally {
     await rm(repo.container, { recursive: true, force: true });
   }

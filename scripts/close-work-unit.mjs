@@ -1,7 +1,8 @@
 import { execFile } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 
-import { closeWorkUnit } from './lib/work-unit.mjs';
+import { closeIntegratedSubjectWorkUnit, closeWorkUnit } from './lib/work-unit.mjs';
 
 const execute = promisify(execFile);
 
@@ -37,11 +38,26 @@ if (authoritativeRun.workflowName !== 'Authoritative Linux CI') {
   throw new Error(`run ${runId} is not Authoritative Linux CI`);
 }
 
-const result = await closeWorkUnit({
-  projectRoot: process.cwd(),
-  authoritativeRun,
-  confirmPredicate: true,
-  push: true,
-});
+const subjectSha = argument('--subject-sha');
+const attestationPath = argument('--attestation');
+if ((subjectSha && !attestationPath) || (!subjectSha && attestationPath)) {
+  throw new Error('--subject-sha and --attestation must be supplied together');
+}
+
+const result = subjectSha
+  ? await closeIntegratedSubjectWorkUnit({
+    projectRoot: process.cwd(),
+    authoritativeRun,
+    attestation: JSON.parse(await readFile(attestationPath, 'utf8')),
+    subjectSha,
+    confirmPredicate: true,
+    push: true,
+  })
+  : await closeWorkUnit({
+    projectRoot: process.cwd(),
+    authoritativeRun,
+    confirmPredicate: true,
+    push: true,
+  });
 
 process.stdout.write(`${JSON.stringify({ ...result, runUrl: authoritativeRun.url }, null, 2)}\n`);
