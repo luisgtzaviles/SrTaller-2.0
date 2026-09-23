@@ -151,6 +151,12 @@ test('policy v10 registers exact directed public module composition', async () =
             producerImportSpecifier: './index.js',
           },
           {
+            token: 'STATION_ADMINISTRATION_RUNTIME',
+            contract: 'StationAdministrationRuntime',
+            consumerImportSpecifier: '../stations/index.js',
+            producerImportSpecifier: './index.js',
+          },
+          {
             token: 'TRUSTED_STATION_ADMISSION_VALIDATOR',
             contract: 'TrustedStationAdmissionValidator',
             consumerImportSpecifier: '../stations/index.js',
@@ -514,10 +520,11 @@ test('migration ownership is fail-closed without a timestamp bypass', async () =
     'src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts',
     'src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts',
     'src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts',
+    'src/infrastructure/database/migrations/20260922130000_stations_create_inventory_enrollment_authority.ts',
   ]);
   assert.deepEqual(
     Object.values(ownership.registrations).map(({ owner }) => owner),
-    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy', 'registration', 'registration', 'stations', 'tenancy', 'stations', 'access', 'access', 'access', 'access'],
+    ['stations', 'users', 'access', 'repairs', 'access', 'access', 'repairs', 'access', 'access', 'users', 'users', 'access', 'customers', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'repairs', 'repairs', 'access', 'repairs', 'access', 'repairs', 'repairs', 'repairs', 'users', 'access', 'tenancy', 'access', 'users', 'catalog', 'catalog', 'catalog', 'catalog', 'repairs', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'access', 'catalog', 'catalog', 'catalog', 'catalog', 'access', 'access', 'access', 'tenancy', 'access', 'tenancy', 'registration', 'registration', 'stations', 'tenancy', 'stations', 'access', 'access', 'access', 'access', 'stations'],
   );
   for (const [migration, registration] of Object.entries(ownership.registrations)) {
     const allowedKeys = [
@@ -639,6 +646,15 @@ test('registered module presentation and Health are the explicitly governed HTTP
           file: 'src/modules/access/access.module.ts',
           className: 'AccessModule',
           importSpecifier: './presentation/admin-users-roles.controller.js',
+        },
+      },
+      'src/modules/access/presentation/admin-stations.controller.ts': {
+        owner: 'access',
+        className: 'AdminStationsController',
+        composition: {
+          file: 'src/modules/access/access.module.ts',
+          className: 'AccessModule',
+          importSpecifier: './presentation/admin-stations.controller.js',
         },
       },
       'src/modules/access/presentation/user-preferences.controller.ts': {

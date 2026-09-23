@@ -183,7 +183,7 @@ test('persistence capability is internal and has only exact adapter consumers', 
   );
   assert.match(
     source,
-    /Pick<DatabaseSchema, 'branches' \| 'branch_commands' \| 'branch_audit_events' \| 'stations' \| 'station_bindings' \| 'station_credentials'>/u,
+    /Pick<DatabaseSchema, 'branches' \| 'branch_commands' \| 'branch_audit_events' \| 'stations' \| 'station_bindings' \| 'station_credentials' \| 'station_enrollment_challenges' \| 'station_enrollment_consumptions' \| 'station_administration_commands' \| 'station_audit_events'>/u,
   );
   assert.match(
     source,

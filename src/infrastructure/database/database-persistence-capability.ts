@@ -19,7 +19,7 @@ type DatabaseMigrationJournalTable = Readonly<{
   timestamp: string;
 }>;
 
-type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'stations' | 'station_bindings' | 'station_credentials'> &
+type DatabaseTechnicalSchema = Pick<DatabaseSchema, 'branches' | 'tenants' | 'stations' | 'station_bindings' | 'station_credentials' | 'station_enrollment_challenges' | 'station_enrollment_consumptions' | 'station_administration_commands' | 'station_audit_events'> &
   Readonly<{
     kysely_migration: DatabaseMigrationJournalTable;
     repairs: DatabaseSchema['repairs'];
@@ -152,7 +152,7 @@ type OwnerSchema<Owner extends InternalDatabasePersistenceOwner> =
     ? Pick<DatabaseSchema, 'tenants' | 'tenant_bootstrap_commands' | 'tenant_bootstrap_guards' | 'tenant_lifecycle_events'>
     : Owner extends 'users'
     ? Pick<DatabaseSchema, 'users' | 'user_preferences' | 'user_provisioning_bootstraps' | 'user_lifecycle_commands' | 'user_profile_update_commands' | 'user_create_commands'>
-    : Pick<DatabaseSchema, 'branches' | 'branch_commands' | 'branch_audit_events' | 'stations' | 'station_bindings' | 'station_credentials'>;
+    : Pick<DatabaseSchema, 'branches' | 'branch_commands' | 'branch_audit_events' | 'stations' | 'station_bindings' | 'station_credentials' | 'station_enrollment_challenges' | 'station_enrollment_consumptions' | 'station_administration_commands' | 'station_audit_events'>;
 
 export type InternalDatabasePersistenceExecutor<
   Owner extends InternalDatabasePersistenceOwner,

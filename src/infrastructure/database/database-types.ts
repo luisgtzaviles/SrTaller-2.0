@@ -179,22 +179,25 @@ export interface TenantLifecycleEventTable {
 export interface StationTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly station_id: ImmutableColumn<string>;
-  readonly status: ImmutableColumn<'active' | 'revoked'>;
+  readonly display_name: MutableColumn<string>;
+  readonly status: MutableColumn<'unlinked' | 'active' | 'revoked'>;
+  readonly version: DefaultedMutableColumn<number>;
   readonly created_at: ImmutableColumn<Date>;
-  readonly updated_at: ImmutableColumn<Date>;
-  readonly revoked_at: ImmutableColumn<Date | null>;
+  readonly updated_at: MutableColumn<Date>;
+  readonly revoked_at: MutableColumn<Date | null>;
   /** Stations-owned monotonic epoch for lifecycle authority. */
-  readonly admission_revision: DefaultedImmutableColumn<number>;
+  readonly admission_revision: DefaultedMutableColumn<number>;
 }
 
 export interface StationBindingTable {
   readonly tenant_id: ImmutableColumn<string>;
   readonly station_id: ImmutableColumn<string>;
+  readonly binding_id: DefaultedImmutableColumn<string>;
   readonly branch_id: ImmutableColumn<string>;
-  readonly revoked_at: ImmutableColumn<Date | null>;
+  readonly revoked_at: MutableColumn<Date | null>;
   readonly created_at: ImmutableColumn<Date>;
   /** Stations-owned monotonic epoch for binding authority. */
-  readonly admission_revision: DefaultedImmutableColumn<number>;
+  readonly admission_revision: DefaultedMutableColumn<number>;
 }
 
 export interface StationCredentialTable {
@@ -202,10 +205,75 @@ export interface StationCredentialTable {
   readonly credential_hash: ImmutableColumn<string>;
   readonly tenant_id: ImmutableColumn<string>;
   readonly station_id: ImmutableColumn<string>;
-  readonly revoked_at: ImmutableColumn<Date | null>;
+  readonly revoked_at: MutableColumn<Date | null>;
   readonly created_at: ImmutableColumn<Date>;
   /** Stations-owned monotonic epoch for exact credential authority. */
-  readonly admission_revision: DefaultedImmutableColumn<number>;
+  readonly admission_revision: DefaultedMutableColumn<number>;
+}
+
+export interface StationEnrollmentChallengeTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly challenge_id: ImmutableColumn<string>;
+  readonly target_branch_id: ImmutableColumn<string>;
+  readonly intended_station_id: ImmutableColumn<string | null>;
+  readonly intended_display_name: ImmutableColumn<string>;
+  readonly kind: ImmutableColumn<'NEW_STATION' | 'RELINK_STATION'>;
+  readonly token_digest: ImmutableColumn<Uint8Array>;
+  readonly status: MutableColumn<'ACTIVE' | 'CONSUMED' | 'CANCELED' | 'SUPERSEDED' | 'EXPIRED'>;
+  readonly issuer_user_id: ImmutableColumn<string>;
+  readonly issuer_admin_identity_id: ImmutableColumn<string>;
+  readonly issuer_admin_session_id: ImmutableColumn<string>;
+  readonly issuer_capability: ImmutableColumn<string>;
+  readonly issuer_authority_digest: ImmutableColumn<Uint8Array>;
+  readonly expires_at: ImmutableColumn<Date>;
+  readonly consumed_at: MutableColumn<Date | null>;
+  readonly canceled_at: MutableColumn<Date | null>;
+  readonly superseded_at: MutableColumn<Date | null>;
+  readonly version: DefaultedMutableColumn<number>;
+  readonly created_at: ImmutableColumn<Date>;
+  readonly updated_at: MutableColumn<Date>;
+}
+
+export interface StationEnrollmentConsumptionTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly challenge_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string>;
+  readonly credential_id: ImmutableColumn<string>;
+  readonly result_digest: ImmutableColumn<Uint8Array>;
+  readonly consumed_at: ImmutableColumn<Date>;
+}
+
+export interface StationAdministrationCommandTable {
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly command_kind: ImmutableColumn<'RENAME' | 'ISSUE_ENROLLMENT' | 'CANCEL_ENROLLMENT' | 'UNLINK' | 'INITIATE_RELINK' | 'REVOKE'>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly request_digest: ImmutableColumn<Uint8Array>;
+  readonly station_id: ImmutableColumn<string | null>;
+  readonly challenge_id: ImmutableColumn<string | null>;
+  readonly result_station_version: ImmutableColumn<number | null>;
+  readonly result_challenge_version: ImmutableColumn<number | null>;
+  readonly completed_at: ImmutableColumn<Date>;
+}
+
+export interface StationAuditEventTable {
+  readonly event_id: ImmutableColumn<string>;
+  readonly tenant_id: ImmutableColumn<string>;
+  readonly station_id: ImmutableColumn<string | null>;
+  readonly challenge_id: ImmutableColumn<string | null>;
+  readonly branch_id: ImmutableColumn<string | null>;
+  readonly actor_user_id: ImmutableColumn<string>;
+  readonly actor_admin_identity_id: ImmutableColumn<string>;
+  readonly admin_session_id: ImmutableColumn<string>;
+  readonly event_type: ImmutableColumn<string>;
+  readonly result: ImmutableColumn<'SUCCEEDED' | 'DENIED' | 'FAILED'>;
+  readonly reason_code: ImmutableColumn<string>;
+  readonly capability: ImmutableColumn<string>;
+  readonly sensitivity_level: ImmutableColumn<1 | 2>;
+  readonly correlation_id: ImmutableColumn<string>;
+  readonly client_request_id: ImmutableColumn<string>;
+  readonly station_version: ImmutableColumn<number | null>;
+  readonly station_admission_revision: ImmutableColumn<number | null>;
+  readonly occurred_at: ImmutableColumn<Date>;
 }
 
 export interface UserTable {
@@ -1809,6 +1877,10 @@ export interface DatabaseSchema {
   readonly stations: StationTable;
   readonly station_bindings: StationBindingTable;
   readonly station_credentials: StationCredentialTable;
+  readonly station_enrollment_challenges: StationEnrollmentChallengeTable;
+  readonly station_enrollment_consumptions: StationEnrollmentConsumptionTable;
+  readonly station_administration_commands: StationAdministrationCommandTable;
+  readonly station_audit_events: StationAuditEventTable;
   readonly users: UserTable;
   readonly user_preferences: UserPreferencesTable;
   readonly catalog_categories: CatalogCategoryTable;

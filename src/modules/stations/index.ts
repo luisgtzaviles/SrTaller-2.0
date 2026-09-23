@@ -21,6 +21,16 @@ import type {
   BranchTimeZone as BranchTimeZoneContract,
   OperationalDateTime as OperationalDateTimeContract,
 } from './application/branch-time-zone.js';
+import {
+  STATION_ADMINISTRATION_RUNTIME as stationAdministrationRuntimeToken,
+} from './application/station-administration.runtime.js';
+import type {
+  IssuedStationEnrollment as IssuedStationEnrollmentContract,
+  StationAdministrationContext as StationAdministrationContextContract,
+  StationAdministrationRuntime as StationAdministrationRuntimeContract,
+  StationEnrollmentItem as StationEnrollmentItemContract,
+  StationInventoryItem as StationInventoryItemContract,
+} from './application/station-administration.runtime.js';
 
 /** Public façade for the Stations-owned Branch settings capability. */
 export const BRANCH_SETTINGS_RUNTIME: typeof branchSettingsRuntimeToken =
@@ -36,6 +46,12 @@ export const parseBranchTimeZone = parseTimeZone;
 export const presentOperationalDateTime = presentDateTime;
 export const BRANCH_ADMINISTRATION_RUNTIME: typeof branchAdministrationRuntimeToken = branchAdministrationRuntimeToken;
 export type BranchAdministrationRuntime = BranchAdministrationRuntimeContract;
+export const STATION_ADMINISTRATION_RUNTIME: typeof stationAdministrationRuntimeToken = stationAdministrationRuntimeToken;
+export type IssuedStationEnrollment = IssuedStationEnrollmentContract;
+export type StationAdministrationContext = StationAdministrationContextContract;
+export type StationAdministrationRuntime = StationAdministrationRuntimeContract;
+export type StationEnrollmentItem = StationEnrollmentItemContract;
+export type StationInventoryItem = StationInventoryItemContract;
 
 export class TrustedStationContextError extends Error {
   constructor() {

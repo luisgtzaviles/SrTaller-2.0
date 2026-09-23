@@ -69,7 +69,13 @@
       "BranchSettingsRuntime",
       "BranchSettingsScope",
       "BranchTimeZone",
+      "IssuedStationEnrollment",
       "OperationalDateTime",
+      "STATION_ADMINISTRATION_RUNTIME",
+      "StationAdministrationContext",
+      "StationAdministrationRuntime",
+      "StationEnrollmentItem",
+      "StationInventoryItem",
       "StationsModuleContract",
       "TRUSTED_STATION_ADMISSION_VALIDATOR",
       "TRUSTED_STATION_CONTEXT_RESOLVER",
@@ -331,6 +337,12 @@
           {
             "token": "BRANCH_SETTINGS_RUNTIME",
             "contract": "BranchSettingsRuntime",
+            "consumerImportSpecifier": "../stations/index.js",
+            "producerImportSpecifier": "./index.js"
+          },
+          {
+            "token": "STATION_ADMINISTRATION_RUNTIME",
+            "contract": "StationAdministrationRuntime",
             "consumerImportSpecifier": "../stations/index.js",
             "producerImportSpecifier": "./index.js"
           },
@@ -871,6 +883,15 @@
           "importSpecifier": "./presentation/admin-users-roles.controller.js"
         }
       },
+      "src/modules/access/presentation/admin-stations.controller.ts": {
+        "owner": "access",
+        "className": "AdminStationsController",
+        "composition": {
+          "file": "src/modules/access/access.module.ts",
+          "className": "AccessModule",
+          "importSpecifier": "./presentation/admin-stations.controller.js"
+        }
+      },
       "src/modules/access/presentation/user-preferences.controller.ts": {
         "owner": "access",
         "className": "UserPreferencesController",
@@ -1029,7 +1050,8 @@
       "src/infrastructure/database/migrations/20260921200000_access_create_admin_invitations.ts",
       "src/infrastructure/database/migrations/20260921201000_access_enable_admin_role_lifecycle.ts",
       "src/infrastructure/database/migrations/20260921202000_access_enforce_global_pending_invitation_email.ts",
-      "src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts"
+      "src/infrastructure/database/migrations/20260922090000_access_bound_admin_invitation_challenge_expiry.ts",
+      "src/infrastructure/database/migrations/20260922130000_stations_create_inventory_enrollment_authority.ts"
     ],
     "migrationOwnership": {
       "legacyMigrations": [
@@ -1777,6 +1799,24 @@
           "references": [],
           "functions": [],
           "triggers": []
+        },
+        "src/infrastructure/database/migrations/20260922130000_stations_create_inventory_enrollment_authority.ts": {
+          "owner": "stations",
+          "tables": [
+            "station_administration_commands",
+            "station_audit_events",
+            "station_bindings",
+            "station_credentials",
+            "station_enrollment_challenges",
+            "station_enrollment_consumptions",
+            "stations"
+          ],
+          "references": ["branches", "tenants"],
+          "functions": ["stations_reject_audit_mutation"],
+          "triggers": [
+            "station_audit_events_reject_delete",
+            "station_audit_events_reject_update"
+          ]
         }
       }
     },
@@ -1815,6 +1855,10 @@
           "StationTable",
           "StationBindingTable",
           "StationCredentialTable",
+          "StationEnrollmentChallengeTable",
+          "StationEnrollmentConsumptionTable",
+          "StationAdministrationCommandTable",
+          "StationAuditEventTable",
           "UserTable",
           "NewRepairFormMode",
           "UserPreferencesTable",
@@ -2117,6 +2161,7 @@
           "src/infrastructure/database/migrations/20260921122000_tenancy_create_bootstrap_guards.ts",
           "src/infrastructure/database/migrations/20260921150000_registration_create_public_verification.ts",
           "src/infrastructure/database/migrations/20260921151000_registration_enable_retention_cleanup.ts",
+          "src/infrastructure/database/migrations/20260922130000_stations_create_inventory_enrollment_authority.ts",
           "src/infrastructure/database/database-connection.ts",
           "src/infrastructure/database/migration-runner.ts",
           "src/modules/repairs/infrastructure/persistence/kysely-repair.repository.ts",
@@ -2331,6 +2376,12 @@
         "allowedScopes": ["TenantPersistenceScope", "TenantBranchPersistenceScope"],
         "status": "materialized-owner-port"
       },
+      "src/modules/stations/application/station-administration.runtime.ts": {
+        "owner": "stations",
+        "contract": "StationAdministrationRuntime",
+        "allowedScopes": ["StationAdministrationContext"],
+        "status": "materialized-owner-port"
+      },
     "src/modules/repairs/application/ports/repair-repository.port.ts": {
       "owner": "repairs",
       "contract": "RepairRepositoryPort",
@@ -2404,6 +2455,7 @@
       "CatalogFieldPolicyScope": ["tenantId"],
       "CatalogFieldPolicyConfigurationContext": ["tenantId", "branchId"],
       "CustomerPersistenceScope": ["tenantId", "branchId"],
+      "StationAdministrationContext": ["tenantId"],
       "RepairCreateContext": ["tenantId", "branchId"],
       "RepairEquipmentCorrectionContext": ["tenantId", "branchId"],
       "RepairConfigurationContext": ["tenantId", "branchId"],
@@ -2463,6 +2515,12 @@
       "src/modules/stations/infrastructure/persistence/kysely-branch-administration.transaction.ts": {
         "owner": "stations",
         "port": "src/modules/stations/application/ports/branch-administration-transaction.port.ts",
+        "composition": "src/modules/stations/stations.module.ts",
+        "status": "materialized-owner-adapter"
+      },
+      "src/modules/stations/infrastructure/persistence/kysely-station-administration.runtime.ts": {
+        "owner": "stations",
+        "port": "src/modules/stations/application/station-administration.runtime.ts",
         "composition": "src/modules/stations/stations.module.ts",
         "status": "materialized-owner-adapter"
       },
@@ -2618,6 +2676,10 @@
         "owner": "stations",
         "kind": "table"
       },
+      "station_enrollment_challenges": { "owner": "stations", "kind": "table" },
+      "station_enrollment_consumptions": { "owner": "stations", "kind": "table" },
+      "station_administration_commands": { "owner": "stations", "kind": "table" },
+      "station_audit_events": { "owner": "stations", "kind": "table" },
       "repairs": {
         "owner": "repairs",
         "kind": "table"
@@ -3244,6 +3306,7 @@
     "src/modules/access/presentation/access-session.controller.ts",
     "src/modules/access/presentation/admin-session.controller.ts",
     "src/modules/access/presentation/admin-users-roles.controller.ts",
+    "src/modules/access/presentation/admin-stations.controller.ts",
     "src/modules/access/presentation/admin-authorization.executor.ts",
     "src/modules/access/presentation/contextual-authorization.executor.ts",
     "src/modules/access/presentation/tenant-wide-authorization.executor.ts",
@@ -3254,6 +3317,7 @@
     "src/modules/stations/application/branch-time-zone.ts",
     "src/modules/stations/application/branch-settings-runtime.service.ts",
     "src/modules/stations/application/branch-administration.service.ts",
+    "src/modules/stations/application/station-administration.runtime.ts",
     "src/modules/stations/application/ports/branch-settings-runtime.port.ts",
     "src/modules/stations/application/ports/local-station-bootstrap-runtime.port.ts",
     "src/modules/stations/application/ports/branch-repository.port.ts",
@@ -3269,6 +3333,7 @@
     "src/modules/stations/infrastructure/http/trusted-station-request-context.resolver.ts",
     "src/modules/stations/infrastructure/persistence/kysely-branch.repository.ts",
     "src/modules/stations/infrastructure/persistence/kysely-branch-administration.transaction.ts",
+    "src/modules/stations/infrastructure/persistence/kysely-station-administration.runtime.ts",
       "src/modules/stations/infrastructure/persistence/kysely-branch-administration.transaction.ts",
     "src/modules/stations/infrastructure/persistence/kysely-station-credential.verifier.ts",
     "src/modules/stations/presentation/local-station-bootstrap.controller.ts",

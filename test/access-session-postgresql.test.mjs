@@ -112,7 +112,7 @@ const tenantA = '00000000-0000-4000-8000-000000000001';
 const tenantB = '20000000-0000-4000-8000-000000000034';
 const branchA = '00000000-0000-4000-8000-000000000101';
 const branchB = '40000000-0000-4000-8000-000000000034';
-const stationA = '50000000-0000-4000-8000-000000000034';
+const stationA = '00000000-0000-4000-8000-000000000401';
 const stationASecond = '51000000-0000-4000-8000-000000000034';
 const stationB = '60000000-0000-4000-8000-000000000034';
 const userA = '70000000-0000-4000-8000-000000000034';
@@ -242,13 +242,28 @@ async function seed(admin) {
     [tenantA],
   );
   await admin.query('insert into branches (tenant_id, branch_id, active, created_at) values ($1,$2,true,now())', [tenantA, branchA]);
-  await admin.query("insert into stations (tenant_id,station_id,status,created_at,updated_at) values ($1,$2,'active',now(),now()),($1,$3,'active',now(),now())", [tenantA, stationA, stationASecond]);
-  await admin.query('insert into station_bindings (tenant_id,station_id,branch_id,created_at) values ($1,$2,$3,now()),($1,$4,$3,now())', [tenantA, stationA, branchA, stationASecond]);
-  await admin.query("insert into station_credentials (credential_id,credential_hash,tenant_id,station_id,created_at) values ($1,'station-a-hash',$2,$3,now()),($4,'station-a-alternate-hash',$2,$3,now()),($5,'station-a-second-hash',$2,$6,now())", [stationCredentialA, tenantA, stationA, stationCredentialAAlternate, stationCredentialASecond, stationASecond]);
+  await admin.query("insert into stations (tenant_id,station_id,status,created_at,updated_at) values ($1,$2,'active',now(),now())", [tenantA, stationA]);
+  await admin.query('insert into station_bindings (tenant_id,station_id,branch_id,created_at) values ($1,$2,$3,now())', [tenantA, stationA, branchA]);
+  await admin.query("insert into station_credentials (credential_id,credential_hash,tenant_id,station_id,created_at,revoked_at) values ($1,'station-a-hash',$2,$3,now(),null),($4,'station-a-alternate-hash',$2,$3,now(),now())", [stationCredentialA, tenantA, stationA, stationCredentialAAlternate]);
   await admin.query("insert into users (tenant_id,user_id,display_name,operational_identifier,status,version,created_at,updated_at) values ($1,$2,'Operador A','operador-a','active',0,now(),now()),($1,$3,'Operador A2','operador-a2','active',0,now(),now())", [tenantA, userA, userASecond]);
   await admin.query("insert into access_roles (tenant_id,role_id,role_key,display_name,status,version,created_at,updated_at) values ($1,$2,'operator','Operador','active',0,now(),now())", [tenantA, roleA]);
   await admin.query("insert into access_role_assignments (tenant_id,assignment_id,user_id,role_id,assignment_scope,branch_id,status,version,assigned_at) values ($1,$2,$3,$4,'BRANCH_RESTRICTED',$5,'active',0,now()),($1,$6,$7,$4,'BRANCH_RESTRICTED',$5,'active',0,now())", [tenantA, assignmentA, userA, roleA, branchA, assignmentASecond, userASecond]);
   await admin.query("insert into access_pin_credentials (tenant_id,user_id,credential_id,status,algorithm,profile_version,pepper_version,memory_kib,passes,parallelism,salt,verifier,credential_version,consecutive_failures,created_at,updated_at) values ($1,$2,gen_random_uuid(),'active','argon2id',1,1,65536,3,4,$4,$5,3,0,now(),now()),($1,$3,gen_random_uuid(),'active','argon2id',1,1,65536,3,4,$6,$7,3,0,now(),now())", [tenantA, userA, userASecond, Buffer.alloc(16, 1), Buffer.alloc(32, 2), Buffer.alloc(16, 3), Buffer.alloc(32, 4)]);
+}
+
+async function seedPostTl07Station(admin) {
+  await admin.query(
+    "insert into stations (tenant_id,station_id,display_name,status,created_at,updated_at) values ($1,$2,'Session Station A2','active',now(),now())",
+    [tenantA, stationASecond],
+  );
+  await admin.query(
+    'insert into station_bindings (tenant_id,station_id,branch_id,created_at) values ($1,$2,$3,now())',
+    [tenantA, stationASecond, branchA],
+  );
+  await admin.query(
+    "insert into station_credentials (credential_id,credential_hash,tenant_id,station_id,created_at) values ($1,'station-a-second-hash',$2,$3,now())",
+    [stationCredentialASecond, tenantA, stationASecond],
+  );
 }
 
 async function seedTenantB(admin) {
@@ -267,7 +282,7 @@ async function seedTenantB(admin) {
      )`,
     [tenantB, branchB],
   );
-  await admin.query("insert into stations (tenant_id,station_id,status,created_at,updated_at) values ($1,$2,'active',now(),now())", [tenantB, stationB]);
+  await admin.query("insert into stations (tenant_id,station_id,display_name,status,created_at,updated_at) values ($1,$2,'Session Station B','active',now(),now())", [tenantB, stationB]);
   await admin.query('insert into station_bindings (tenant_id,station_id,branch_id,created_at) values ($1,$2,$3,now())', [tenantB, stationB, branchB]);
   await admin.query("insert into station_credentials (credential_id,credential_hash,tenant_id,station_id,created_at) values ($1,'station-b-hash',$2,$3,now())", [stationCredentialB, tenantB, stationB]);
   await admin.query("insert into users (tenant_id,user_id,display_name,operational_identifier,status,version,created_at,updated_at) values ($1,$2,'Operador B','operador-b','active',0,now(),now())", [tenantB, userA]);
@@ -409,6 +424,7 @@ test('PostgreSQL 18.4 enforces concurrent Operational Sessions, exact lifecycle,
         name === '20260912180000_access_enable_concurrent_operational_sessions')?.name,
       '20260912180000_access_enable_concurrent_operational_sessions',
     );
+    await seedPostTl07Station(admin);
     await seedTenantB(admin);
     assert.equal(
       (await admin.query(

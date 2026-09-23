@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { Module } from '@nestjs/common';
 
 import { RuntimeInfrastructureModule } from '../../infrastructure/runtime/runtime-infrastructure.module.js';
@@ -23,6 +25,7 @@ import {
   BRANCH_ADMINISTRATION_RUNTIME,
   BRANCH_SETTINGS_RUNTIME,
   ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR,
+  STATION_ADMINISTRATION_RUNTIME,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
   TRUSTED_STATION_CONTEXT_RESOLVER,
 } from '../stations/index.js';
@@ -30,6 +33,7 @@ import type {
   BranchAdministrationRuntime,
   BranchSettingsRuntime,
   AdminInvitationBranchCommitValidator,
+  StationAdministrationRuntime,
   TrustedStationAdmissionValidator,
   TrustedStationContextResolver,
 } from '../stations/index.js';
@@ -96,6 +100,7 @@ import {
   ResolveAdminSessionUseCase,
 } from './application/use-cases/admin-session.use-cases.js';
 import { composeEffectiveCapabilities } from './domain/capability.js';
+import type { CapabilityCode } from './domain/capability.js';
 import {
   ACCESS_SESSION_RUNTIME,
   AccessSessionController,
@@ -109,6 +114,10 @@ import {
   ACCESS_BRANCH_ADMINISTRATION_RUNTIME,
   AdminBranchesController,
 } from './presentation/admin-branches.controller.js';
+import {
+  ACCESS_STATION_ADMINISTRATION_RUNTIME,
+  AdminStationsController,
+} from './presentation/admin-stations.controller.js';
 import { BranchSettingsAdministrationController } from './presentation/branch-settings-administration.controller.js';
 import { ContextualAuthorizationExecutorService } from './presentation/contextual-authorization.executor.js';
 import { TenantWideAuthorizationExecutorService } from './presentation/tenant-wide-authorization.executor.js';
@@ -157,6 +166,7 @@ type RegisteredAccessUseCases =
     AccessSessionController,
     AdminSessionController,
     AdminBranchesController,
+    AdminStationsController,
     AdminUsersRolesController,
     PublicAdminInvitationController,
     AccessAdministrationController,
@@ -170,6 +180,13 @@ type RegisteredAccessUseCases =
       useFactory: (
         branches: BranchAdministrationRuntime,
       ): BranchAdministrationRuntime => branches,
+    },
+    {
+      provide: ACCESS_STATION_ADMINISTRATION_RUNTIME,
+      inject: [STATION_ADMINISTRATION_RUNTIME],
+      useFactory: (
+        stations: StationAdministrationRuntime,
+      ): StationAdministrationRuntime => stations,
     },
     {
       provide: ACCESS_SESSION_RUNTIME,
@@ -270,6 +287,16 @@ type RegisteredAccessUseCases =
           provisionPin: new ProvisionPinCredentialUseCase(pinRepository, pinHasher),
           replacePin: new ReplacePinCredentialUseCase(pinRepository, pinHasher),
           listConfiguredPinUserIds: (scope: unknown) => pinRepository.listConfiguredUserIds(scope as never),
+          invalidateStationSessionsAtCommit: (
+            tenantId: string,
+            stationId: string,
+            occurredAt: string,
+            transactionContext: object,
+          ) => sessionRepository.invalidateByStationAtCommit(
+            { tenantId },
+            { stationId, occurredAt },
+            transactionContext,
+          ),
           tokens,
           registrationPasswordHasher: adminPasswordHasher,
           tenantBootstrapTransaction: new KyselyTenantBootstrapTransaction(database as never),
@@ -292,9 +319,35 @@ type RegisteredAccessUseCases =
               const matrix = await new ListAccessMatrixUseCase(accessRepository).execute({ tenantId });
               const activeRoles = new Map(matrix.roles.filter((role) => role.status === 'active').map((role) => [role.roleId, role.capabilityCodes]));
               const capabilities = matrix.assignments
-                .filter((assignment) => assignment.userId === userId && assignment.status === 'active' && assignment.assignmentScope === 'TENANT_WIDE' && assignment.branchId === null)
+                .filter((assignment) => assignment.userId === userId && assignment.status === 'active')
                 .flatMap((assignment) => activeRoles.get(assignment.roleId) ?? []);
               return composeEffectiveCapabilities(capabilities);
+            },
+            capabilityAuthority: async (tenantId: string, userId: string, capability: CapabilityCode) => {
+              const matrix = await new ListAccessMatrixUseCase(accessRepository).execute({ tenantId });
+              const roles = new Map(matrix.roles
+                .filter((role) => role.status === 'active' && role.capabilityCodes.includes(capability))
+                .map((role) => [role.roleId, role]));
+              const grants = matrix.assignments
+                .filter((assignment) => assignment.userId === userId && assignment.status === 'active' && roles.has(assignment.roleId));
+              if (grants.length === 0) return null;
+              const tenantWide = grants.some((grant) => grant.assignmentScope === 'TENANT_WIDE' && grant.branchId === null);
+              const branchIds = tenantWide ? null : Object.freeze([...new Set(grants
+                .filter((grant) => grant.assignmentScope === 'BRANCH_RESTRICTED' && grant.branchId !== null)
+                .map((grant) => grant.branchId as string))].sort());
+              if (branchIds !== null && branchIds.length === 0) return null;
+              const snapshot = grants.map((grant) => ({
+                assignmentId: grant.assignmentId,
+                assignmentVersion: grant.version,
+                assignmentScope: grant.assignmentScope,
+                branchId: grant.branchId,
+                roleId: grant.roleId,
+                roleVersion: roles.get(grant.roleId)!.version,
+              })).sort((left, right) => left.assignmentId.localeCompare(right.assignmentId));
+              return Object.freeze({
+                branchIds,
+                digest: createHash('sha256').update(JSON.stringify({ tenantId, userId, capability, snapshot })).digest(),
+              });
             },
           }),
         });

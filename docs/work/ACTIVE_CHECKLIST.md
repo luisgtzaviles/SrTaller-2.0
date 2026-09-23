@@ -1,161 +1,168 @@
 # Active Work Unit Checklist
 
+Current PBI: NONE
+
 <!-- WORK_UNIT_METADATA
-work_unit: QUALITY — Diagnose Owner-Scoped CI Runtime Variability
-iteration: 3 - Remote review
-type: QUALITY
-risk: SENSITIVE
-shadow_risk: SENSITIVE
-branch: chore/quality-owner-scoped-ci-variability
-base_sha: 9bd8bfcf106ba69be66202eedee115a2eea19739
+work_unit: TL-07 — Station Inventory + Enrollment Authority
+iteration: 5 - final remote promotion
+type: PRODUCT
+risk: ARCHITECTURAL
+shadow_risk: ARCHITECTURAL
+branch: feature/tl-07-station-inventory-enrollment-readiness
+base_sha: 74fe2b5fd5b66ee48428953f3e027f2815c839ca
 status: PROMOTION
 closure_mode: DERIVED
 last_updated: 2026-09-22
 -->
 
-Current PBI: NONE
-
 ## Objective
 
-Diagnose the exact cause and historical pattern of owner-scoped PostgreSQL CI runtime variability without changing TL-07, gates, timeouts, coverage, product, or infrastructure.
+Complete Tenant-administered Station inventory and enrollment authority while
+preserving the trusted Station/PIN boundary and reserving redemption for TL-08.
 
 ## Why
 
-TL-07 attempt 1 exhausted the unchanged owner-scoped 240-second budget, while
-the same exact PR head later produced both a fast leg and a near-budget leg.
-The Owner requires a cause classification before deciding whether TL-07 may
-resume promotion.
+Materialize the approved TL-07 authority, lifecycle and administrative UX with
+fail-closed tenancy and trust semantics.
 
 ## In Scope
 
-- Recover the exact observable identity of TL-07 CI attempt 1.
-- Compare both TL-07 attempts by suite and phase where evidence exists.
-- Audit the exact 240-second measurement boundary against its accepted contract.
-- Compare PR #70, PR #71, their exact-main runs and TL-07 evidence.
-- Classify the runtime variability before proposing any remediation.
+- Station Inventory V1 reads and rename.
+- Enrollment issue/cancel with immutable Branch/name authority, ten-minute TTL,
+  one-time secret presentation and digest-only persistence.
+- Unlink, initiate relink and terminal revoke with trust/session invalidation.
+- Branch-scoped Admin authorization, tenant isolation, audit and concurrency.
+- Admin HTTP/UI `Dispositivos`, QR/manual-code presentation and Level-2 UX.
+- Additive migration/backfill for the exact approved legacy Station mapping.
+- Reconciliation with the integrated child-diagnostics and CI-variability
+  Quality evidence.
 
 ## Out of Scope
 
-- Product, TL-07, PostgreSQL, migrations, tests, timeout, inventory, retries,
-  parallelism, CI gates and infrastructure changes.
-- Push, PR, merge, deploy and TL-08.
-- A new benchmark/calibration campaign.
+- Device redemption, activation or operational handoff owned by TL-08.
+- Station reactivation, physical delete, generic lifecycle patch, MDM,
+  fingerprint authority and invented telemetry.
+- PR merge, deploy, infrastructure and unrelated cleanup.
 
 ## Applicable Contracts
 
 - [`AGENTS.md`](../../AGENTS.md)
 - [`WORK_UNIT_LIFECYCLE.md`](../delivery/WORK_UNIT_LIFECYCLE.md)
 - [`QUALITY_STRATEGY.md`](../quality/QUALITY_STRATEGY.md)
-- [Owner-scoped runtime stabilization](../quality/evidence/owner-scoped-postgresql-runtime/README.md)
-- [Owner-scoped child diagnostics](../quality/evidence/owner-scoped-child-diagnostics/README.md)
+- [`DEFINITION_OF_DONE.md`](../delivery/DEFINITION_OF_DONE.md)
+- [Owner-scoped CI runtime variability](../quality/evidence/owner-scoped-ci-runtime-variability/README.md)
 
 ## Risks
 
-- A successful rerun must not erase the failed first attempt.
-- Total campaign timing alone could incorrectly blame one child or TL-07.
-- Hosted-runner variability must not be converted into an invented product fix.
-- GitHub logs may not expose the active inner child after an outer timeout.
+- Station trust changes must immediately deny PIN login and existing
+  Operational Sessions without crossing persistence ownership boundaries.
+- Admin authorization needs a branch-scoped control-plane path consistent with
+  TL-06 and must remain fail-closed across tenants.
+- Enrollment authority must be useful to TL-08 without exposing a production
+  redemption endpoint in TL-07.
+- The owner-scoped campaign must stay serial, preserve eight suites and remain
+  within its unchanged 240-second outer budget.
+- The historical hosted-runner timeout remains evidence and must not become an
+  implicit retry-to-green policy.
 
 ## Plan
 
-- [x] Preserve TL-07 branch, exact HEAD and Draft PR #72 unchanged.
-- [x] Recover attempt-1 stage, timeout boundary, cleanup and retained diagnostics.
-- [x] Compare both TL-07 attempts by file and phase where materially available.
-- [x] Audit the complete 240-second owner-scoped wrapper boundary.
-- [x] Build the authoritative PR #70/#71/TL-07 runtime series.
-- [x] Classify cause and decide whether repository remediation is justified.
-- [x] Record Owner acceptance and freeze the documentary closure candidate.
+- [x] Preserve the original TL-07 history and checkpoint `8b75ba6724257044896b4c4ae26c09ef616c4d42`.
+- [x] Complete the approved Station inventory, enrollment authority and lifecycle implementation.
+- [x] Complete Admin HTTP/UI, authorization, audit and responsive product proof.
+- [x] Fix the historical Access PIN schema fixture incompatibility.
+- [x] Fix the historical Access Session schema fixture incompatibility.
+- [x] Preserve TL-07 while the bounded CI-variability diagnosis was completed.
+- [x] Integrate and close both owner-scoped Quality dependencies.
+- [x] Merge authoritative `main` into the preserved TL-07 branch ordinarily.
+- [x] Execute the exact verification path required by the current Harness.
+- [~] Push the reconciled branch and complete authoritative PR review.
 
 ## Current
 
-The Owner accepts `CI_HOST_RESOURCE_VARIABILITY` as the bounded diagnosis.
-The same-head slow leg expands all material child processes proportionally;
-no TL-07, PostgreSQL, migration, assertion, cleanup or specific-suite defect is
-shown. No runtime remediation or general retry policy was implemented. The
-documentary candidate is in remote review; GitHub is authoritative for its PR
-and CI state.
+TL-07 product history is preserved and authoritative `main` has been merged
+ordinarily. The canonical full verification passed once on reconciliation
+merge `a6845e8e204e471db59abbe7396a6b5aaf698dd8`: stages 0–19, owner-scoped
+`8/8`, TL-07 PostgreSQL `3/3`, 89 migrations, rerun `0 pending`, runtime
+smokes, fingerprint and cleanup all passed. The subsequent readiness-only
+checklist delta passed the exact `DOCS_ONLY` verifier and Work Unit promotion
+checker.
 
 ## Next
 
-Await the separate Owner merge decision for this documentary/evidence
-candidate. TL-07 may then resume through its own separately authorized
-promotion path. A bounded progress-marker improvement remains a future Quality
-candidate and is not part of this Work Unit.
+Update existing Draft PR #72 through an ordinary push, observe authoritative
+CI on its exact HEAD and complete the security/architectural review.
 
 ## Blockers
 
-No local blocker remains for this Quality candidate. TL-07 remains frozen and
-PR #72 remains untouched until its own promotion is separately resumed.
+No semantic product/security conflict exists. Promotion remains contingent on
+authoritative remote CI and final security/architectural review results.
 
 ## Important Discoveries
 
-- Attempt 1 `run-1` failed in `owner-scoped-adapters` at the outer 240,000 ms
-  timeout; cleanup passed and no PostgreSQL/assertion failure was emitted.
-- The external kill occurred before the owner-scoped parent could return its
-  structured child marker, so the exact inner suite/ordinal is not recoverable
-  from that historical log.
-- The accepted budget covers the complete owner-scoped wrapper. The
-  `campaign=232240 ms` value excludes setup/finalization; the enforced wrapper
-  was 234,565 ms and had 5,435 ms of margin.
-- In TL-07 attempt 2, the slow leg was 41% slower overall and the principal
-  material suites were each approximately 40–43% slower than the fast leg.
-- Access PIN is the largest absolute contributor but scales proportionally; it
-  is not a unique regression.
-- PR #71 exact-main also required a second attempt after the same outer timeout,
-  before TL-07 was present. Runtime is not worsening monotonically with TL-07.
-- Runner image/region do not correlate with the observed fast and slow legs.
-- Available CI telemetry cannot distinguish VM performance-tier variation,
-  host contention or another underlying hosted-runner resource cause.
-- Owner acceptance is specific to PR #72 evidence and does not establish a
-  general retry-on-timeout policy.
-- The comparative report is in
-  [`owner-scoped-ci-runtime-variability`](../quality/evidence/owner-scoped-ci-runtime-variability/README.md).
+- TL-07 product implementation and product walkthrough were complete before
+  the Quality dependencies; TL-08 redemption remains deliberately absent.
+- The historical Access PIN and Access Session fixtures seed only columns
+  available at their intentionally rolled-back schema versions.
+- The Access Session fixture uses the approved legacy Station mapping,
+  preserves the alternate credential as revoked and creates its second Station
+  only after TL-07 is reapplied.
+- The integrated child-diagnostics dependency preserves bounded, redacted
+  failure context without changing the eight-suite serial campaign.
+- The Owner accepts `CI_HOST_RESOURCE_VARIABILITY` for the specific historical
+  PR #72 evidence. Available telemetry cannot distinguish VM performance tier,
+  host contention or another hosted-runner resource cause.
+- PR #72 attempt 1 remains a failed outer-wrapper timeout. Attempt 2 success
+  does not erase that evidence or establish a general retry policy.
+- The repository defines 89 migrations and the prior material migration rerun
+  reported `0 pending`.
 - `apps/dev-preview-web/src/.DS_Store` remains unrelated and untracked.
 
 ## Focused Verification
 
-- [x] Exact GitHub attempt-1 and attempt-2 logs inspected without rerun.
-- [x] Successful per-suite timings compared for the same exact TL-07 HEAD.
-- [x] PR #70/#71 candidate and exact-main history inspected.
-- [x] Current runner code and accepted Quality contract inspected.
-- [x] Documentation links, consistency, Work Unit checker and `git diff --check`.
+- [x] Prior TL-07 domain, application, authorization and UI proof completed.
+- [x] Prior TL-07 PostgreSQL material proof: `3/3` PASS.
+- [x] Prior Access PIN PostgreSQL historical fixture: `1/1` PASS.
+- [x] Prior Access Session PostgreSQL historical fixture: `1/1` PASS.
+- [x] Local product/full candidate `8b877a8c6999b9954d376c46bf64930ce67fa108`: stages 0–19 PASS.
+- [x] Historical PR #72 attempt 2: owner-scoped `8/8`, TL-07 PostgreSQL `3/3`, comparison and promotion gate PASS.
+- [x] One canonical `verify:full` on reconciliation merge `a6845e8e204e471db59abbe7396a6b5aaf698dd8`: stages 0–19 PASS.
+- [x] Owner-scoped campaign in that run: `8/8` PASS, 115.010s campaign / 118.654s wrapper, below 240s.
+- [x] TL-07 PostgreSQL in that run: `3/3` PASS; 89 migrations; second run `0 pending`.
+- [x] Final docs-only readiness delta, Work Unit promotion checker and delta `git diff --check`.
 
 ## Promotion Gates
 
-- [x] Owner accepted the bounded diagnosis and documentary closure direction.
-- [x] No timeout, retry, suite, assertion or gate change is proposed.
-- [x] Exact-HEAD docs-only promotion verification PASS.
-- [x] TL-07 remains a dependent, frozen Draft candidate and is not merged.
-- [x] Ordinary push, one Draft PR, authoritative CI and focused review were
-  authorized for remote promotion.
-- [ ] Merge and governed closure require separate Owner authority.
+- [x] Approved TL-07 product scope implemented without TL-08 redemption.
+- [x] Historical-schema fixture remediations preserved.
+- [x] Owner-scoped Quality dependencies integrated and closed.
+- [x] Timeout, suite inventory, serial isolation and fail-closed semantics unchanged.
+- [x] Required local verification PASS on the reconciled candidate.
+- [ ] Existing PR #72 updated and authoritative CI/review PASS.
+- [ ] Owner merge authorization remains separate.
 
 ## Remote Actions / Authorization
 
-- Ordinary push, one Draft PR, authoritative CI inspection and focused review
-  were authorized for this promotion step.
-- GitHub remains the authority for current PR and CI facts; they are not copied
-  into this checklist as a status ledger.
-- Merge, deploy, TL-07 modification and TL-08 remain unauthorized.
-- PR #72 remains open and Draft; TL-07 was not modified or pushed.
+- Owner authorized ordinary main reconciliation, required local checks,
+  ordinary push to existing PR #72 and authoritative CI/review.
+- PR #72 merge, deploy, TL-08 and unrelated cleanup remain unauthorized.
+- No force push, rebase, squash, timeout change, retry policy or suite reduction
+  is allowed.
 
 ## Handoff Notes
 
-- Quality branch was created from clean integrated `main` at
-  `9bd8bfcf106ba69be66202eedee115a2eea19739`.
-- Preserve TL-07 branch and PR #72 at
+- Preserved TL-07 PR checkpoint before this reconciliation:
   `1e5335734920de8a0f47a929120dcdce0c4ea3c9`.
-- Preserve `apps/dev-preview-web/src/.DS_Store` untracked.
-- Attempt 1 remains historical authoritative evidence; attempt 2 does not
-  erase it.
-- Do not encode a general retry policy from this PR-specific risk acceptance.
-- Future candidate only: bounded, sanitized parent-level progress markers
-  before the external wrapper timeout.
+- Integrated Quality merge on `main`:
+  `82c59813639f75f6123072c7d3c866077cdd22a7`.
+- Preserve `apps/dev-preview-web/src/.DS_Store`; it is unrelated and untracked.
+- Future bounded parent-level progress markers remain outside TL-07.
+- TL-08 is explicitly not started and production redemption is forbidden.
 
 ## Closure Predicate
 
-The Quality Work Unit closes only when this exact documentary snapshot is
-merged through an authorized ordinary PR, authoritative exact-main CI and its
-promotion gate are GREEN, deployment is N/A for this documentation-only scope,
-and the governed closure ref targets that exact merge. TL-07 remains outside
-this predicate and retains its own promotion authority.
+TL-07 closes only after this exact product snapshot is merged through an
+authorized ordinary PR; authoritative exact-main CI, required PostgreSQL
+material and promotion gate are GREEN; any required environment validation is
+satisfied; and the governed closure ref targets the exact merge. TL-08 and
+deploy retain separate authority.

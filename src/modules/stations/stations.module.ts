@@ -20,6 +20,7 @@ import {
   BRANCH_SETTINGS_RUNTIME,
   BRANCH_ADMINISTRATION_RUNTIME,
   ADMIN_INVITATION_BRANCH_COMMIT_VALIDATOR,
+  STATION_ADMINISTRATION_RUNTIME,
   TRUSTED_STATION_ADMISSION_VALIDATOR,
   TRUSTED_STATION_CONTEXT_RESOLVER,
 } from './index.js';
@@ -29,6 +30,7 @@ import type {
   AdminInvitationBranchCommitValidator,
   TrustedStationAdmissionValidator,
   TrustedStationContextResolver,
+  StationAdministrationRuntime,
 } from './index.js';
 import {
   LOCAL_STATION_BOOTSTRAP_RUNTIME,
@@ -48,6 +50,7 @@ import { parseTenantId } from '../tenancy/index.js';
 import { LocalStationBootstrapController } from './presentation/local-station-bootstrap.controller.js';
 import type { KyselyBranchRepositoryFactory } from './infrastructure/persistence/kysely-branch.repository.js';
 import { BranchAdministrationService } from './application/branch-administration.service.js';
+import { KyselyStationAdministrationRuntime } from './infrastructure/persistence/kysely-station-administration.runtime.js';
 
 type RegisteredStationsPersistenceAdapter = KyselyBranchRepositoryFactory;
 
@@ -56,6 +59,7 @@ type StationsRuntimeComposition = Readonly<{
   verifier: KyselyStationCredentialVerifier;
   branchRepository: ReturnType<typeof createKyselyBranchRepository>;
   branchTransactions: KyselyBranchAdministrationTransaction;
+  stationAdministration: StationAdministrationRuntime;
 }>;
 
 @Module({
@@ -117,7 +121,14 @@ type StationsRuntimeComposition = Readonly<{
               typeof KyselyBranchAdministrationTransaction
             >[0],
           ),
+          stationAdministration: new KyselyStationAdministrationRuntime(database as never),
         }),
+    },
+    {
+      provide: STATION_ADMINISTRATION_RUNTIME,
+      inject: [STATIONS_RUNTIME_COMPOSITION],
+      useFactory: (composition: StationsRuntimeComposition): StationAdministrationRuntime =>
+        composition.stationAdministration,
     },
     {
       provide: BRANCH_ADMINISTRATION_RUNTIME,
@@ -173,6 +184,7 @@ type StationsRuntimeComposition = Readonly<{
   ],
   exports: [
     BRANCH_ADMINISTRATION_RUNTIME,
+    STATION_ADMINISTRATION_RUNTIME,
     BRANCH_SETTINGS_RUNTIME,
     TRUSTED_STATION_ADMISSION_VALIDATOR,
     TRUSTED_STATION_CONTEXT_RESOLVER,

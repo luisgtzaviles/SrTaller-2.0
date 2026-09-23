@@ -199,8 +199,8 @@ test(
         [tenantA, branchA, tenantB, branchB],
       );
       await admin.query(
-        `insert into stations (tenant_id, station_id, status, created_at, updated_at)
-         values ($1, $2, 'active', now(), now()), ($3, $4, 'active', now(), now())`,
+        `insert into stations (tenant_id, station_id, display_name, status, created_at, updated_at)
+         values ($1, $2, 'Station A', 'active', now(), now()), ($3, $4, 'Station B', 'active', now(), now())`,
         [tenantA, stationA, tenantB, stationB],
       );
       await admin.query(
@@ -278,8 +278,8 @@ test(
         [tenantA, branchA],
       );
       await admin.query(
-        `insert into stations (tenant_id, station_id, status, created_at, updated_at)
-         values ($1, $2, 'active', now(), now())`,
+        `insert into stations (tenant_id, station_id, display_name, status, created_at, updated_at)
+         values ($1, $2, 'Cross Tenant Station', 'active', now(), now())`,
         [tenantA, stationCrossTenant],
       );
       await assert.rejects(

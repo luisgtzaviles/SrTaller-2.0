@@ -96,6 +96,12 @@ export interface AccessSessionRuntime {
   readonly provisionPin: ProvisionPinCredentialUseCase;
   readonly replacePin: ReplacePinCredentialUseCase;
   readonly listConfiguredPinUserIds: (scope: unknown) => Promise<readonly string[]>;
+  readonly invalidateStationSessionsAtCommit: (
+    tenantId: string,
+    stationId: string,
+    occurredAt: string,
+    transactionContext: object,
+  ) => Promise<number>;
   readonly tokens: SessionTokenPort;
   readonly registrationPasswordHasher: AdminPasswordHasherPort;
   readonly tenantBootstrapTransaction: TenantBootstrapTransactionPort;
@@ -107,6 +113,11 @@ export interface AccessSessionRuntime {
     recovery: AdminRecoveryFoundationUseCase;
     tokens: AdminSessionTokenPort;
     capabilities: (tenantId: string, userId: string) => Promise<readonly CapabilityCode[]>;
+    capabilityAuthority: (
+      tenantId: string,
+      userId: string,
+      capability: CapabilityCode,
+    ) => Promise<Readonly<{ branchIds: readonly string[] | null; digest: Uint8Array }> | null>;
   }>;
 }
 

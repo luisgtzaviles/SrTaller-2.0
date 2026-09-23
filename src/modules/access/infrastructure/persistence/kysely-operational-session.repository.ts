@@ -7,7 +7,7 @@ import {
   releaseDatabaseTransactionContext,
 } from '../../../../infrastructure/database/database-transaction-capability.js';
 import type { DatabaseSchema, AccessOperationalSessionRow } from '../../../../infrastructure/database/database-types.js';
-import { useDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
+import { useDatabasePersistenceExecutor, useTransactionalDatabasePersistenceExecutor } from '../../../../infrastructure/database/database-persistence-capability.js';
 import type { TrustedStationContext } from '../../../stations/index.js';
 import type { TrustedStationAdmissionValidator } from '../../../stations/index.js';
 import type { AuthenticationUserAdmissionValidator } from '../../../users/index.js';
@@ -446,6 +446,29 @@ export class KyselyOperationalSessionRepository
     input: Parameters<OperationalSessionRepositoryPort['invalidateByStation']>[1],
   ) {
     return useDatabasePersistenceExecutor(this.connection, 'access', async (database) => {
+      const result = await database.updateTable('access_operational_sessions')
+        .set((expression) => ({
+          status: 'invalidated',
+          ended_at: expression.fn('greatest', [
+            'issued_at',
+            expression.val(new Date(input.occurredAt)),
+          ]),
+          version: expression('version', '+', 1),
+        }))
+        .where('tenant_id', '=', scope.tenantId)
+        .where('station_id', '=', input.stationId)
+        .where('status', '=', 'active')
+        .executeTakeFirst();
+      return Number(result.numUpdatedRows);
+    });
+  }
+
+  async invalidateByStationAtCommit(
+    scope: Parameters<OperationalSessionRepositoryPort['invalidateByStation']>[0],
+    input: Parameters<OperationalSessionRepositoryPort['invalidateByStation']>[1],
+    transactionContext: object,
+  ): Promise<number> {
+    return useTransactionalDatabasePersistenceExecutor(transactionContext, 'access', async (database) => {
       const result = await database.updateTable('access_operational_sessions')
         .set((expression) => ({
           status: 'invalidated',
